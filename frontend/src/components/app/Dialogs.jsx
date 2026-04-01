@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +16,9 @@ import {
   TrendingUp, Activity, Eye, Star, History, Lock, Unlock, UserCircle,
   LogIn, User, Save, Send, RefreshCw, Play, Pause, SkipForward, Package, Box, Edit3, Bell
 } from "lucide-react";
+
+// Helper for accessible dialog descriptions
+const HiddenDesc = ({ children }) => <DialogDescription className="sr-only">{children}</DialogDescription>;
 
 export function AppDialogs() {
   const ctx = useApp();
