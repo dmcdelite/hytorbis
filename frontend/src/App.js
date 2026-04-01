@@ -23,8 +23,12 @@ import {
   Layers, Edit3, Maximize2, Upload, LayoutTemplate, Users, Box,
   Swords, Heart, Compass, Pickaxe, Eye, Globe, BarChart3, Play,
   Pause, SkipForward, ThumbsUp, Search, Tag, TrendingUp,
-  Activity, Package, Share2, MessageSquare
+  Activity, Package, Share2, MessageSquare, User, LogIn, LogOut,
+  Star, History, Lock, Unlock, UserCircle
 } from "lucide-react";
+
+// Configure axios to send credentials
+axios.defaults.withCredentials = true;
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -163,12 +167,186 @@ function App() {
   const [collabCursors, setCollabCursors] = useState({});
   const [collabChat, setCollabChat] = useState([]);
 
-  // Fetch worlds and templates on mount
+  // P4: Authentication
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authMode, setAuthMode] = useState("login"); // login, register
+  const [authForm, setAuthForm] = useState({ email: "", password: "", name: "" });
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  // P4: User Profile
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [editProfile, setEditProfile] = useState({ name: "", bio: "" });
+
+  // P4: Version History
+  const [showVersionDialog, setShowVersionDialog] = useState(false);
+  const [worldVersions, setWorldVersions] = useState([]);
+
+  // P4: Reviews
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [selectedGalleryForReview, setSelectedGalleryForReview] = useState(null);
+
+  // Fetch worlds, templates, and check auth on mount
   useEffect(() => {
     fetchWorlds();
     fetchTemplates();
     fetchCustomPrefabs();
+    checkAuth();
   }, []);
+
+  // P4: Check auth on mount
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get(`${API}/auth/me`);
+      setCurrentUser(response.data);
+    } catch (e) {
+      setCurrentUser(null);
+    }
+  };
+
+  // P4: Login
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const response = await axios.post(`${API}/auth/login`, {
+        email: authForm.email,
+        password: authForm.password
+      });
+      setCurrentUser(response.data);
+      setShowAuthDialog(false);
+      setAuthForm({ email: "", password: "", name: "" });
+    } catch (e) {
+      setAuthError(e.response?.data?.detail || "Login failed");
+    }
+    setAuthLoading(false);
+  };
+
+  // P4: Register
+  const handleRegister = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const response = await axios.post(`${API}/auth/register`, {
+        email: authForm.email,
+        password: authForm.password,
+        name: authForm.name
+      });
+      setCurrentUser(response.data);
+      setShowAuthDialog(false);
+      setAuthForm({ email: "", password: "", name: "" });
+    } catch (e) {
+      setAuthError(e.response?.data?.detail || "Registration failed");
+    }
+    setAuthLoading(false);
+  };
+
+  // P4: Logout
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API}/auth/logout`);
+    } catch (e) {}
+    setCurrentUser(null);
+  };
+
+  // P4: Fetch profile
+  const fetchProfile = async (userId) => {
+    try {
+      const response = await axios.get(`${API}/users/${userId}/profile`);
+      setProfileData(response.data);
+      setEditProfile({ name: response.data.name || "", bio: response.data.bio || "" });
+    } catch (e) {
+      console.error("Failed to fetch profile:", e);
+    }
+  };
+
+  // P4: Update profile
+  const updateProfile = async () => {
+    if (!currentUser) return;
+    try {
+      await axios.put(`${API}/users/profile`, editProfile);
+      setCurrentUser({ ...currentUser, ...editProfile });
+      setShowProfileDialog(false);
+    } catch (e) {
+      console.error("Failed to update profile:", e);
+    }
+  };
+
+  // P4: Fetch versions
+  const fetchVersions = async () => {
+    if (!currentWorld) return;
+    try {
+      const response = await axios.get(`${API}/worlds/${currentWorld.id}/versions`);
+      setWorldVersions(response.data.versions || []);
+    } catch (e) {
+      console.error("Failed to fetch versions:", e);
+    }
+  };
+
+  // P4: Create version
+  const createVersion = async () => {
+    if (!currentWorld) return;
+    try {
+      await axios.post(`${API}/worlds/${currentWorld.id}/versions`);
+      fetchVersions();
+    } catch (e) {
+      console.error("Failed to create version:", e);
+    }
+  };
+
+  // P4: Restore version
+  const restoreVersion = async (versionId) => {
+    if (!currentWorld) return;
+    try {
+      await axios.post(`${API}/worlds/${currentWorld.id}/versions/${versionId}/restore`);
+      loadWorld(currentWorld.id);
+      setShowVersionDialog(false);
+    } catch (e) {
+      console.error("Failed to restore version:", e);
+    }
+  };
+
+  // P4: Toggle world visibility
+  const toggleWorldVisibility = async () => {
+    if (!currentWorld || !currentUser) return;
+    try {
+      const newVisibility = !currentWorld.is_public;
+      await axios.put(`${API}/worlds/${currentWorld.id}/visibility?is_public=${newVisibility}`);
+      setCurrentWorld({ ...currentWorld, is_public: newVisibility });
+    } catch (e) {
+      console.error("Failed to update visibility:", e);
+    }
+  };
+
+  // P4: Fetch reviews
+  const fetchReviews = async (galleryId) => {
+    try {
+      const response = await axios.get(`${API}/reviews/${galleryId}`);
+      setReviews(response.data.reviews || []);
+    } catch (e) {
+      console.error("Failed to fetch reviews:", e);
+    }
+  };
+
+  // P4: Create review
+  const createReview = async () => {
+    if (!currentUser || !selectedGalleryForReview) return;
+    try {
+      await axios.post(`${API}/reviews`, {
+        gallery_id: selectedGalleryForReview,
+        rating: newReview.rating,
+        comment: newReview.comment
+      });
+      fetchReviews(selectedGalleryForReview);
+      setNewReview({ rating: 5, comment: "" });
+    } catch (e) {
+      alert(e.response?.data?.detail || "Failed to create review");
+    }
+  };
 
   // P3: WebSocket connection
   useEffect(() => {
@@ -952,6 +1130,28 @@ function App() {
               >
                 <BarChart3 size={18} />
               </Button>
+              {currentUser && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { setShowVersionDialog(true); fetchVersions(); }}
+                    title="Version History"
+                    data-testid="version-history-btn"
+                  >
+                    <History size={18} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleWorldVisibility}
+                    title={currentWorld?.is_public ? "Make Private" : "Make Public"}
+                    data-testid="visibility-toggle-btn"
+                  >
+                    {currentWorld?.is_public ? <Unlock size={18} /> : <Lock size={18} />}
+                  </Button>
+                </>
+              )}
               <div className="header-divider" />
             </>
           )}
@@ -963,6 +1163,35 @@ function App() {
           >
             {aiPanelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
           </Button>
+          <div className="header-divider" />
+          {/* P4: Auth buttons */}
+          {currentUser ? (
+            <div className="user-menu">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => { fetchProfile(currentUser.id); setShowProfileDialog(true); }}
+                className="user-btn"
+                data-testid="profile-btn"
+              >
+                <UserCircle size={18} />
+                <span className="user-name">{currentUser.name}</span>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" data-testid="logout-btn">
+                <LogOut size={18} />
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => { setShowAuthDialog(true); setAuthMode("login"); }}
+              data-testid="login-btn"
+            >
+              <LogIn size={16} />
+              Sign In
+            </Button>
+          )}
         </div>
       </header>
 
@@ -1557,6 +1786,16 @@ function App() {
                           <span>{entry.zone_count} zones • {entry.prefab_count} prefabs</span>
                           <span>{entry.map_size}</span>
                         </div>
+                        <div className="gallery-rating">
+                          {entry.avg_rating ? (
+                            <span className="rating-display">
+                              <Star size={12} className="star-filled" />
+                              {entry.avg_rating} ({entry.review_count || 0})
+                            </span>
+                          ) : (
+                            <span className="rating-display text-muted">No reviews</span>
+                          )}
+                        </div>
                         <div className="gallery-actions">
                           <Button size="sm" onClick={() => downloadFromGallery(entry.id)}>
                             <Download size={14} /> Download
@@ -1567,6 +1806,15 @@ function App() {
                           }}>
                             <ThumbsUp size={14} />
                           </Button>
+                          {currentUser && (
+                            <Button size="sm" variant="ghost" onClick={() => {
+                              setSelectedGalleryForReview(entry.id);
+                              fetchReviews(entry.id);
+                              setShowReviewDialog(true);
+                            }} data-testid={`review-btn-${entry.id}`}>
+                              <Star size={14} /> Review
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1774,6 +2022,266 @@ function App() {
                   </Button>
                 ))}
               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P4: Auth Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="dialog-content" data-testid="auth-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCircle size={20} />
+              {authMode === "login" ? "Sign In" : "Create Account"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            {authError && (
+              <div className="auth-error" data-testid="auth-error">{authError}</div>
+            )}
+            {authMode === "register" && (
+              <div className="form-group">
+                <Label>Name</Label>
+                <Input
+                  value={authForm.name}
+                  onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
+                  placeholder="Your name"
+                  data-testid="auth-name-input"
+                />
+              </div>
+            )}
+            <div className="form-group">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={authForm.email}
+                onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+                placeholder="you@example.com"
+                data-testid="auth-email-input"
+              />
+            </div>
+            <div className="form-group">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={authForm.password}
+                onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+                placeholder="Enter password"
+                data-testid="auth-password-input"
+                onKeyDown={(e) => e.key === "Enter" && (authMode === "login" ? handleLogin() : handleRegister())}
+              />
+            </div>
+            <Button
+              onClick={authMode === "login" ? handleLogin : handleRegister}
+              disabled={authLoading || !authForm.email || !authForm.password}
+              data-testid="auth-submit-btn"
+            >
+              {authLoading ? <Loader2 className="animate-spin" size={16} /> : (authMode === "login" ? <LogIn size={16} /> : <UserCircle size={16} />)}
+              {authMode === "login" ? "Sign In" : "Register"}
+            </Button>
+            <div className="auth-switch">
+              {authMode === "login" ? (
+                <span>
+                  Don't have an account?{" "}
+                  <button className="link-btn" onClick={() => { setAuthMode("register"); setAuthError(""); }} data-testid="switch-to-register">
+                    Register
+                  </button>
+                </span>
+              ) : (
+                <span>
+                  Already have an account?{" "}
+                  <button className="link-btn" onClick={() => { setAuthMode("login"); setAuthError(""); }} data-testid="switch-to-login">
+                    Sign In
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P4: Profile Dialog */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="profile-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User size={20} />
+              My Profile
+            </DialogTitle>
+          </DialogHeader>
+          <div className="profile-container">
+            <div className="profile-info">
+              <div className="profile-avatar">
+                <UserCircle size={64} />
+              </div>
+              <div className="profile-details">
+                <h3 data-testid="profile-name">{profileData?.name || currentUser?.name || "User"}</h3>
+                <p className="text-muted">{currentUser?.email}</p>
+                <p className="profile-bio">{profileData?.bio || "No bio set"}</p>
+                <p className="text-muted profile-role">Role: {profileData?.role || currentUser?.role || "user"}</p>
+              </div>
+            </div>
+            {profileData && (
+              <div className="profile-stats">
+                <div className="stat-card">
+                  <span className="stat-value" data-testid="profile-worlds-count">{profileData.worlds_count}</span>
+                  <span className="stat-label">Worlds</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value">{profileData.published_count}</span>
+                  <span className="stat-label">Published</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value">{profileData.total_downloads}</span>
+                  <span className="stat-label">Downloads</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value">{profileData.total_likes}</span>
+                  <span className="stat-label">Likes</span>
+                </div>
+              </div>
+            )}
+            <div className="profile-edit">
+              <h4>Edit Profile</h4>
+              <div className="form-group">
+                <Label>Name</Label>
+                <Input
+                  value={editProfile.name}
+                  onChange={(e) => setEditProfile({ ...editProfile, name: e.target.value })}
+                  data-testid="edit-profile-name"
+                />
+              </div>
+              <div className="form-group">
+                <Label>Bio</Label>
+                <Textarea
+                  value={editProfile.bio}
+                  onChange={(e) => setEditProfile({ ...editProfile, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
+                  data-testid="edit-profile-bio"
+                />
+              </div>
+              <Button onClick={updateProfile} data-testid="save-profile-btn">
+                <Save size={16} /> Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P4: Version History Dialog */}
+      <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="version-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History size={20} />
+              Version History
+            </DialogTitle>
+          </DialogHeader>
+          <div className="version-container">
+            <div className="version-actions">
+              <Button onClick={createVersion} data-testid="create-version-btn">
+                <Plus size={16} /> Save Current Version
+              </Button>
+              <span className="text-muted">{worldVersions.length} version(s) saved</span>
+            </div>
+            <ScrollArea className="version-list">
+              {worldVersions.length === 0 ? (
+                <div className="version-empty">
+                  <History size={40} className="opacity-30" />
+                  <p>No versions saved yet</p>
+                  <p className="text-muted">Create a snapshot to track your progress</p>
+                </div>
+              ) : (
+                worldVersions.map((v) => (
+                  <div key={v.id} className="version-item" data-testid={`version-${v.version_number}`}>
+                    <div className="version-info">
+                      <span className="version-name">{v.name}</span>
+                      <span className="version-date text-muted">
+                        {new Date(v.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => restoreVersion(v.id)}
+                      data-testid={`restore-version-${v.version_number}`}
+                    >
+                      <RefreshCw size={14} /> Restore
+                    </Button>
+                  </div>
+                ))
+              )}
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P4: Reviews Dialog */}
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="review-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star size={20} />
+              World Reviews
+            </DialogTitle>
+          </DialogHeader>
+          <div className="reviews-container">
+            <div className="review-form">
+              <h4>Leave a Review</h4>
+              <div className="rating-input" data-testid="rating-input">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    className={`star-btn ${star <= newReview.rating ? "star-active" : ""}`}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    data-testid={`star-${star}`}
+                  >
+                    <Star size={24} />
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                value={newReview.comment}
+                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                placeholder="Write your review..."
+                data-testid="review-comment-input"
+              />
+              <Button
+                onClick={createReview}
+                disabled={!newReview.comment}
+                data-testid="submit-review-btn"
+              >
+                <Send size={16} /> Submit Review
+              </Button>
+            </div>
+            <div className="reviews-list">
+              <h4>Reviews ({reviews.length})</h4>
+              <ScrollArea className="reviews-scroll">
+                {reviews.length === 0 ? (
+                  <div className="reviews-empty">
+                    <Star size={32} className="opacity-30" />
+                    <p>No reviews yet. Be the first!</p>
+                  </div>
+                ) : (
+                  reviews.map((review) => (
+                    <div key={review.id} className="review-item" data-testid={`review-${review.id}`}>
+                      <div className="review-header">
+                        <span className="review-user">{review.user_name}</span>
+                        <span className="review-stars">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star key={i} size={12} className={i < review.rating ? "star-filled" : "star-empty"} />
+                          ))}
+                        </span>
+                      </div>
+                      <p className="review-comment">{review.comment}</p>
+                      <span className="review-date text-muted">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </ScrollArea>
             </div>
           </div>
         </DialogContent>

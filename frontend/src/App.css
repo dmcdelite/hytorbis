@@ -1285,6 +1285,305 @@ body {
   gap: 12px;
 }
 
+
+/* ============ P4: Auth Styles ============ */
+.auth-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #60a5fa;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: #93c5fd;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-name {
+  font-size: 13px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============ P4: Profile Styles ============ */
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.profile-avatar {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.profile-details h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.profile-bio {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.profile-role {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-edit h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #94a3b8;
+}
+
+/* ============ P4: Version History Styles ============ */
+.version-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.version-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.version-list {
+  max-height: 400px;
+}
+
+.version-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.version-empty p {
+  margin-top: 8px;
+}
+
+.version-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: rgba(30, 41, 59, 0.3);
+  transition: background 0.15s;
+}
+
+.version-item:hover {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.version-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.version-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.version-date {
+  font-size: 12px;
+}
+
+/* ============ P4: Reviews Styles ============ */
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.review-form h4,
+.reviews-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.rating-input {
+  display: flex;
+  gap: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #475569;
+  padding: 2px;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.star-btn:hover {
+  transform: scale(1.15);
+}
+
+.star-btn.star-active {
+  color: #f59e0b;
+}
+
+.star-filled {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+.star-empty {
+  color: #475569;
+}
+
+.reviews-scroll {
+  max-height: 300px;
+}
+
+.reviews-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #64748b;
+}
+
+.reviews-empty p {
+  margin-top: 8px;
+}
+
+.review-item {
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.review-user {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.review-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.review-comment {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.review-date {
+  font-size: 11px;
+  display: block;
+  margin-top: 6px;
+}
+
+.gallery-rating {
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+
 /* Responsive */
 @media (max-width: 1200px) {
   .sidebar-right {

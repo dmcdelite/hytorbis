@@ -1,17 +1,21 @@
-from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Request, Response, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import random
 import json
 import asyncio
+import bcrypt
+import jwt
+import secrets
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -21,11 +25,70 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'fallback-secret-key-change-in-production')
+JWT_ALGORITHM = "HS256"
+
 # Create the main app
 app = FastAPI(title="Hytale World Builder API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# ==================== P4: AUTH UTILITIES ====================
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=60),
+        "type": "access"
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def create_refresh_token(user_id: str) -> str:
+    payload = {
+        "sub": user_id,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "type": "refresh"
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_user(request: Request) -> Optional[dict]:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            return None
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            return None
+        user["id"] = str(user["_id"])
+        del user["_id"]
+        user.pop("password_hash", None)
+        return user
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None
+
+async def require_auth(request: Request) -> dict:
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
 
 # ==================== P3: WEBSOCKET CONNECTION MANAGER ====================
 
@@ -192,6 +255,76 @@ class CollabSession(BaseModel):
     user_id: str
     action: str  # join, leave, update
     data: Optional[Dict[str, Any]] = None
+
+# ==================== P4: USER & AUTH MODELS ====================
+
+class UserRegister(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: str
+    role: str = "user"  # user, admin, moderator
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    worlds_count: int = 0
+    published_count: int = 0
+    total_downloads: int = 0
+    total_likes: int = 0
+
+class UserProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+class PasswordReset(BaseModel):
+    email: str
+
+class PasswordResetConfirm(BaseModel):
+    token: str
+    new_password: str
+
+# ==================== P4: WORLD VERSION MODEL ====================
+
+class WorldVersion(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    world_id: str
+    version_number: int
+    name: str
+    description: Optional[str] = ""
+    snapshot: Dict[str, Any]  # Full world state
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_by: Optional[str] = None
+
+# ==================== P4: REVIEW MODEL ====================
+
+class WorldReview(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    gallery_id: str
+    user_id: str
+    user_name: str
+    rating: int = Field(ge=1, le=5)
+    comment: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReviewCreate(BaseModel):
+    gallery_id: str
+    rating: int = Field(ge=1, le=5)
+    comment: str
 
 # ==================== P3: CUSTOM PREFAB MODEL ====================
 
@@ -1892,13 +2025,376 @@ async def websocket_collab(websocket: WebSocket, world_id: str, user_id: str):
             "users": ws_manager.get_users(world_id)
         })
 
+# ==================== P4: AUTHENTICATION ENDPOINTS ====================
+
+@api_router.post("/auth/register")
+async def register(user_data: UserRegister, response: Response):
+    """Register a new user"""
+    email = user_data.email.lower().strip()
+    
+    # Check if email exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    hashed = hash_password(user_data.password)
+    user_doc = {
+        "email": email,
+        "password_hash": hashed,
+        "name": user_data.name,
+        "role": "user",
+        "bio": "",
+        "avatar_url": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    result = await db.users.insert_one(user_doc)
+    user_id = str(result.inserted_id)
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return {
+        "id": user_id,
+        "email": email,
+        "name": user_data.name,
+        "role": "user"
+    }
+
+@api_router.post("/auth/login")
+async def login(credentials: UserLogin, response: Response, request: Request):
+    """Login user"""
+    email = credentials.email.lower().strip()
+    
+    # Check brute force
+    client_ip = request.client.host if request.client else "unknown"
+    attempt_key = f"{client_ip}:{email}"
+    
+    attempts = await db.login_attempts.find_one({"identifier": attempt_key})
+    if attempts and attempts.get("count", 0) >= 5:
+        lockout_time = attempts.get("locked_until")
+        if lockout_time and datetime.fromisoformat(lockout_time) > datetime.now(timezone.utc):
+            raise HTTPException(status_code=429, detail="Too many login attempts. Try again in 15 minutes.")
+    
+    # Find user
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Verify password
+    if not verify_password(credentials.password, user["password_hash"]):
+        # Increment failed attempts
+        await db.login_attempts.update_one(
+            {"identifier": attempt_key},
+            {
+                "$inc": {"count": 1},
+                "$set": {"locked_until": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()}
+            },
+            upsert=True
+        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Clear failed attempts
+    await db.login_attempts.delete_one({"identifier": attempt_key})
+    
+    user_id = str(user["_id"])
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return {
+        "id": user_id,
+        "email": user["email"],
+        "name": user.get("name", ""),
+        "role": user.get("role", "user"),
+        "bio": user.get("bio", ""),
+        "avatar_url": user.get("avatar_url")
+    }
+
+@api_router.post("/auth/logout")
+async def logout(response: Response):
+    """Logout user"""
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return {"message": "Logged out"}
+
+@api_router.get("/auth/me")
+async def get_me(request: Request):
+    """Get current user"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+@api_router.post("/auth/refresh")
+async def refresh_token(request: Request, response: Response):
+    """Refresh access token"""
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="No refresh token")
+    
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        access_token = create_access_token(str(user["_id"]), user["email"])
+        response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+        
+        return {"message": "Token refreshed"}
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# ==================== P4: USER PROFILE ENDPOINTS ====================
+
+@api_router.get("/users/{user_id}/profile")
+async def get_user_profile(user_id: str):
+    """Get public user profile"""
+    user = await db.users.find_one({"_id": ObjectId(user_id)}, {"password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get stats
+    worlds_count = await db.worlds.count_documents({"owner_id": user_id})
+    published = await db.gallery.find({"creator_id": user_id}).to_list(100)
+    published_count = len(published)
+    total_downloads = sum(p.get("downloads", 0) for p in published)
+    total_likes = sum(p.get("likes", 0) for p in published)
+    
+    return {
+        "id": str(user["_id"]),
+        "name": user.get("name", ""),
+        "bio": user.get("bio", ""),
+        "avatar_url": user.get("avatar_url"),
+        "role": user.get("role", "user"),
+        "created_at": user.get("created_at"),
+        "worlds_count": worlds_count,
+        "published_count": published_count,
+        "total_downloads": total_downloads,
+        "total_likes": total_likes
+    }
+
+@api_router.put("/users/profile")
+async def update_profile(profile: UserProfileUpdate, request: Request):
+    """Update current user profile"""
+    user = await require_auth(request)
+    
+    update_data = {}
+    if profile.name is not None:
+        update_data["name"] = profile.name
+    if profile.bio is not None:
+        update_data["bio"] = profile.bio
+    if profile.avatar_url is not None:
+        update_data["avatar_url"] = profile.avatar_url
+    
+    if update_data:
+        await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": update_data})
+    
+    return {"message": "Profile updated"}
+
+@api_router.get("/users/{user_id}/worlds")
+async def get_user_worlds(user_id: str):
+    """Get worlds created by a user"""
+    worlds = await db.worlds.find({"owner_id": user_id, "is_public": True}, {"_id": 0}).to_list(50)
+    return {"worlds": worlds}
+
+@api_router.get("/users/{user_id}/published")
+async def get_user_published(user_id: str):
+    """Get gallery entries by a user"""
+    entries = await db.gallery.find({"creator_id": user_id}, {"_id": 0}).to_list(50)
+    return {"entries": entries}
+
+# ==================== P4: WORLD VERSION HISTORY ====================
+
+@api_router.post("/worlds/{world_id}/versions")
+async def create_world_version(world_id: str, request: Request):
+    """Create a version snapshot of a world"""
+    user = await get_current_user(request)
+    
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    
+    # Get current version count
+    version_count = await db.world_versions.count_documents({"world_id": world_id})
+    
+    version = WorldVersion(
+        world_id=world_id,
+        version_number=version_count + 1,
+        name=f"Version {version_count + 1}",
+        snapshot=world,
+        created_by=user["id"] if user else None
+    )
+    
+    doc = version.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.world_versions.insert_one(doc)
+    
+    # Keep only last 20 versions
+    old_versions = await db.world_versions.find({"world_id": world_id}).sort([("version_number", 1)]).to_list(100)
+    if len(old_versions) > 20:
+        to_delete = old_versions[:-20]
+        for v in to_delete:
+            await db.world_versions.delete_one({"id": v["id"]})
+    
+    return {"message": "Version created", "version": version_count + 1}
+
+@api_router.get("/worlds/{world_id}/versions")
+async def list_world_versions(world_id: str):
+    """List all versions of a world"""
+    versions = await db.world_versions.find(
+        {"world_id": world_id}, 
+        {"_id": 0, "snapshot": 0}  # Exclude large snapshot data
+    ).sort([("version_number", -1)]).to_list(20)
+    
+    return {"versions": versions}
+
+@api_router.get("/worlds/{world_id}/versions/{version_id}")
+async def get_world_version(world_id: str, version_id: str):
+    """Get a specific version of a world"""
+    version = await db.world_versions.find_one({"id": version_id, "world_id": world_id}, {"_id": 0})
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    return version
+
+@api_router.post("/worlds/{world_id}/versions/{version_id}/restore")
+async def restore_world_version(world_id: str, version_id: str, request: Request):
+    """Restore a world to a previous version"""
+    user = await get_current_user(request)
+    
+    version = await db.world_versions.find_one({"id": version_id, "world_id": world_id}, {"_id": 0})
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    
+    snapshot = version.get("snapshot", {})
+    
+    # Update world with snapshot data
+    update_data = {
+        "zones": snapshot.get("zones", []),
+        "prefabs": snapshot.get("prefabs", []),
+        "terrain": snapshot.get("terrain", {}),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.worlds.update_one({"id": world_id}, {"$set": update_data})
+    
+    return {"message": "World restored to version", "version": version.get("version_number")}
+
+# ==================== P4: WORLD VISIBILITY ====================
+
+@api_router.put("/worlds/{world_id}/visibility")
+async def update_world_visibility(world_id: str, is_public: bool, request: Request):
+    """Update world visibility (public/private)"""
+    user = await require_auth(request)
+    
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    
+    await db.worlds.update_one(
+        {"id": world_id},
+        {"$set": {"is_public": is_public, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Visibility updated", "is_public": is_public}
+
+# ==================== P4: REVIEWS ====================
+
+@api_router.post("/reviews")
+async def create_review(review: ReviewCreate, request: Request):
+    """Create a review for a gallery entry"""
+    user = await require_auth(request)
+    
+    # Check gallery entry exists
+    entry = await db.gallery.find_one({"id": review.gallery_id})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Gallery entry not found")
+    
+    # Check if user already reviewed
+    existing = await db.reviews.find_one({"gallery_id": review.gallery_id, "user_id": user["id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="You already reviewed this world")
+    
+    review_doc = WorldReview(
+        gallery_id=review.gallery_id,
+        user_id=user["id"],
+        user_name=user.get("name", "Anonymous"),
+        rating=review.rating,
+        comment=review.comment
+    )
+    
+    doc = review_doc.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.reviews.insert_one(doc)
+    
+    # Update average rating
+    all_reviews = await db.reviews.find({"gallery_id": review.gallery_id}).to_list(1000)
+    avg_rating = sum(r["rating"] for r in all_reviews) / len(all_reviews)
+    await db.gallery.update_one(
+        {"id": review.gallery_id},
+        {"$set": {"avg_rating": round(avg_rating, 1), "review_count": len(all_reviews)}}
+    )
+    
+    return {"message": "Review created", "review_id": review_doc.id}
+
+@api_router.get("/reviews/{gallery_id}")
+async def get_reviews(gallery_id: str):
+    """Get reviews for a gallery entry"""
+    reviews = await db.reviews.find({"gallery_id": gallery_id}, {"_id": 0}).sort([("created_at", -1)]).to_list(50)
+    return {"reviews": reviews}
+
+@api_router.delete("/reviews/{review_id}")
+async def delete_review(review_id: str, request: Request):
+    """Delete a review (only by author or admin)"""
+    user = await require_auth(request)
+    
+    review = await db.reviews.find_one({"id": review_id})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    if review["user_id"] != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.reviews.delete_one({"id": review_id})
+    
+    # Update average rating
+    gallery_id = review["gallery_id"]
+    all_reviews = await db.reviews.find({"gallery_id": gallery_id}).to_list(1000)
+    if all_reviews:
+        avg_rating = sum(r["rating"] for r in all_reviews) / len(all_reviews)
+    else:
+        avg_rating = 0
+    await db.gallery.update_one(
+        {"id": gallery_id},
+        {"$set": {"avg_rating": round(avg_rating, 1), "review_count": len(all_reviews)}}
+    )
+    
+    return {"message": "Review deleted"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -1909,6 +2405,59 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database indexes and seed admin"""
+    # Create indexes
+    await db.users.create_index("email", unique=True)
+    await db.login_attempts.create_index("identifier")
+    await db.world_versions.create_index([("world_id", 1), ("version_number", -1)])
+    await db.reviews.create_index([("gallery_id", 1), ("user_id", 1)])
+    
+    # Seed admin
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    
+    existing = await db.users.find_one({"email": admin_email})
+    if existing is None:
+        hashed = hash_password(admin_password)
+        await db.users.insert_one({
+            "email": admin_email,
+            "password_hash": hashed,
+            "name": "Admin",
+            "role": "admin",
+            "bio": "Platform Administrator",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        logger.info(f"Admin user created: {admin_email}")
+    elif not verify_password(admin_password, existing.get("password_hash", "")):
+        await db.users.update_one(
+            {"email": admin_email},
+            {"$set": {"password_hash": hash_password(admin_password)}}
+        )
+        logger.info(f"Admin password updated: {admin_email}")
+    
+    # Write test credentials
+    creds_path = Path("/app/memory/test_credentials.md")
+    creds_path.parent.mkdir(parents=True, exist_ok=True)
+    creds_path.write_text(f"""# Test Credentials
+
+## Admin Account
+- Email: {admin_email}
+- Password: {admin_password}
+- Role: admin
+
+## Auth Endpoints
+- POST /api/auth/register - Register new user
+- POST /api/auth/login - Login
+- POST /api/auth/logout - Logout
+- GET /api/auth/me - Get current user
+- POST /api/auth/refresh - Refresh token
+
+## Test User
+Create via registration or use admin account above.
+""")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
