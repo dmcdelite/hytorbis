@@ -185,6 +185,124 @@ body {
   color: var(--text-secondary);
 }
 
+.section-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* Collab Badge */
+.collab-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--brand-ai) !important;
+  font-size: 0.7rem;
+}
+
+/* Auto-Generate Button */
+.auto-gen-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--brand-ai) 0%, var(--brand-secondary) 100%);
+  border: none;
+  color: white;
+}
+
+.auto-gen-btn:hover {
+  opacity: 0.9;
+}
+
+/* Template Grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.template-card {
+  cursor: pointer;
+  border: 2px solid var(--border-default);
+  transition: all 0.2s;
+  background: var(--bg-surface-elevated);
+}
+
+.template-card:hover {
+  border-color: var(--brand-primary);
+}
+
+.template-card.selected {
+  border-color: var(--brand-primary);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.template-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.template-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.template-difficulty {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* Import Textarea */
+.import-textarea {
+  min-height: 150px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* Auto-gen Textarea */
+.autogen-textarea {
+  min-height: 100px;
+}
+
+/* Dialog sizes */
+.dialog-lg {
+  max-width: 600px;
+}
+
+.dialog-xl {
+  max-width: 800px;
+}
+
+/* 3D Preview */
+.preview-3d-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.preview-3d-canvas {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+.preview-3d-info {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Empty Actions */
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
 /* Worlds List */
 .worlds-list {
   max-height: 180px;

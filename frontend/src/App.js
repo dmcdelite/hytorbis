@@ -12,13 +12,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Map, Sparkles, Mountain, Home, Castle, Landmark, Building, 
   Download, Save, Trash2, Plus, Settings, Wand2, Send, Bot,
   TreePine, Snowflake, Sun, Skull, Waves, ChevronRight, X,
   RefreshCw, FolderOpen, FileJson, Loader2, PanelRightOpen, PanelRightClose,
   Undo2, Redo2, Paintbrush, MousePointer, ZoomIn, ZoomOut, Move,
-  Layers, Edit3, Maximize2
+  Layers, Edit3, Maximize2, Upload, LayoutTemplate, Users, Box,
+  Swords, Heart, Compass, Pickaxe, Eye
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -63,6 +65,14 @@ const MAP_SIZE_PRESETS = [
   { label: "Max (512x512)", width: 512, height: 512 }
 ];
 
+const TEMPLATE_ICONS = {
+  adventure: Compass,
+  peaceful: Heart,
+  challenge: Swords,
+  exploration: Map,
+  dungeon_crawler: Pickaxe
+};
+
 // Main App Component
 function App() {
   const [worlds, setWorlds] = useState([]);
@@ -96,17 +106,66 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const lastPanPos = useRef({ x: 0, y: 0 });
 
-  // Fetch worlds on mount
+  // P2: Templates
+  const [templates, setTemplates] = useState([]);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+  // P2: Import
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importConfig, setImportConfig] = useState("");
+
+  // P2: AI Auto-generate
+  const [showAutoGenDialog, setShowAutoGenDialog] = useState(false);
+  const [autoGenPrompt, setAutoGenPrompt] = useState("");
+  const [autoGenLoading, setAutoGenLoading] = useState(false);
+
+  // P2: 3D Preview
+  const [show3DPreview, setShow3DPreview] = useState(false);
+  const [preview3DData, setPreview3DData] = useState(null);
+
+  // P2: Collaboration
+  const [collabEnabled, setCollabEnabled] = useState(false);
+  const [collabUsers, setCollabUsers] = useState([]);
+  const [userId] = useState(`user-${Math.random().toString(36).substr(2, 9)}`);
+
+  // Fetch worlds and templates on mount
   useEffect(() => {
     fetchWorlds();
+    fetchTemplates();
   }, []);
+
+  // Collaboration polling
+  useEffect(() => {
+    let interval;
+    if (collabEnabled && currentWorld) {
+      interval = setInterval(async () => {
+        try {
+          const response = await axios.get(`${API}/collab/${currentWorld.id}/status`);
+          setCollabUsers(response.data.users || []);
+        } catch (e) {
+          console.error("Collab poll error:", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [collabEnabled, currentWorld]);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/templates`);
+      setTemplates(response.data.templates || []);
+    } catch (e) {
+      console.error("Failed to fetch templates:", e);
+    }
+  };
 
   // Save to history when world changes
   const saveToHistory = useCallback((newWorld) => {
     if (!newWorld) return;
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(JSON.parse(JSON.stringify(newWorld)));
-    if (newHistory.length > 50) newHistory.shift(); // Limit history
+    if (newHistory.length > 50) newHistory.shift();
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
@@ -152,18 +211,144 @@ function App() {
       setAiMessages([]);
       setHistory([response.data]);
       setHistoryIndex(0);
-      // Auto-adjust zoom for larger maps
-      if (newWorldSize.width > 128) {
-        setZoom(0.3);
-      } else if (newWorldSize.width > 64) {
-        setZoom(0.5);
-      } else {
-        setZoom(1);
-      }
+      autoZoom(newWorldSize.width);
     } catch (e) {
       console.error("Failed to create world:", e);
     }
     setLoading(false);
+  };
+
+  // P2: Create from template
+  const createFromTemplate = async () => {
+    if (!newWorldName.trim() || !selectedTemplate) return;
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/worlds/from-template`, {
+        name: newWorldName,
+        template: selectedTemplate,
+        map_width: newWorldSize.width,
+        map_height: newWorldSize.height
+      });
+      setCurrentWorld(response.data);
+      setWorlds([...worlds, response.data]);
+      setShowTemplateDialog(false);
+      setNewWorldName("");
+      setSelectedTemplate(null);
+      setAiMessages([]);
+      setHistory([response.data]);
+      setHistoryIndex(0);
+      autoZoom(newWorldSize.width);
+    } catch (e) {
+      console.error("Failed to create from template:", e);
+    }
+    setLoading(false);
+  };
+
+  // P2: Import world
+  const importWorld = async () => {
+    if (!importConfig.trim()) return;
+    setLoading(true);
+    try {
+      const config = JSON.parse(importConfig);
+      const response = await axios.post(`${API}/worlds/import`, {
+        config: config,
+        name: newWorldName || null
+      });
+      setCurrentWorld(response.data);
+      setWorlds([...worlds, response.data]);
+      setShowImportDialog(false);
+      setImportConfig("");
+      setNewWorldName("");
+      setHistory([response.data]);
+      setHistoryIndex(0);
+      autoZoom(response.data.map_width);
+    } catch (e) {
+      console.error("Failed to import world:", e);
+      alert("Invalid JSON format. Please check your configuration.");
+    }
+    setLoading(false);
+  };
+
+  // P2: AI Auto-generate
+  const autoGenerateWorld = async () => {
+    if (!autoGenPrompt.trim() || !currentWorld) return;
+    setAutoGenLoading(true);
+    try {
+      const response = await axios.post(`${API}/ai/auto-generate`, {
+        world_id: currentWorld.id,
+        prompt: autoGenPrompt,
+        provider: aiProvider
+      });
+      
+      const updatedWorld = response.data.world;
+      setCurrentWorld(updatedWorld);
+      saveToHistory(updatedWorld);
+      setShowAutoGenDialog(false);
+      setAutoGenPrompt("");
+      
+      // Add to AI messages
+      setAiMessages(prev => [
+        ...prev,
+        { role: "user", content: `Generate: ${autoGenPrompt}` },
+        { role: "assistant", content: `Generated ${updatedWorld.zones?.length || 0} zones and ${updatedWorld.prefabs?.length || 0} prefabs. ${response.data.generated?.description || ''}` }
+      ]);
+    } catch (e) {
+      console.error("Auto-generate failed:", e);
+      alert("Failed to generate. Please try a different prompt.");
+    }
+    setAutoGenLoading(false);
+  };
+
+  // P2: Load 3D preview data
+  const load3DPreview = async () => {
+    if (!currentWorld) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/worlds/${currentWorld.id}/preview-3d`);
+      setPreview3DData(response.data);
+      setShow3DPreview(true);
+    } catch (e) {
+      console.error("Failed to load 3D preview:", e);
+    }
+    setLoading(false);
+  };
+
+  // P2: Toggle collaboration
+  const toggleCollab = async () => {
+    if (!currentWorld) return;
+    
+    if (!collabEnabled) {
+      try {
+        await axios.post(`${API}/collab/join`, {
+          world_id: currentWorld.id,
+          user_id: userId,
+          action: "join"
+        });
+        setCollabEnabled(true);
+      } catch (e) {
+        console.error("Failed to join collab:", e);
+      }
+    } else {
+      try {
+        await axios.post(`${API}/collab/leave`, {
+          world_id: currentWorld.id,
+          user_id: userId,
+          action: "leave"
+        });
+        setCollabEnabled(false);
+        setCollabUsers([]);
+      } catch (e) {
+        console.error("Failed to leave collab:", e);
+      }
+    }
+  };
+
+  const autoZoom = (mapWidth) => {
+    if (mapWidth > 256) setZoom(0.2);
+    else if (mapWidth > 128) setZoom(0.3);
+    else if (mapWidth > 64) setZoom(0.5);
+    else setZoom(1);
+    setPan({ x: 0, y: 0 });
   };
 
   const loadWorld = async (worldId) => {
@@ -174,15 +359,9 @@ function App() {
       setAiMessages([]);
       setHistory([response.data]);
       setHistoryIndex(0);
-      // Auto-adjust zoom
-      if (response.data.map_width > 128) {
-        setZoom(0.3);
-      } else if (response.data.map_width > 64) {
-        setZoom(0.5);
-      } else {
-        setZoom(1);
-      }
-      setPan({ x: 0, y: 0 });
+      autoZoom(response.data.map_width);
+      setCollabEnabled(false);
+      setCollabUsers([]);
     } catch (e) {
       console.error("Failed to load world:", e);
     }
@@ -229,7 +408,7 @@ function App() {
     }
   };
 
-  // P1: Drag-to-paint support
+  // Map interaction handlers
   const handleMapMouseDown = useCallback((x, y, e) => {
     if (!currentWorld) return;
     
@@ -243,7 +422,6 @@ function App() {
       setIsDragging(true);
       handleCellAction(x, y);
     } else if (activeTool === "select") {
-      // Check if clicking on a zone or prefab
       const zone = currentWorld.zones.find(z => z.x === x && z.y === y);
       const prefab = currentWorld.prefabs.find(p => p.x === x && p.y === y);
       if (zone) {
@@ -284,7 +462,6 @@ function App() {
     if (!currentWorld) return;
 
     if (activeTool === "zone") {
-      // Check if zone already exists at this position
       const existingIndex = currentWorld.zones.findIndex(z => z.x === x && z.y === y);
       if (existingIndex === -1) {
         const newZone = {
@@ -303,7 +480,6 @@ function App() {
         }));
       }
     } else if (activeTool === "prefab") {
-      // Check if prefab already exists at this position
       const existingIndex = currentWorld.prefabs.findIndex(p => p.x === x && p.y === y);
       if (existingIndex === -1) {
         const newPrefab = {
@@ -355,7 +531,6 @@ function App() {
     });
   };
 
-  // P1: Update zone/prefab properties
   const updateZoneProperty = (zoneId, property, value) => {
     if (!currentWorld) return;
     const newWorld = {
@@ -427,6 +602,38 @@ function App() {
     if (!currentWorld) return;
     try {
       const response = await axios.get(`${API}/worlds/${currentWorld.id}/export/${format}`);
+      
+      // Handle JAR export (binary)
+      if (format === "jar" && response.data.data_base64) {
+        const binaryString = atob(response.data.data_base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "application/java-archive" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.data.filename || `${currentWorld.name}_worldgen.jar`;
+        link.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      
+      // Handle prefab export
+      if (format === "prefab") {
+        const dataStr = JSON.stringify(response.data.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.data.filename || `${currentWorld.name}.prefab.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      
+      // Standard JSON export
       const dataStr = JSON.stringify(response.data, null, 2);
       const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
@@ -456,6 +663,12 @@ function App() {
               <Badge variant="outline" className="world-size-badge">
                 {currentWorld.map_width}x{currentWorld.map_height}
               </Badge>
+              {collabEnabled && (
+                <Badge className="collab-badge">
+                  <Users size={12} />
+                  {collabUsers.length} online
+                </Badge>
+              )}
             </div>
           )}
         </div>
@@ -467,7 +680,7 @@ function App() {
                 size="icon"
                 onClick={undo}
                 disabled={historyIndex <= 0}
-                title="Undo (Ctrl+Z)"
+                title="Undo"
                 data-testid="undo-btn"
               >
                 <Undo2 size={18} />
@@ -477,10 +690,29 @@ function App() {
                 size="icon"
                 onClick={redo}
                 disabled={historyIndex >= history.length - 1}
-                title="Redo (Ctrl+Y)"
+                title="Redo"
                 data-testid="redo-btn"
               >
                 <Redo2 size={18} />
+              </Button>
+              <div className="header-divider" />
+              <Button
+                variant={collabEnabled ? "default" : "ghost"}
+                size="icon"
+                onClick={toggleCollab}
+                title="Collaboration"
+                data-testid="collab-btn"
+              >
+                <Users size={18} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={load3DPreview}
+                title="3D Preview"
+                data-testid="preview-3d-btn"
+              >
+                <Box size={18} />
               </Button>
               <div className="header-divider" />
             </>
@@ -497,75 +729,23 @@ function App() {
       </header>
 
       <div className="main-content">
-        {/* Left Sidebar - Worlds & Tools */}
+        {/* Left Sidebar */}
         <aside className="sidebar-left" data-testid="sidebar-left">
           <div className="sidebar-section">
             <div className="section-header">
               <FolderOpen size={16} />
               <span>Worlds</span>
-              <Dialog open={showNewWorldDialog} onOpenChange={setShowNewWorldDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto" data-testid="new-world-btn">
-                    <Plus size={16} />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="dialog-content">
-                  <DialogHeader>
-                    <DialogTitle>Create New World</DialogTitle>
-                  </DialogHeader>
-                  <div className="dialog-form">
-                    <div className="form-group">
-                      <Label>World Name</Label>
-                      <Input
-                        value={newWorldName}
-                        onChange={(e) => setNewWorldName(e.target.value)}
-                        placeholder="My Hytale World"
-                        data-testid="new-world-name-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <Label>Seed (optional)</Label>
-                      <div className="seed-input-group">
-                        <Input
-                          value={newWorldSeed}
-                          onChange={(e) => setNewWorldSeed(e.target.value)}
-                          placeholder="Auto-generate"
-                          data-testid="new-world-seed-input"
-                        />
-                        <Button variant="secondary" size="icon" onClick={generateSeed} data-testid="generate-seed-btn">
-                          <RefreshCw size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <Label>Map Size</Label>
-                      <Select 
-                        value={`${newWorldSize.width}x${newWorldSize.height}`}
-                        onValueChange={(v) => {
-                          const preset = MAP_SIZE_PRESETS.find(p => `${p.width}x${p.height}` === v);
-                          if (preset) setNewWorldSize({ width: preset.width, height: preset.height });
-                        }}
-                      >
-                        <SelectTrigger data-testid="map-size-select">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MAP_SIZE_PRESETS.map((preset) => (
-                            <SelectItem key={preset.label} value={`${preset.width}x${preset.height}`}>
-                              {preset.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="form-hint">Larger maps may affect performance</p>
-                    </div>
-                    <Button onClick={createWorld} disabled={!newWorldName.trim() || loading} data-testid="create-world-btn">
-                      {loading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
-                      Create World
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <div className="section-actions">
+                <Button variant="ghost" size="icon" onClick={() => setShowTemplateDialog(true)} title="From Template" data-testid="template-btn">
+                  <LayoutTemplate size={16} />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setShowImportDialog(true)} title="Import" data-testid="import-btn">
+                  <Upload size={16} />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setShowNewWorldDialog(true)} title="New World" data-testid="new-world-btn">
+                  <Plus size={16} />
+                </Button>
+              </div>
             </div>
             <ScrollArea className="worlds-list">
               {worlds.map((world) => (
@@ -593,7 +773,7 @@ function App() {
               {worlds.length === 0 && (
                 <div className="empty-state">
                   <p>No worlds yet</p>
-                  <p className="text-muted">Create your first world to begin</p>
+                  <p className="text-muted">Create or import a world</p>
                 </div>
               )}
             </ScrollArea>
@@ -607,43 +787,19 @@ function App() {
                 <span>Tools</span>
               </div>
               <div className="tools-grid">
-                <Button
-                  variant={activeTool === "select" ? "default" : "secondary"}
-                  className="tool-btn"
-                  onClick={() => setActiveTool("select")}
-                  data-testid="tool-select"
-                  title="Select & Edit"
-                >
+                <Button variant={activeTool === "select" ? "default" : "secondary"} className="tool-btn" onClick={() => setActiveTool("select")} data-testid="tool-select">
                   <MousePointer size={16} />
                   Select
                 </Button>
-                <Button
-                  variant={activeTool === "zone" ? "default" : "secondary"}
-                  className="tool-btn"
-                  onClick={() => setActiveTool("zone")}
-                  data-testid="tool-zone"
-                  title="Paint Zones (drag to paint)"
-                >
+                <Button variant={activeTool === "zone" ? "default" : "secondary"} className="tool-btn" onClick={() => setActiveTool("zone")} data-testid="tool-zone">
                   <Paintbrush size={16} />
                   Zone
                 </Button>
-                <Button
-                  variant={activeTool === "prefab" ? "default" : "secondary"}
-                  className="tool-btn"
-                  onClick={() => setActiveTool("prefab")}
-                  data-testid="tool-prefab"
-                  title="Place Structures"
-                >
+                <Button variant={activeTool === "prefab" ? "default" : "secondary"} className="tool-btn" onClick={() => setActiveTool("prefab")} data-testid="tool-prefab">
                   <Castle size={16} />
                   Prefab
                 </Button>
-                <Button
-                  variant={activeTool === "pan" ? "default" : "secondary"}
-                  className="tool-btn"
-                  onClick={() => setActiveTool("pan")}
-                  data-testid="tool-pan"
-                  title="Pan Map (or hold Alt)"
-                >
+                <Button variant={activeTool === "pan" ? "default" : "secondary"} className="tool-btn" onClick={() => setActiveTool("pan")} data-testid="tool-pan">
                   <Move size={16} />
                   Pan
                 </Button>
@@ -667,7 +823,6 @@ function App() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="form-hint">Click and drag to paint zones</p>
                 </div>
               )}
 
@@ -694,12 +849,21 @@ function App() {
                   </Select>
                 </div>
               )}
+            </div>
+          )}
 
-              {activeTool === "select" && (
-                <div className="tool-options">
-                  <p className="form-hint">Click zones or prefabs to edit properties</p>
-                </div>
-              )}
+          {/* P2: AI Auto-Generate */}
+          {currentWorld && (
+            <div className="sidebar-section">
+              <Button 
+                variant="outline" 
+                className="auto-gen-btn" 
+                onClick={() => setShowAutoGenDialog(true)}
+                data-testid="auto-generate-btn"
+              >
+                <Wand2 size={16} />
+                AI Auto-Generate
+              </Button>
             </div>
           )}
 
@@ -721,13 +885,12 @@ function App() {
                   step={0.1}
                   onValueChange={([v]) => setZoom(v)}
                   className="zoom-slider"
-                  data-testid="zoom-slider"
                 />
                 <Button variant="secondary" size="icon" onClick={() => setZoom(z => Math.min(2, z + 0.1))} data-testid="zoom-in">
                   <ZoomIn size={16} />
                 </Button>
               </div>
-              <Button variant="ghost" size="sm" className="fit-btn" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} data-testid="zoom-reset">
+              <Button variant="ghost" size="sm" className="fit-btn" onClick={() => { autoZoom(currentWorld.map_width); }}>
                 <Maximize2 size={14} />
                 Reset View
               </Button>
@@ -742,20 +905,30 @@ function App() {
                 Save World
               </Button>
               <div className="export-buttons">
-                <Button variant="secondary" onClick={() => exportWorld("json")} data-testid="export-json-btn">
+                <Button variant="secondary" onClick={() => exportWorld("json")} data-testid="export-json-btn" title="Export as JSON">
                   <FileJson size={16} />
                   JSON
                 </Button>
-                <Button variant="secondary" onClick={() => exportWorld("hytale")} data-testid="export-hytale-btn">
+                <Button variant="secondary" onClick={() => exportWorld("hytale")} data-testid="export-hytale-btn" title="Export Hytale config">
                   <Download size={16} />
                   Hytale
+                </Button>
+              </div>
+              <div className="export-buttons">
+                <Button variant="secondary" onClick={() => exportWorld("prefab")} data-testid="export-prefab-btn" title="Export as .prefab.json">
+                  <Layers size={16} />
+                  Prefab
+                </Button>
+                <Button variant="secondary" onClick={() => exportWorld("jar")} data-testid="export-jar-btn" title="Export as .jar mod package">
+                  <Box size={16} />
+                  JAR
                 </Button>
               </div>
             </div>
           )}
         </aside>
 
-        {/* Main Canvas Area */}
+        {/* Main Canvas */}
         <main className="canvas-area" data-testid="canvas-area">
           {currentWorld ? (
             <>
@@ -764,17 +937,12 @@ function App() {
                 onMouseDown={handleMapMouseDown}
                 onMouseMove={handleMapMouseMove}
                 onMouseUp={handleMapMouseUp}
-                onRemoveZone={removeZone}
-                onRemovePrefab={removePrefab}
                 activeTool={activeTool}
                 zoom={zoom}
                 pan={pan}
                 selectedElement={selectedElement}
               />
-              <TerrainPanel
-                terrain={currentWorld.terrain}
-                onUpdate={updateTerrain}
-              />
+              <TerrainPanel terrain={currentWorld.terrain} onUpdate={updateTerrain} />
             </>
           ) : (
             <div className="empty-canvas">
@@ -788,17 +956,27 @@ function App() {
                   <Wand2 size={48} className="empty-icon" />
                   <h2>Create Your World</h2>
                   <p>Build worlds up to 512x512 tiles</p>
-                  <Button onClick={() => setShowNewWorldDialog(true)} data-testid="create-first-world-btn">
-                    <Plus size={16} />
-                    New World
-                  </Button>
+                  <div className="empty-actions">
+                    <Button onClick={() => setShowNewWorldDialog(true)} data-testid="create-first-world-btn">
+                      <Plus size={16} />
+                      New World
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowTemplateDialog(true)}>
+                      <LayoutTemplate size={16} />
+                      From Template
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+                      <Upload size={16} />
+                      Import
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </main>
 
-        {/* Right Panel - AI Assistant */}
+        {/* AI Panel */}
         {aiPanelOpen && (
           <aside className="sidebar-right" data-testid="ai-panel">
             <div className="ai-header">
@@ -827,14 +1005,12 @@ function App() {
                 <div className="ai-welcome">
                   <Bot size={32} className="ai-welcome-icon" />
                   <p>I can help you design your world!</p>
-                  <p className="text-muted">Try asking me to suggest zone layouts, prefab placements, or terrain settings.</p>
+                  <p className="text-muted">Ask for suggestions or use AI Auto-Generate for full map population.</p>
                 </div>
               ) : (
                 aiMessages.map((msg, i) => (
                   <div key={i} className={`ai-message ${msg.role}`}>
-                    <div className="ai-message-content">
-                      {msg.content}
-                    </div>
+                    <div className="ai-message-content">{msg.content}</div>
                   </div>
                 ))
               )}
@@ -852,7 +1028,7 @@ function App() {
               <Textarea
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
-                placeholder={currentWorld ? "Ask for world suggestions..." : "Create a world first"}
+                placeholder={currentWorld ? "Ask for suggestions..." : "Create a world first"}
                 disabled={!currentWorld || aiLoading}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -862,19 +1038,14 @@ function App() {
                 }}
                 data-testid="ai-input"
               />
-              <Button 
-                onClick={sendAiMessage} 
-                disabled={!currentWorld || !aiInput.trim() || aiLoading}
-                className="ai-send-btn"
-                data-testid="ai-send-btn"
-              >
+              <Button onClick={sendAiMessage} disabled={!currentWorld || !aiInput.trim() || aiLoading} className="ai-send-btn" data-testid="ai-send-btn">
                 <Send size={16} />
               </Button>
             </div>
           </aside>
         )}
 
-        {/* P1: Properties Panel */}
+        {/* Properties Panel */}
         <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
           <SheetContent side="right" className="properties-sheet">
             <SheetHeader>
@@ -901,19 +1072,194 @@ function App() {
           </SheetContent>
         </Sheet>
       </div>
+
+      {/* New World Dialog */}
+      <Dialog open={showNewWorldDialog} onOpenChange={setShowNewWorldDialog}>
+        <DialogContent className="dialog-content">
+          <DialogHeader>
+            <DialogTitle>Create New World</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <div className="form-group">
+              <Label>World Name</Label>
+              <Input value={newWorldName} onChange={(e) => setNewWorldName(e.target.value)} placeholder="My Hytale World" data-testid="new-world-name-input" />
+            </div>
+            <div className="form-group">
+              <Label>Seed (optional)</Label>
+              <div className="seed-input-group">
+                <Input value={newWorldSeed} onChange={(e) => setNewWorldSeed(e.target.value)} placeholder="Auto-generate" data-testid="new-world-seed-input" />
+                <Button variant="secondary" size="icon" onClick={generateSeed}><RefreshCw size={16} /></Button>
+              </div>
+            </div>
+            <div className="form-group">
+              <Label>Map Size</Label>
+              <Select value={`${newWorldSize.width}x${newWorldSize.height}`} onValueChange={(v) => {
+                const preset = MAP_SIZE_PRESETS.find(p => `${p.width}x${p.height}` === v);
+                if (preset) setNewWorldSize({ width: preset.width, height: preset.height });
+              }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MAP_SIZE_PRESETS.map((p) => (
+                    <SelectItem key={p.label} value={`${p.width}x${p.height}`}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={createWorld} disabled={!newWorldName.trim() || loading} data-testid="create-world-btn">
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+              Create World
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P2: Template Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="dialog-content dialog-lg">
+          <DialogHeader>
+            <DialogTitle>Create from Template</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <div className="form-group">
+              <Label>World Name</Label>
+              <Input value={newWorldName} onChange={(e) => setNewWorldName(e.target.value)} placeholder="My World" />
+            </div>
+            <div className="form-group">
+              <Label>Map Size</Label>
+              <Select value={`${newWorldSize.width}x${newWorldSize.height}`} onValueChange={(v) => {
+                const preset = MAP_SIZE_PRESETS.find(p => `${p.width}x${p.height}` === v);
+                if (preset) setNewWorldSize({ width: preset.width, height: preset.height });
+              }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MAP_SIZE_PRESETS.map((p) => (
+                    <SelectItem key={p.label} value={`${p.width}x${p.height}`}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Label>Select Template</Label>
+            <div className="template-grid">
+              {templates.map((t) => {
+                const Icon = TEMPLATE_ICONS[t.id] || Map;
+                return (
+                  <Card 
+                    key={t.id} 
+                    className={`template-card ${selectedTemplate === t.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedTemplate(t.id)}
+                    data-testid={`template-${t.id}`}
+                  >
+                    <CardHeader className="template-card-header">
+                      <Icon size={24} />
+                      <CardTitle className="template-card-title">{t.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{t.description}</CardDescription>
+                      <div className="template-difficulty">
+                        Difficulty: {t.difficulty_range[0]}-{t.difficulty_range[1]}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            <Button onClick={createFromTemplate} disabled={!newWorldName.trim() || !selectedTemplate || loading} data-testid="create-from-template-btn">
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <LayoutTemplate size={16} />}
+              Create from Template
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P2: Import Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="dialog-content">
+          <DialogHeader>
+            <DialogTitle>Import World</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <div className="form-group">
+              <Label>World Name (optional)</Label>
+              <Input value={newWorldName} onChange={(e) => setNewWorldName(e.target.value)} placeholder="Auto-detect from config" />
+            </div>
+            <div className="form-group">
+              <Label>JSON Configuration</Label>
+              <Textarea 
+                value={importConfig} 
+                onChange={(e) => setImportConfig(e.target.value)} 
+                placeholder="Paste your world JSON config here..."
+                className="import-textarea"
+                data-testid="import-config-input"
+              />
+            </div>
+            <Button onClick={importWorld} disabled={!importConfig.trim() || loading} data-testid="import-world-btn">
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+              Import World
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P2: AI Auto-Generate Dialog */}
+      <Dialog open={showAutoGenDialog} onOpenChange={setShowAutoGenDialog}>
+        <DialogContent className="dialog-content">
+          <DialogHeader>
+            <DialogTitle>AI Auto-Generate World</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <p className="form-hint">Describe the world you want and AI will generate zones, prefabs, and terrain settings.</p>
+            <div className="form-group">
+              <Label>Prompt</Label>
+              <Textarea 
+                value={autoGenPrompt} 
+                onChange={(e) => setAutoGenPrompt(e.target.value)} 
+                placeholder="e.g., Create a challenging dungeon-crawler with corrupted zones in the center surrounded by emerald groves. Add many dungeons and ruins."
+                className="autogen-textarea"
+                data-testid="autogen-prompt-input"
+              />
+            </div>
+            <div className="form-group">
+              <Label>AI Provider</Label>
+              <Select value={aiProvider} onValueChange={setAiProvider}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="openai">GPT-5.2</SelectItem>
+                  <SelectItem value="anthropic">Claude</SelectItem>
+                  <SelectItem value="gemini">Gemini</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={autoGenerateWorld} disabled={!autoGenPrompt.trim() || autoGenLoading} data-testid="generate-world-btn">
+              {autoGenLoading ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+              Generate World
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P2: 3D Preview Dialog */}
+      <Dialog open={show3DPreview} onOpenChange={setShow3DPreview}>
+        <DialogContent className="dialog-content dialog-xl">
+          <DialogHeader>
+            <DialogTitle>3D World Preview</DialogTitle>
+          </DialogHeader>
+          {preview3DData && (
+            <Preview3D data={preview3DData} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-// Map Canvas Component - optimized for large maps
-function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, onRemovePrefab, activeTool, zoom, pan, selectedElement }) {
+// Map Canvas Component
+function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoom, pan, selectedElement }) {
   const containerRef = useRef(null);
   const [visibleRange, setVisibleRange] = useState({ startX: 0, endX: 50, startY: 0, endY: 50 });
   
   const cellSize = Math.max(8, Math.min(32, Math.floor(800 / Math.max(world.map_width, world.map_height))));
   const scaledCellSize = cellSize * zoom;
 
-  // Calculate visible range for virtualization on large maps
   useEffect(() => {
     const updateVisibleRange = () => {
       if (!containerRef.current) return;
@@ -933,12 +1279,8 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
     return () => window.removeEventListener('resize', updateVisibleRange);
   }, [pan, zoom, scaledCellSize, world.map_width, world.map_height]);
 
-  // Create maps for quick lookup
   const zoneMap = {};
-  world.zones.forEach(zone => {
-    const key = `${zone.x}-${zone.y}`;
-    zoneMap[key] = zone;
-  });
+  world.zones.forEach(zone => { zoneMap[`${zone.x}-${zone.y}`] = zone; });
 
   const prefabMap = {};
   world.prefabs.forEach(prefab => {
@@ -947,7 +1289,6 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
     prefabMap[key].push(prefab);
   });
 
-  // Generate visible cells only
   const visibleCells = [];
   for (let y = visibleRange.startY; y < visibleRange.endY; y++) {
     for (let x = visibleRange.startX; x < visibleRange.endX; x++) {
@@ -993,10 +1334,7 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
             height: world.map_height * scaledCellSize,
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             backgroundSize: `${scaledCellSize}px ${scaledCellSize}px`,
-            backgroundImage: `
-              linear-gradient(to right, var(--border-default) 1px, transparent 1px),
-              linear-gradient(to bottom, var(--border-default) 1px, transparent 1px)
-            `
+            backgroundImage: `linear-gradient(to right, var(--border-default) 1px, transparent 1px), linear-gradient(to bottom, var(--border-default) 1px, transparent 1px)`
           }}
         >
           {visibleCells.map(({ x, y, key, zone, prefabs, isSelected }) => {
@@ -1023,7 +1361,7 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
                 {prefabs.map((prefab) => {
                   const PrefabIcon = PREFAB_CONFIG[prefab.type]?.icon;
                   return (
-                    <div key={prefab.id} className="cell-prefab-marker" title={PREFAB_CONFIG[prefab.type]?.name}>
+                    <div key={prefab.id} className="cell-prefab-marker">
                       {PrefabIcon && scaledCellSize > 12 && <PrefabIcon size={Math.min(12, scaledCellSize * 0.4)} />}
                     </div>
                   );
@@ -1045,18 +1383,6 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
           ))}
         </div>
         <div className="legend-section">
-          <span className="legend-title">Prefabs</span>
-          {Object.entries(PREFAB_CONFIG).map(([key, config]) => {
-            const Icon = config.icon;
-            return (
-              <div key={key} className="legend-item">
-                <Icon size={12} />
-                <span>{config.name}</span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="legend-section">
           <span className="legend-title">Stats</span>
           <span className="legend-stat">{world.zones.length} zones</span>
           <span className="legend-stat">{world.prefabs.length} prefabs</span>
@@ -1066,7 +1392,7 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, onRemoveZone, o
   );
 }
 
-// P1: Zone Properties Panel
+// Zone Properties Panel
 function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
   const zoneConfig = ZONE_CONFIG[zone.type];
   const availableBiomes = Object.entries(BIOME_CONFIG).filter(([_, b]) => b.zones.includes(zone.type));
@@ -1074,7 +1400,6 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
   const toggleBiome = (biomeId) => {
     const currentBiomes = zone.biomes || [];
     const existingIndex = currentBiomes.findIndex(b => b.type === biomeId);
-    
     if (existingIndex >= 0) {
       onUpdateBiomes(zone.id, currentBiomes.filter((_, i) => i !== existingIndex));
     } else {
@@ -1084,9 +1409,7 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
 
   const updateBiomeSetting = (biomeId, key, value) => {
     const currentBiomes = zone.biomes || [];
-    onUpdateBiomes(zone.id, currentBiomes.map(b => 
-      b.type === biomeId ? { ...b, [key]: value } : b
-    ));
+    onUpdateBiomes(zone.id, currentBiomes.map(b => b.type === biomeId ? { ...b, [key]: value } : b));
   };
 
   return (
@@ -1098,35 +1421,19 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
           <span>{zoneConfig.name}</span>
         </div>
       </div>
-      
       <div className="property-group">
         <Label>Position</Label>
-        <div className="position-display">
-          X: {zone.x}, Y: {zone.y}
-        </div>
+        <div className="position-display">X: {zone.x}, Y: {zone.y}</div>
       </div>
-
       <div className="property-group">
         <Label>Difficulty (1-10)</Label>
         <div className="slider-with-value">
-          <Slider
-            value={[zone.difficulty || 1]}
-            min={1}
-            max={10}
-            step={1}
-            onValueChange={([v]) => onUpdate(zone.id, 'difficulty', v)}
-            data-testid="zone-difficulty-slider"
-          />
+          <Slider value={[zone.difficulty || 1]} min={1} max={10} step={1} onValueChange={([v]) => onUpdate(zone.id, 'difficulty', v)} />
           <span className="slider-value">{zone.difficulty || 1}</span>
         </div>
       </div>
-
       <div className="property-group">
-        <Label className="flex items-center gap-2">
-          <Layers size={14} />
-          Biomes
-        </Label>
-        <p className="form-hint">Select biomes to mix in this zone</p>
+        <Label className="flex items-center gap-2"><Layers size={14} />Biomes</Label>
         <div className="biome-list">
           {availableBiomes.map(([biomeId, biomeConfig]) => {
             const isActive = zone.biomes?.some(b => b.type === biomeId);
@@ -1142,25 +1449,8 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
                   <div className="biome-settings">
                     <div className="biome-slider">
                       <span>Density</span>
-                      <Slider
-                        value={[biomeData.density || 0.5]}
-                        min={0}
-                        max={1}
-                        step={0.1}
-                        onValueChange={([v]) => updateBiomeSetting(biomeId, 'density', v)}
-                      />
+                      <Slider value={[biomeData.density || 0.5]} min={0} max={1} step={0.1} onValueChange={([v]) => updateBiomeSetting(biomeId, 'density', v)} />
                       <span>{(biomeData.density || 0.5).toFixed(1)}</span>
-                    </div>
-                    <div className="biome-slider">
-                      <span>Variation</span>
-                      <Slider
-                        value={[biomeData.variation || 0.3]}
-                        min={0}
-                        max={1}
-                        step={0.1}
-                        onValueChange={([v]) => updateBiomeSetting(biomeId, 'variation', v)}
-                      />
-                      <span>{(biomeData.variation || 0.3).toFixed(1)}</span>
                     </div>
                   </div>
                 )}
@@ -1169,16 +1459,12 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
           })}
         </div>
       </div>
-
-      <Button variant="destructive" onClick={onDelete} className="delete-btn" data-testid="delete-zone-btn">
-        <Trash2 size={16} />
-        Delete Zone
-      </Button>
+      <Button variant="destructive" onClick={onDelete} className="delete-btn"><Trash2 size={16} />Delete Zone</Button>
     </div>
   );
 }
 
-// P1: Prefab Properties Panel
+// Prefab Properties Panel
 function PrefabPropertiesPanel({ prefab, onUpdate, onDelete }) {
   const prefabConfig = PREFAB_CONFIG[prefab.type];
   const Icon = prefabConfig.icon;
@@ -1187,28 +1473,16 @@ function PrefabPropertiesPanel({ prefab, onUpdate, onDelete }) {
     <div className="properties-panel">
       <div className="property-group">
         <Label>Structure Type</Label>
-        <div className="prefab-type-display">
-          <Icon size={18} />
-          <span>{prefabConfig.name}</span>
-        </div>
+        <div className="prefab-type-display"><Icon size={18} /><span>{prefabConfig.name}</span></div>
       </div>
-      
       <div className="property-group">
         <Label>Position</Label>
-        <div className="position-display">
-          X: {prefab.x}, Y: {prefab.y}
-        </div>
+        <div className="position-display">X: {prefab.x}, Y: {prefab.y}</div>
       </div>
-
       <div className="property-group">
-        <Label>Rotation (degrees)</Label>
-        <Select 
-          value={String(prefab.rotation || 0)} 
-          onValueChange={(v) => onUpdate(prefab.id, 'rotation', parseInt(v))}
-        >
-          <SelectTrigger data-testid="prefab-rotation-select">
-            <SelectValue />
-          </SelectTrigger>
+        <Label>Rotation</Label>
+        <Select value={String(prefab.rotation || 0)} onValueChange={(v) => onUpdate(prefab.id, 'rotation', parseInt(v))}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="0">0°</SelectItem>
             <SelectItem value="90">90°</SelectItem>
@@ -1217,109 +1491,115 @@ function PrefabPropertiesPanel({ prefab, onUpdate, onDelete }) {
           </SelectContent>
         </Select>
       </div>
-
       <div className="property-group">
         <Label>Scale</Label>
         <div className="slider-with-value">
-          <Slider
-            value={[prefab.scale || 1]}
-            min={0.5}
-            max={2}
-            step={0.1}
-            onValueChange={([v]) => onUpdate(prefab.id, 'scale', v)}
-            data-testid="prefab-scale-slider"
-          />
+          <Slider value={[prefab.scale || 1]} min={0.5} max={2} step={0.1} onValueChange={([v]) => onUpdate(prefab.id, 'scale', v)} />
           <span className="slider-value">{(prefab.scale || 1).toFixed(1)}x</span>
         </div>
       </div>
-
-      <Button variant="destructive" onClick={onDelete} className="delete-btn" data-testid="delete-prefab-btn">
-        <Trash2 size={16} />
-        Delete Structure
-      </Button>
+      <Button variant="destructive" onClick={onDelete} className="delete-btn"><Trash2 size={16} />Delete Structure</Button>
     </div>
   );
 }
 
-// Terrain Panel Component
+// Terrain Panel
 function TerrainPanel({ terrain, onUpdate }) {
   return (
     <div className="terrain-panel" data-testid="terrain-panel">
-      <h3 className="terrain-title">
-        <Mountain size={16} />
-        Terrain Settings
-      </h3>
+      <h3 className="terrain-title"><Mountain size={16} />Terrain Settings</h3>
       <div className="terrain-controls">
-        <div className="terrain-control">
-          <div className="control-header">
-            <Label>Height Scale</Label>
-            <span className="control-value">{terrain?.height_scale?.toFixed(2) || "1.00"}</span>
+        {[
+          { key: "height_scale", label: "Height", min: 0.1, max: 3, default: 1 },
+          { key: "cave_density", label: "Caves", min: 0, max: 1, default: 0.5 },
+          { key: "river_frequency", label: "Rivers", min: 0, max: 1, default: 0.3 },
+          { key: "mountain_scale", label: "Mountains", min: 0, max: 1, default: 0.5 },
+          { key: "ocean_level", label: "Ocean", min: 0, max: 1, default: 0.3 }
+        ].map(({ key, label, min, max, default: def }) => (
+          <div key={key} className="terrain-control">
+            <div className="control-header">
+              <Label>{label}</Label>
+              <span className="control-value">{(terrain?.[key] || def).toFixed(2)}</span>
+            </div>
+            <Slider value={[terrain?.[key] || def]} min={min} max={max} step={0.05} onValueChange={([v]) => onUpdate(key, v)} />
           </div>
-          <Slider
-            value={[terrain?.height_scale || 1]}
-            min={0.1}
-            max={3}
-            step={0.1}
-            onValueChange={([v]) => onUpdate("height_scale", v)}
-            data-testid="terrain-height-slider"
-          />
-        </div>
-        <div className="terrain-control">
-          <div className="control-header">
-            <Label>Cave Density</Label>
-            <span className="control-value">{terrain?.cave_density?.toFixed(2) || "0.50"}</span>
-          </div>
-          <Slider
-            value={[terrain?.cave_density || 0.5]}
-            min={0}
-            max={1}
-            step={0.05}
-            onValueChange={([v]) => onUpdate("cave_density", v)}
-            data-testid="terrain-cave-slider"
-          />
-        </div>
-        <div className="terrain-control">
-          <div className="control-header">
-            <Label>River Frequency</Label>
-            <span className="control-value">{terrain?.river_frequency?.toFixed(2) || "0.30"}</span>
-          </div>
-          <Slider
-            value={[terrain?.river_frequency || 0.3]}
-            min={0}
-            max={1}
-            step={0.05}
-            onValueChange={([v]) => onUpdate("river_frequency", v)}
-            data-testid="terrain-river-slider"
-          />
-        </div>
-        <div className="terrain-control">
-          <div className="control-header">
-            <Label>Mountain Scale</Label>
-            <span className="control-value">{terrain?.mountain_scale?.toFixed(2) || "0.50"}</span>
-          </div>
-          <Slider
-            value={[terrain?.mountain_scale || 0.5]}
-            min={0}
-            max={1}
-            step={0.05}
-            onValueChange={([v]) => onUpdate("mountain_scale", v)}
-            data-testid="terrain-mountain-slider"
-          />
-        </div>
-        <div className="terrain-control">
-          <div className="control-header">
-            <Label>Ocean Level</Label>
-            <span className="control-value">{terrain?.ocean_level?.toFixed(2) || "0.30"}</span>
-          </div>
-          <Slider
-            value={[terrain?.ocean_level || 0.3]}
-            min={0}
-            max={1}
-            step={0.05}
-            onValueChange={([v]) => onUpdate("ocean_level", v)}
-            data-testid="terrain-ocean-slider"
-          />
-        </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// P2: 3D Preview Component
+function Preview3D({ data }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !data) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    const { dimensions, height_map, zones, terrain } = data;
+    const cellSize = Math.min(600 / dimensions.width, 400 / dimensions.height);
+    
+    canvas.width = dimensions.width * cellSize;
+    canvas.height = dimensions.height * cellSize;
+    
+    // Create a zone lookup
+    const zoneMap = {};
+    zones.forEach(z => { zoneMap[`${z.x}-${z.y}`] = z; });
+
+    // Draw height map with zone colors
+    for (let y = 0; y < dimensions.height; y++) {
+      for (let x = 0; x < dimensions.width; x++) {
+        const height = height_map[y]?.[x] || 0.5;
+        const zone = zoneMap[`${x}-${y}`];
+        
+        let baseColor;
+        if (zone) {
+          const zoneColors = {
+            emerald_grove: [16, 185, 129],
+            borea: [6, 182, 212],
+            desert: [245, 158, 11],
+            arctic: [226, 232, 240],
+            corrupted: [139, 92, 246]
+          };
+          baseColor = zoneColors[zone.type] || [107, 114, 128];
+        } else {
+          // Water or empty
+          if (height < terrain.ocean_level) {
+            baseColor = [30, 64, 175]; // Water
+          } else {
+            baseColor = [71, 85, 105]; // Empty land
+          }
+        }
+        
+        // Apply height shading
+        const brightness = 0.5 + height * 0.5;
+        const r = Math.min(255, Math.floor(baseColor[0] * brightness));
+        const g = Math.min(255, Math.floor(baseColor[1] * brightness));
+        const b = Math.min(255, Math.floor(baseColor[2] * brightness));
+        
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+    }
+    
+    // Draw prefabs as markers
+    data.prefabs.forEach(p => {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(p.position.x * cellSize + cellSize/2, p.position.y * cellSize + cellSize/2, cellSize/3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+  }, [data]);
+
+  return (
+    <div className="preview-3d-container">
+      <canvas ref={canvasRef} className="preview-3d-canvas" />
+      <div className="preview-3d-info">
+        <p>Height-mapped terrain view with zone coloring</p>
+        <p className="text-muted">White dots indicate structure locations</p>
       </div>
     </div>
   );
