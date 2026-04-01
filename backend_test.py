@@ -21,6 +21,7 @@ class HytaleAPITester:
         self.test_world_id = None
         self.test_zone_id = None
         self.test_prefab_id = None
+        self.test_gallery_id = None
         
     def log(self, message: str, level: str = "INFO"):
         """Log test messages with timestamp"""
@@ -732,12 +733,289 @@ class HytaleAPITester:
             self.log(f"Delete world failed: {e}")
             return False
     
+    # ==================== P3 FEATURES TESTS ====================
+    
+    def test_custom_prefabs_list(self) -> bool:
+        """Test P3: List custom prefabs"""
+        try:
+            response = requests.get(f"{API_BASE}/prefabs/custom", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            if "prefabs" not in data:
+                self.log("Custom prefabs response missing 'prefabs' field")
+                return False
+            
+            # Should return a list (can be empty initially)
+            return isinstance(data["prefabs"], list)
+            
+        except Exception as e:
+            self.log(f"Custom prefabs list failed: {e}")
+            return False
+    
+    def test_custom_prefabs_create(self) -> bool:
+        """Test P3: Create custom prefab"""
+        try:
+            prefab_data = {
+                "name": f"Test Prefab {datetime.now().strftime('%H%M%S')}",
+                "description": "A test custom prefab",
+                "icon": "cube",
+                "color": "#FF5733",
+                "category": "custom",
+                "is_public": True,
+                "tags": ["test", "custom"]
+            }
+            
+            response = requests.post(f"{API_BASE}/prefabs/custom", json=prefab_data, timeout=10)
+            if response.status_code != 200:
+                self.log(f"Create custom prefab failed with status: {response.status_code}")
+                return False
+            
+            data = response.json()
+            required_fields = ["id", "name", "description", "icon", "color", "category"]
+            
+            for field in required_fields:
+                if field not in data:
+                    self.log(f"Missing field in custom prefab response: {field}")
+                    return False
+            
+            if data["name"] != prefab_data["name"]:
+                self.log("Custom prefab name doesn't match")
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"Create custom prefab failed: {e}")
+            return False
+    
+    def test_gallery_list(self) -> bool:
+        """Test P3: List gallery entries"""
+        try:
+            response = requests.get(f"{API_BASE}/gallery", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            required_fields = ["total", "entries", "limit", "offset"]
+            
+            for field in required_fields:
+                if field not in data:
+                    self.log(f"Missing field in gallery response: {field}")
+                    return False
+            
+            # Should return a list (can be empty initially)
+            return isinstance(data["entries"], list)
+            
+        except Exception as e:
+            self.log(f"Gallery list failed: {e}")
+            return False
+    
+    def test_gallery_publish(self) -> bool:
+        """Test P3: Publish world to gallery"""
+        if not self.test_world_id:
+            return False
+            
+        try:
+            publish_data = {
+                "world_id": self.test_world_id,
+                "description": "Test world published to gallery",
+                "creator_name": "API Tester",
+                "tags": ["test", "api", "automated"]
+            }
+            
+            response = requests.post(f"{API_BASE}/gallery/publish", json=publish_data, timeout=10)
+            if response.status_code != 200:
+                self.log(f"Gallery publish failed with status: {response.status_code}")
+                return False
+            
+            data = response.json()
+            if "message" not in data or "gallery_id" not in data:
+                self.log("Gallery publish response missing required fields")
+                return False
+            
+            # Store gallery ID for later tests
+            self.test_gallery_id = data["gallery_id"]
+            return True
+            
+        except Exception as e:
+            self.log(f"Gallery publish failed: {e}")
+            return False
+    
+    def test_gallery_get_entry(self) -> bool:
+        """Test P3: Get gallery entry and increment views"""
+        if not hasattr(self, 'test_gallery_id') or not self.test_gallery_id:
+            self.log("No gallery ID available for testing")
+            return False
+            
+        try:
+            response = requests.get(f"{API_BASE}/gallery/{self.test_gallery_id}", timeout=10)
+            if response.status_code != 200:
+                self.log(f"Gallery get entry failed with status: {response.status_code}")
+                if response.status_code == 404:
+                    self.log("Gallery entry not found - may have been deleted")
+                return False
+            
+            data = response.json()
+            required_fields = ["id", "world_id", "name", "description", "creator_name", "views"]
+            
+            for field in required_fields:
+                if field not in data:
+                    self.log(f"Missing field in gallery entry: {field}")
+                    return False
+            
+            # Views should be at least 1 (from this request)
+            if data["views"] < 1:
+                self.log(f"Views count is {data['views']}, expected at least 1")
+                return False
+            
+            self.log(f"Gallery entry has {data['views']} views")
+            return True
+            
+        except Exception as e:
+            self.log(f"Gallery get entry failed: {e}")
+            return False
+    
+    def test_gallery_like(self) -> bool:
+        """Test P3: Like gallery entry"""
+        if not hasattr(self, 'test_gallery_id') or not self.test_gallery_id:
+            return False
+            
+        try:
+            response = requests.post(f"{API_BASE}/gallery/{self.test_gallery_id}/like", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            if "message" not in data or "gallery_id" not in data:
+                self.log("Gallery like response missing required fields")
+                return False
+            
+            return data["gallery_id"] == self.test_gallery_id
+            
+        except Exception as e:
+            self.log(f"Gallery like failed: {e}")
+            return False
+    
+    def test_gallery_download(self) -> bool:
+        """Test P3: Download world from gallery"""
+        if not hasattr(self, 'test_gallery_id') or not self.test_gallery_id:
+            return False
+            
+        try:
+            response = requests.post(f"{API_BASE}/gallery/{self.test_gallery_id}/download", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            if "world" not in data or "gallery_info" not in data:
+                self.log("Gallery download response missing required fields")
+                return False
+            
+            # Check world data structure
+            world = data["world"]
+            if "id" not in world or "name" not in world:
+                self.log("Downloaded world data incomplete")
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"Gallery download failed: {e}")
+            return False
+    
+    def test_analytics_track(self) -> bool:
+        """Test P3: Track analytics event"""
+        try:
+            event_data = {
+                "event_type": "test_event",
+                "world_id": self.test_world_id,
+                "user_id": "test_user",
+                "data": {"test": True, "timestamp": datetime.now().isoformat()}
+            }
+            
+            response = requests.post(f"{API_BASE}/analytics/track", json=event_data, timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            return "message" in data and data["message"] == "Event tracked"
+            
+        except Exception as e:
+            self.log(f"Analytics track failed: {e}")
+            return False
+    
+    def test_analytics_world(self) -> bool:
+        """Test P3: Get world analytics"""
+        if not self.test_world_id:
+            return False
+            
+        try:
+            response = requests.get(f"{API_BASE}/analytics/world/{self.test_world_id}", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            # Analytics might be empty for new world, but should return valid structure
+            return isinstance(data, dict)
+            
+        except Exception as e:
+            self.log(f"Analytics world failed: {e}")
+            return False
+    
+    def test_analytics_summary(self) -> bool:
+        """Test P3: Get platform analytics summary"""
+        try:
+            response = requests.get(f"{API_BASE}/analytics/summary", timeout=10)
+            if response.status_code != 200:
+                return False
+            
+            data = response.json()
+            # Should return platform stats
+            return isinstance(data, dict)
+            
+        except Exception as e:
+            self.log(f"Analytics summary failed: {e}")
+            return False
+    
+    def test_procedural_preview(self) -> bool:
+        """Test P3: Generate procedural preview"""
+        try:
+            params = "template=adventure&map_width=32&map_height=32&steps=5"
+            response = requests.post(f"{API_BASE}/generate/preview?{params}", timeout=15)
+            if response.status_code != 200:
+                self.log(f"Procedural preview failed with status: {response.status_code}")
+                return False
+            
+            data = response.json()
+            if "steps" not in data:
+                self.log("Procedural preview response missing 'steps' field")
+                return False
+            
+            steps = data["steps"]
+            if not isinstance(steps, list) or len(steps) != 5:
+                self.log(f"Expected 5 steps, got {len(steps) if isinstance(steps, list) else 'non-list'}")
+                return False
+            
+            # Check step structure
+            for i, step in enumerate(steps):
+                if "step" not in step or "description" not in step:
+                    self.log(f"Step {i} missing required fields")
+                    return False
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"Procedural preview failed: {e}")
+            return False
+    
     def run_all_tests(self):
         """Run all API tests in sequence"""
-        self.log("🚀 Starting Hytale World Builder P2 Features API Tests")
+        self.log("🚀 Starting Hytale World Builder P3 Features API Tests")
         self.log(f"Testing against: {API_BASE}")
         
-        # Core API tests + P2 Features
+        # Core API tests + P2 + P3 Features
         tests = [
             ("API Health Check", self.test_health_endpoint),
             ("Seed Generation", self.test_seed_generation),
@@ -758,6 +1036,19 @@ class HytaleAPITester:
             ("P2: Collaboration", self.test_collaboration),
             ("Reference Data", self.test_reference_data),
             ("AI Chat", self.test_ai_chat),
+            # P3 Features Tests
+            ("P3: Custom Prefabs List", self.test_custom_prefabs_list),
+            ("P3: Custom Prefabs Create", self.test_custom_prefabs_create),
+            ("P3: Gallery List", self.test_gallery_list),
+            ("P3: Gallery Publish", self.test_gallery_publish),
+            ("P3: Gallery Get Entry", self.test_gallery_get_entry),
+            ("P3: Gallery Like", self.test_gallery_like),
+            ("P3: Gallery Download", self.test_gallery_download),
+            ("P3: Analytics Track", self.test_analytics_track),
+            ("P3: Analytics World", self.test_analytics_world),
+            ("P3: Analytics Summary", self.test_analytics_summary),
+            ("P3: Procedural Preview", self.test_procedural_preview),
+            # Cleanup
             ("Remove Zone", self.test_remove_zone),
             ("Remove Prefab", self.test_remove_prefab),
             ("Delete World", self.test_delete_world),

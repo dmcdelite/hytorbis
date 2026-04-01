@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { 
   Map, Sparkles, Mountain, Home, Castle, Landmark, Building, 
   Download, Save, Trash2, Plus, Settings, Wand2, Send, Bot,
@@ -20,11 +21,14 @@ import {
   RefreshCw, FolderOpen, FileJson, Loader2, PanelRightOpen, PanelRightClose,
   Undo2, Redo2, Paintbrush, MousePointer, ZoomIn, ZoomOut, Move,
   Layers, Edit3, Maximize2, Upload, LayoutTemplate, Users, Box,
-  Swords, Heart, Compass, Pickaxe, Eye
+  Swords, Heart, Compass, Pickaxe, Eye, Globe, BarChart3, Play,
+  Pause, SkipForward, ThumbsUp, Search, Tag, TrendingUp,
+  Activity, Package, Share2, MessageSquare
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+const WS_URL = BACKEND_URL.replace('https://', 'wss://').replace('http://', 'ws://');
 
 // Zone colors and data
 const ZONE_CONFIG = {
@@ -129,27 +133,250 @@ function App() {
   const [collabUsers, setCollabUsers] = useState([]);
   const [userId] = useState(`user-${Math.random().toString(36).substr(2, 9)}`);
 
+  // P3: Gallery
+  const [showGalleryDialog, setShowGalleryDialog] = useState(false);
+  const [galleryEntries, setGalleryEntries] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [gallerySearch, setGallerySearch] = useState("");
+  const [gallerySort, setGallerySort] = useState("recent");
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [publishData, setPublishData] = useState({ description: "", creator_name: "", tags: "" });
+
+  // P3: Custom Prefabs
+  const [showCustomPrefabDialog, setShowCustomPrefabDialog] = useState(false);
+  const [customPrefabs, setCustomPrefabs] = useState([]);
+  const [newPrefab, setNewPrefab] = useState({ name: "", description: "", icon: "cube", color: "#6B7280", category: "custom", is_public: false, tags: "" });
+
+  // P3: Analytics
+  const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState(null);
+
+  // P3: Procedural Preview
+  const [showProceduralPreview, setShowProceduralPreview] = useState(false);
+  const [proceduralSteps, setProceduralSteps] = useState([]);
+  const [currentPreviewStep, setCurrentPreviewStep] = useState(0);
+  const [previewPlaying, setPreviewPlaying] = useState(false);
+
+  // P3: WebSocket Collaboration
+  const wsRef = useRef(null);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [collabCursors, setCollabCursors] = useState({});
+  const [collabChat, setCollabChat] = useState([]);
+
   // Fetch worlds and templates on mount
   useEffect(() => {
     fetchWorlds();
     fetchTemplates();
+    fetchCustomPrefabs();
   }, []);
 
-  // Collaboration polling
+  // P3: WebSocket connection
+  useEffect(() => {
+    if (collabEnabled && currentWorld && !wsRef.current) {
+      const ws = new WebSocket(`${WS_URL}/ws/collab/${currentWorld.id}/${userId}`);
+      
+      ws.onopen = () => {
+        setWsConnected(true);
+        console.log("WebSocket connected");
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === "connected") {
+          setCollabUsers(data.users || []);
+        } else if (data.type === "user_joined" || data.type === "user_left") {
+          setCollabUsers(data.users || []);
+        } else if (data.type === "cursor_update") {
+          setCollabCursors(prev => ({
+            ...prev,
+            [data.user_id]: { x: data.x, y: data.y }
+          }));
+        } else if (data.type === "zone_added" && currentWorld) {
+          setCurrentWorld(prev => ({
+            ...prev,
+            zones: [...prev.zones, data.zone]
+          }));
+        } else if (data.type === "zone_removed" && currentWorld) {
+          setCurrentWorld(prev => ({
+            ...prev,
+            zones: prev.zones.filter(z => z.id !== data.zone_id)
+          }));
+        } else if (data.type === "prefab_added" && currentWorld) {
+          setCurrentWorld(prev => ({
+            ...prev,
+            prefabs: [...prev.prefabs, data.prefab]
+          }));
+        } else if (data.type === "prefab_removed" && currentWorld) {
+          setCurrentWorld(prev => ({
+            ...prev,
+            prefabs: prev.prefabs.filter(p => p.id !== data.prefab_id)
+          }));
+        } else if (data.type === "chat_message") {
+          setCollabChat(prev => [...prev.slice(-49), { user: data.user_id, message: data.message }]);
+        }
+      };
+      
+      ws.onclose = () => {
+        setWsConnected(false);
+        wsRef.current = null;
+      };
+      
+      wsRef.current = ws;
+    }
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [collabEnabled, currentWorld, userId]);
+
+  // Send WebSocket message
+  const sendWsMessage = (type, data) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type, ...data }));
+    }
+  };
+
+  // P3: Fetch custom prefabs
+  const fetchCustomPrefabs = async () => {
+    try {
+      const response = await axios.get(`${API}/prefabs/custom`);
+      setCustomPrefabs(response.data.prefabs || []);
+    } catch (e) {
+      console.error("Failed to fetch custom prefabs:", e);
+    }
+  };
+
+  // P3: Fetch gallery
+  const fetchGallery = async () => {
+    setGalleryLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (gallerySearch) params.append("query", gallerySearch);
+      params.append("sort_by", gallerySort);
+      const response = await axios.get(`${API}/gallery?${params}`);
+      setGalleryEntries(response.data.entries || []);
+    } catch (e) {
+      console.error("Failed to fetch gallery:", e);
+    }
+    setGalleryLoading(false);
+  };
+
+  // P3: Publish to gallery
+  const publishToGallery = async () => {
+    if (!currentWorld || !publishData.description) return;
+    try {
+      await axios.post(`${API}/gallery/publish`, {
+        world_id: currentWorld.id,
+        description: publishData.description,
+        creator_name: publishData.creator_name || "Anonymous",
+        tags: publishData.tags.split(",").map(t => t.trim()).filter(Boolean)
+      });
+      setShowPublishDialog(false);
+      setPublishData({ description: "", creator_name: "", tags: "" });
+      alert("Published to gallery!");
+    } catch (e) {
+      console.error("Publish failed:", e);
+      alert(e.response?.data?.detail || "Failed to publish");
+    }
+  };
+
+  // P3: Download from gallery
+  const downloadFromGallery = async (galleryId) => {
+    try {
+      const response = await axios.post(`${API}/gallery/${galleryId}/download`);
+      const world = response.data.world;
+      // Import the world
+      const imported = await axios.post(`${API}/worlds/import`, {
+        config: world,
+        name: `${world.name} (Copy)`
+      });
+      setCurrentWorld(imported.data);
+      setWorlds(prev => [...prev, imported.data]);
+      setShowGalleryDialog(false);
+    } catch (e) {
+      console.error("Download failed:", e);
+    }
+  };
+
+  // P3: Create custom prefab
+  const createCustomPrefab = async () => {
+    if (!newPrefab.name) return;
+    try {
+      await axios.post(`${API}/prefabs/custom`, {
+        ...newPrefab,
+        tags: newPrefab.tags.split(",").map(t => t.trim()).filter(Boolean)
+      });
+      fetchCustomPrefabs();
+      setShowCustomPrefabDialog(false);
+      setNewPrefab({ name: "", description: "", icon: "cube", color: "#6B7280", category: "custom", is_public: false, tags: "" });
+    } catch (e) {
+      console.error("Create prefab failed:", e);
+    }
+  };
+
+  // P3: Fetch analytics
+  const fetchAnalytics = async () => {
+    if (!currentWorld) return;
+    try {
+      const [worldAnalytics, summary] = await Promise.all([
+        axios.get(`${API}/analytics/world/${currentWorld.id}`),
+        axios.get(`${API}/analytics/summary`)
+      ]);
+      setAnalyticsData({
+        world: worldAnalytics.data,
+        summary: summary.data
+      });
+    } catch (e) {
+      console.error("Failed to fetch analytics:", e);
+    }
+  };
+
+  // P3: Generate procedural preview
+  const generateProceduralPreview = async (template = "adventure") => {
+    try {
+      const response = await axios.post(`${API}/generate/preview?template=${template}&map_width=32&map_height=32&steps=5`);
+      setProceduralSteps(response.data.steps || []);
+      setCurrentPreviewStep(0);
+      setShowProceduralPreview(true);
+    } catch (e) {
+      console.error("Preview generation failed:", e);
+    }
+  };
+
+  // P3: Play procedural preview animation
   useEffect(() => {
     let interval;
-    if (collabEnabled && currentWorld) {
-      interval = setInterval(async () => {
-        try {
-          const response = await axios.get(`${API}/collab/${currentWorld.id}/status`);
-          setCollabUsers(response.data.users || []);
-        } catch (e) {
-          console.error("Collab poll error:", e);
-        }
-      }, 3000);
+    if (previewPlaying && proceduralSteps.length > 0) {
+      interval = setInterval(() => {
+        setCurrentPreviewStep(prev => {
+          if (prev >= proceduralSteps.length - 1) {
+            setPreviewPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1500);
     }
     return () => clearInterval(interval);
-  }, [collabEnabled, currentWorld]);
+  }, [previewPlaying, proceduralSteps]);
+
+  // Track analytics event
+  const trackEvent = async (eventType, data = {}) => {
+    try {
+      await axios.post(`${API}/analytics/track`, {
+        event_type: eventType,
+        world_id: currentWorld?.id,
+        user_id: userId,
+        data
+      });
+    } catch (e) {
+      // Silent fail for analytics
+    }
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -313,33 +540,25 @@ function App() {
     setLoading(false);
   };
 
-  // P2: Toggle collaboration
+  // P2/P3: Toggle collaboration (uses WebSocket)
   const toggleCollab = async () => {
     if (!currentWorld) return;
     
     if (!collabEnabled) {
-      try {
-        await axios.post(`${API}/collab/join`, {
-          world_id: currentWorld.id,
-          user_id: userId,
-          action: "join"
-        });
-        setCollabEnabled(true);
-      } catch (e) {
-        console.error("Failed to join collab:", e);
-      }
+      setCollabEnabled(true);
+      setCollabCursors({});
+      setCollabChat([]);
+      trackEvent("collab_join", { world_id: currentWorld.id });
     } else {
-      try {
-        await axios.post(`${API}/collab/leave`, {
-          world_id: currentWorld.id,
-          user_id: userId,
-          action: "leave"
-        });
-        setCollabEnabled(false);
-        setCollabUsers([]);
-      } catch (e) {
-        console.error("Failed to leave collab:", e);
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
       }
+      setCollabEnabled(false);
+      setCollabUsers([]);
+      setCollabCursors({});
+      setWsConnected(false);
+      trackEvent("collab_leave", { world_id: currentWorld.id });
     }
   };
 
@@ -700,10 +919,11 @@ function App() {
                 variant={collabEnabled ? "default" : "ghost"}
                 size="icon"
                 onClick={toggleCollab}
-                title="Collaboration"
+                title={collabEnabled ? `Connected (${collabUsers.length} users)` : "Start Collaboration"}
                 data-testid="collab-btn"
               >
                 <Users size={18} />
+                {wsConnected && <span className="ws-indicator" />}
               </Button>
               <Button
                 variant="ghost"
@@ -713,6 +933,24 @@ function App() {
                 data-testid="preview-3d-btn"
               >
                 <Box size={18} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { setShowGalleryDialog(true); fetchGallery(); }}
+                title="Community Gallery"
+                data-testid="gallery-btn"
+              >
+                <Globe size={18} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { setShowAnalyticsDialog(true); fetchAnalytics(); }}
+                title="Analytics"
+                data-testid="analytics-btn"
+              >
+                <BarChart3 size={18} />
               </Button>
               <div className="header-divider" />
             </>
@@ -904,6 +1142,10 @@ function App() {
                 <Save size={16} />
                 Save World
               </Button>
+              <Button variant="outline" onClick={() => setShowPublishDialog(true)} className="publish-btn" data-testid="publish-btn">
+                <Share2 size={16} />
+                Publish to Gallery
+              </Button>
               <div className="export-buttons">
                 <Button variant="secondary" onClick={() => exportWorld("json")} data-testid="export-json-btn" title="Export as JSON">
                   <FileJson size={16} />
@@ -920,7 +1162,7 @@ function App() {
                   Prefab
                 </Button>
                 <Button variant="secondary" onClick={() => exportWorld("jar")} data-testid="export-jar-btn" title="Export as .jar mod package">
-                  <Box size={16} />
+                  <Package size={16} />
                   JAR
                 </Button>
               </div>
@@ -1248,6 +1490,323 @@ function App() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* P3: Gallery Dialog */}
+      <Dialog open={showGalleryDialog} onOpenChange={setShowGalleryDialog}>
+        <DialogContent className="dialog-content dialog-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe size={20} />
+              Community Gallery
+            </DialogTitle>
+          </DialogHeader>
+          <div className="gallery-container">
+            <div className="gallery-filters">
+              <div className="search-box">
+                <Search size={16} />
+                <Input 
+                  value={gallerySearch} 
+                  onChange={(e) => setGallerySearch(e.target.value)}
+                  placeholder="Search worlds..."
+                  onKeyDown={(e) => e.key === "Enter" && fetchGallery()}
+                />
+              </div>
+              <Select value={gallerySort} onValueChange={setGallerySort}>
+                <SelectTrigger className="sort-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                  <SelectItem value="popular">Most Viewed</SelectItem>
+                  <SelectItem value="downloads">Most Downloads</SelectItem>
+                  <SelectItem value="likes">Most Liked</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={fetchGallery}><Search size={16} /></Button>
+            </div>
+            <ScrollArea className="gallery-grid-container">
+              {galleryLoading ? (
+                <div className="gallery-loading"><Loader2 className="animate-spin" size={32} /></div>
+              ) : galleryEntries.length === 0 ? (
+                <div className="gallery-empty">
+                  <Globe size={48} className="opacity-30" />
+                  <p>No worlds found</p>
+                  <p className="text-muted">Be the first to publish!</p>
+                </div>
+              ) : (
+                <div className="gallery-grid">
+                  {galleryEntries.map((entry) => (
+                    <Card key={entry.id} className="gallery-card">
+                      <CardHeader>
+                        <CardTitle className="gallery-card-title">{entry.name}</CardTitle>
+                        <CardDescription>by {entry.creator_name}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="gallery-description">{entry.description}</p>
+                        <div className="gallery-stats">
+                          <span><Eye size={12} /> {entry.views || 0}</span>
+                          <span><ThumbsUp size={12} /> {entry.likes || 0}</span>
+                          <span><Download size={12} /> {entry.downloads || 0}</span>
+                        </div>
+                        <div className="gallery-tags">
+                          {(entry.tags || []).slice(0, 3).map((tag, i) => (
+                            <Badge key={i} variant="secondary">{tag}</Badge>
+                          ))}
+                        </div>
+                        <div className="gallery-meta">
+                          <span>{entry.zone_count} zones • {entry.prefab_count} prefabs</span>
+                          <span>{entry.map_size}</span>
+                        </div>
+                        <div className="gallery-actions">
+                          <Button size="sm" onClick={() => downloadFromGallery(entry.id)}>
+                            <Download size={14} /> Download
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={async () => {
+                            await axios.post(`${API}/gallery/${entry.id}/like`);
+                            fetchGallery();
+                          }}>
+                            <ThumbsUp size={14} />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P3: Publish Dialog */}
+      <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+        <DialogContent className="dialog-content">
+          <DialogHeader>
+            <DialogTitle>Publish to Gallery</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <div className="form-group">
+              <Label>Creator Name</Label>
+              <Input 
+                value={publishData.creator_name} 
+                onChange={(e) => setPublishData({...publishData, creator_name: e.target.value})}
+                placeholder="Your name"
+              />
+            </div>
+            <div className="form-group">
+              <Label>Description</Label>
+              <Textarea 
+                value={publishData.description} 
+                onChange={(e) => setPublishData({...publishData, description: e.target.value})}
+                placeholder="Describe your world..."
+              />
+            </div>
+            <div className="form-group">
+              <Label>Tags (comma-separated)</Label>
+              <Input 
+                value={publishData.tags} 
+                onChange={(e) => setPublishData({...publishData, tags: e.target.value})}
+                placeholder="adventure, dungeon, large"
+              />
+            </div>
+            <Button onClick={publishToGallery} disabled={!publishData.description}>
+              <Share2 size={16} /> Publish
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P3: Analytics Dialog */}
+      <Dialog open={showAnalyticsDialog} onOpenChange={setShowAnalyticsDialog}>
+        <DialogContent className="dialog-content dialog-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 size={20} />
+              Analytics Dashboard
+            </DialogTitle>
+          </DialogHeader>
+          {analyticsData ? (
+            <div className="analytics-container">
+              <div className="analytics-section">
+                <h4>Platform Stats</h4>
+                <div className="analytics-grid">
+                  <div className="stat-card">
+                    <span className="stat-value">{analyticsData.summary?.total_worlds || 0}</span>
+                    <span className="stat-label">Total Worlds</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-value">{analyticsData.summary?.total_published || 0}</span>
+                    <span className="stat-label">Published</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-value">{analyticsData.summary?.total_custom_prefabs || 0}</span>
+                    <span className="stat-label">Custom Prefabs</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-value">{analyticsData.summary?.recent_activity_24h || 0}</span>
+                    <span className="stat-label">Events (24h)</span>
+                  </div>
+                </div>
+              </div>
+              {currentWorld && (
+                <div className="analytics-section">
+                  <h4>Current World</h4>
+                  <div className="analytics-grid">
+                    <div className="stat-card">
+                      <span className="stat-value">{analyticsData.world?.world_stats?.zones || 0}</span>
+                      <span className="stat-label">Zones</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-value">{analyticsData.world?.world_stats?.prefabs || 0}</span>
+                      <span className="stat-label">Prefabs</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-value">{analyticsData.world?.world_stats?.map_size || "0x0"}</span>
+                      <span className="stat-label">Size</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="analytics-section">
+                <h4>Popular Tags</h4>
+                <div className="tag-cloud">
+                  {(analyticsData.summary?.popular_tags || []).map((t, i) => (
+                    <Badge key={i} variant="outline">{t.tag} ({t.count})</Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="analytics-loading"><Loader2 className="animate-spin" /></div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* P3: Custom Prefab Dialog */}
+      <Dialog open={showCustomPrefabDialog} onOpenChange={setShowCustomPrefabDialog}>
+        <DialogContent className="dialog-content">
+          <DialogHeader>
+            <DialogTitle>Create Custom Prefab</DialogTitle>
+          </DialogHeader>
+          <div className="dialog-form">
+            <div className="form-group">
+              <Label>Name</Label>
+              <Input value={newPrefab.name} onChange={(e) => setNewPrefab({...newPrefab, name: e.target.value})} placeholder="My Custom Structure" />
+            </div>
+            <div className="form-group">
+              <Label>Description</Label>
+              <Textarea value={newPrefab.description} onChange={(e) => setNewPrefab({...newPrefab, description: e.target.value})} placeholder="What does this prefab represent?" />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <Label>Icon</Label>
+                <Select value={newPrefab.icon} onValueChange={(v) => setNewPrefab({...newPrefab, icon: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cube">Cube</SelectItem>
+                    <SelectItem value="castle">Castle</SelectItem>
+                    <SelectItem value="home">Home</SelectItem>
+                    <SelectItem value="mountain">Mountain</SelectItem>
+                    <SelectItem value="sparkles">Sparkles</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="form-group">
+                <Label>Color</Label>
+                <Input type="color" value={newPrefab.color} onChange={(e) => setNewPrefab({...newPrefab, color: e.target.value})} />
+              </div>
+            </div>
+            <div className="form-group">
+              <Label>Tags (comma-separated)</Label>
+              <Input value={newPrefab.tags} onChange={(e) => setNewPrefab({...newPrefab, tags: e.target.value})} placeholder="building, decoration" />
+            </div>
+            <Button onClick={createCustomPrefab} disabled={!newPrefab.name}>
+              <Box size={16} /> Create Prefab
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P3: Procedural Preview Dialog */}
+      <Dialog open={showProceduralPreview} onOpenChange={setShowProceduralPreview}>
+        <DialogContent className="dialog-content dialog-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Activity size={20} />
+              Procedural Generation Preview
+            </DialogTitle>
+          </DialogHeader>
+          <div className="procedural-preview">
+            {proceduralSteps.length > 0 && (
+              <>
+                <div className="preview-controls">
+                  <Button variant="ghost" size="icon" onClick={() => setCurrentPreviewStep(Math.max(0, currentPreviewStep - 1))} disabled={currentPreviewStep === 0}>
+                    <ChevronRight className="rotate-180" size={16} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setPreviewPlaying(!previewPlaying)}>
+                    {previewPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setCurrentPreviewStep(Math.min(proceduralSteps.length - 1, currentPreviewStep + 1))} disabled={currentPreviewStep >= proceduralSteps.length - 1}>
+                    <ChevronRight size={16} />
+                  </Button>
+                </div>
+                <div className="preview-progress">
+                  <Progress value={(currentPreviewStep + 1) / proceduralSteps.length * 100} />
+                  <span>Step {currentPreviewStep + 1} of {proceduralSteps.length}</span>
+                </div>
+                <div className="preview-step-info">
+                  <h4>{proceduralSteps[currentPreviewStep]?.name}</h4>
+                  <p>{proceduralSteps[currentPreviewStep]?.description}</p>
+                </div>
+                <ProceduralPreviewCanvas step={proceduralSteps[currentPreviewStep]} />
+                <div className="preview-stats">
+                  <span>Zones: {proceduralSteps[currentPreviewStep]?.zones?.length || 0}</span>
+                  <span>Prefabs: {proceduralSteps[currentPreviewStep]?.prefabs?.length || 0}</span>
+                </div>
+              </>
+            )}
+            <div className="preview-template-select">
+              <Label>Preview Template</Label>
+              <div className="template-buttons">
+                {["adventure", "peaceful", "challenge", "exploration", "dungeon_crawler"].map((t) => (
+                  <Button key={t} variant="outline" size="sm" onClick={() => generateProceduralPreview(t)}>
+                    {t.replace("_", " ")}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* P3: Collab Chat (when enabled) */}
+      {collabEnabled && wsConnected && (
+        <div className="collab-chat-panel">
+          <div className="collab-chat-header">
+            <MessageSquare size={14} />
+            <span>Team Chat</span>
+            <Badge variant="secondary">{collabUsers.length}</Badge>
+          </div>
+          <ScrollArea className="collab-chat-messages">
+            {collabChat.map((msg, i) => (
+              <div key={i} className="chat-msg">
+                <span className="chat-user">{msg.user.slice(0, 8)}:</span>
+                <span>{msg.message}</span>
+              </div>
+            ))}
+          </ScrollArea>
+          <Input 
+            placeholder="Type a message..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.value) {
+                sendWsMessage("chat", { message: e.target.value });
+                setCollabChat(prev => [...prev, { user: userId, message: e.target.value }]);
+                e.target.value = "";
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -1603,6 +2162,66 @@ function Preview3D({ data }) {
       </div>
     </div>
   );
+}
+
+// P3: Procedural Preview Canvas
+function ProceduralPreviewCanvas({ step }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !step) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    const size = 32;
+    const cellSize = 12;
+    canvas.width = size * cellSize;
+    canvas.height = size * cellSize;
+    
+    // Clear
+    ctx.fillStyle = '#1A1D2A';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid
+    ctx.strokeStyle = '#2D3748';
+    for (let i = 0; i <= size; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * cellSize, 0);
+      ctx.lineTo(i * cellSize, size * cellSize);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i * cellSize);
+      ctx.lineTo(size * cellSize, i * cellSize);
+      ctx.stroke();
+    }
+    
+    // Draw zones
+    const zoneColors = {
+      emerald_grove: '#10B981',
+      borea: '#06B6D4',
+      desert: '#F59E0B',
+      arctic: '#E2E8F0',
+      corrupted: '#8B5CF6'
+    };
+    
+    (step.zones || []).forEach(z => {
+      ctx.fillStyle = zoneColors[z.type] || '#6B7280';
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(z.x * cellSize, z.y * cellSize, cellSize, cellSize);
+      ctx.globalAlpha = 1;
+    });
+    
+    // Draw prefabs
+    (step.prefabs || []).forEach(p => {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(p.x * cellSize + cellSize/2, p.y * cellSize + cellSize/2, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+  }, [step]);
+
+  return <canvas ref={canvasRef} className="procedural-canvas" />;
 }
 
 export default App;

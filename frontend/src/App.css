@@ -974,6 +974,317 @@ body {
   animation: spin 1s linear infinite;
 }
 
+/* ==================== P3: Gallery Styles ==================== */
+
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gallery-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+}
+
+.sort-select {
+  width: 150px;
+}
+
+.gallery-grid-container {
+  max-height: 400px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.gallery-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+}
+
+.gallery-card-title {
+  font-size: 1rem;
+}
+
+.gallery-description {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.gallery-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.gallery-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gallery-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.gallery-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.gallery-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gallery-loading,
+.gallery-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ==================== P3: Analytics Styles ==================== */
+
+.analytics-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.analytics-section h4 {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--text-secondary);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tag-cloud {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.analytics-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+/* ==================== P3: Procedural Preview Styles ==================== */
+
+.procedural-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.preview-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.preview-progress span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.preview-step-info {
+  text-align: center;
+}
+
+.preview-step-info h4 {
+  font-family: var(--font-heading);
+  margin: 0;
+}
+
+.preview-step-info p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+}
+
+.procedural-canvas {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+
+.preview-stats {
+  display: flex;
+  gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.preview-template-select {
+  width: 100%;
+  border-top: 1px solid var(--border-default);
+  padding-top: 16px;
+}
+
+.template-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==================== P3: Collab Chat Styles ==================== */
+
+.collab-chat-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 280px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.collab-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-default);
+  font-weight: 500;
+}
+
+.collab-chat-messages {
+  height: 200px;
+  padding: 8px;
+}
+
+.chat-msg {
+  font-size: 0.8rem;
+  padding: 4px 0;
+}
+
+.chat-user {
+  color: var(--brand-ai);
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.collab-chat-panel input {
+  border: none;
+  border-top: 1px solid var(--border-default);
+  border-radius: 0;
+}
+
+/* WebSocket indicator */
+.ws-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: var(--brand-primary);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Publish Button */
+.publish-btn {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Form row for side-by-side */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .sidebar-right {
@@ -983,6 +1294,14 @@ body {
   
   .terrain-controls {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .gallery-grid {
+    grid-template-columns: 1fr;
   }
 }
 

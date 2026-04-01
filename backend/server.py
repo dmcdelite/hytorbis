@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime, timezone
 import random
 import json
+import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,6 +26,67 @@ app = FastAPI(title="Hytale World Builder API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# ==================== P3: WEBSOCKET CONNECTION MANAGER ====================
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+        self.user_info: Dict[str, Dict[str, Any]] = {}
+    
+    async def connect(self, websocket: WebSocket, world_id: str, user_id: str):
+        await websocket.accept()
+        if world_id not in self.active_connections:
+            self.active_connections[world_id] = []
+        self.active_connections[world_id].append(websocket)
+        self.user_info[f"{world_id}:{user_id}"] = {
+            "websocket": websocket,
+            "cursor": {"x": 0, "y": 0},
+            "color": f"#{random.randint(0, 0xFFFFFF):06x}",
+            "joined_at": datetime.now(timezone.utc).isoformat()
+        }
+        # Notify others
+        await self.broadcast(world_id, {
+            "type": "user_joined",
+            "user_id": user_id,
+            "users": self.get_users(world_id)
+        }, exclude=websocket)
+    
+    def disconnect(self, websocket: WebSocket, world_id: str, user_id: str):
+        if world_id in self.active_connections:
+            if websocket in self.active_connections[world_id]:
+                self.active_connections[world_id].remove(websocket)
+        key = f"{world_id}:{user_id}"
+        if key in self.user_info:
+            del self.user_info[key]
+    
+    def get_users(self, world_id: str) -> List[Dict]:
+        users = []
+        for key, info in self.user_info.items():
+            if key.startswith(f"{world_id}:"):
+                user_id = key.split(":")[1]
+                users.append({
+                    "user_id": user_id,
+                    "cursor": info["cursor"],
+                    "color": info["color"]
+                })
+        return users
+    
+    async def broadcast(self, world_id: str, message: dict, exclude: WebSocket = None):
+        if world_id in self.active_connections:
+            for connection in self.active_connections[world_id]:
+                if connection != exclude:
+                    try:
+                        await connection.send_json(message)
+                    except:
+                        pass
+    
+    async def update_cursor(self, world_id: str, user_id: str, x: int, y: int):
+        key = f"{world_id}:{user_id}"
+        if key in self.user_info:
+            self.user_info[key]["cursor"] = {"x": x, "y": y}
+
+ws_manager = ConnectionManager()
 
 # ==================== MODELS ====================
 
@@ -130,6 +192,80 @@ class CollabSession(BaseModel):
     user_id: str
     action: str  # join, leave, update
     data: Optional[Dict[str, Any]] = None
+
+# ==================== P3: CUSTOM PREFAB MODEL ====================
+
+class CustomPrefab(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = ""
+    icon: str = "cube"  # lucide icon name
+    color: str = "#6B7280"
+    category: str = "custom"  # custom, building, nature, decoration
+    size: Dict[str, int] = Field(default_factory=lambda: {"width": 1, "height": 1, "depth": 1})
+    properties: Dict[str, Any] = Field(default_factory=dict)
+    creator_id: Optional[str] = None
+    is_public: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    tags: List[str] = []
+
+class CustomPrefabCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    icon: str = "cube"
+    color: str = "#6B7280"
+    category: str = "custom"
+    size: Optional[Dict[str, int]] = None
+    properties: Optional[Dict[str, Any]] = None
+    is_public: bool = False
+    tags: List[str] = []
+
+# ==================== P3: GALLERY MODEL ====================
+
+class GalleryWorld(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    world_id: str
+    name: str
+    description: str
+    thumbnail: Optional[str] = None
+    creator_name: str = "Anonymous"
+    creator_id: Optional[str] = None
+    tags: List[str] = []
+    zone_count: int = 0
+    prefab_count: int = 0
+    map_size: str = "64x64"
+    template_used: Optional[str] = None
+    downloads: int = 0
+    likes: int = 0
+    views: int = 0
+    featured: bool = False
+    published_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class GalleryPublish(BaseModel):
+    world_id: str
+    description: str
+    creator_name: str = "Anonymous"
+    tags: List[str] = []
+
+class GallerySearch(BaseModel):
+    query: Optional[str] = None
+    tags: Optional[List[str]] = None
+    sort_by: str = "recent"  # recent, popular, downloads, likes
+    limit: int = 20
+    offset: int = 0
+
+# ==================== P3: ANALYTICS MODEL ====================
+
+class AnalyticsEvent(BaseModel):
+    event_type: str  # world_created, zone_placed, prefab_placed, export, ai_used, etc.
+    world_id: Optional[str] = None
+    user_id: Optional[str] = None
+    data: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # ==================== WORLD TEMPLATES ====================
 
@@ -1316,6 +1452,445 @@ async def get_3d_preview_data(world_id: str):
             "ambient_light": 0.4
         }
     }
+
+# ==================== P3: CUSTOM PREFABS ====================
+
+@api_router.get("/prefabs/custom")
+async def list_custom_prefabs(include_public: bool = True):
+    """List custom prefab definitions"""
+    query = {}
+    if include_public:
+        query = {"$or": [{"is_public": True}, {"is_public": {"$exists": False}}]}
+    
+    prefabs = await db.custom_prefabs.find(query, {"_id": 0}).to_list(100)
+    return {"prefabs": prefabs}
+
+@api_router.post("/prefabs/custom", response_model=CustomPrefab)
+async def create_custom_prefab(prefab: CustomPrefabCreate):
+    """Create a custom prefab definition"""
+    custom_prefab = CustomPrefab(
+        name=prefab.name,
+        description=prefab.description,
+        icon=prefab.icon,
+        color=prefab.color,
+        category=prefab.category,
+        size=prefab.size or {"width": 1, "height": 1, "depth": 1},
+        properties=prefab.properties or {},
+        is_public=prefab.is_public,
+        tags=prefab.tags
+    )
+    
+    doc = custom_prefab.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.custom_prefabs.insert_one(doc)
+    return custom_prefab
+
+@api_router.get("/prefabs/custom/{prefab_id}")
+async def get_custom_prefab(prefab_id: str):
+    """Get a custom prefab by ID"""
+    prefab = await db.custom_prefabs.find_one({"id": prefab_id}, {"_id": 0})
+    if not prefab:
+        raise HTTPException(status_code=404, detail="Custom prefab not found")
+    return prefab
+
+@api_router.delete("/prefabs/custom/{prefab_id}")
+async def delete_custom_prefab(prefab_id: str):
+    """Delete a custom prefab"""
+    result = await db.custom_prefabs.delete_one({"id": prefab_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Custom prefab not found")
+    return {"message": "Custom prefab deleted", "id": prefab_id}
+
+# ==================== P3: COMMUNITY GALLERY ====================
+
+@api_router.post("/gallery/publish")
+async def publish_to_gallery(request: GalleryPublish):
+    """Publish a world to the community gallery"""
+    world = await db.worlds.find_one({"id": request.world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    
+    # Check if already published
+    existing = await db.gallery.find_one({"world_id": request.world_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="World already published")
+    
+    gallery_entry = GalleryWorld(
+        world_id=request.world_id,
+        name=world.get("name", "Unnamed World"),
+        description=request.description,
+        creator_name=request.creator_name,
+        tags=request.tags,
+        zone_count=len(world.get("zones", [])),
+        prefab_count=len(world.get("prefabs", [])),
+        map_size=f"{world.get('map_width', 64)}x{world.get('map_height', 64)}",
+        template_used=world.get("template")
+    )
+    
+    doc = gallery_entry.model_dump()
+    doc['published_at'] = doc['published_at'].isoformat()
+    
+    await db.gallery.insert_one(doc)
+    
+    # Track analytics
+    await track_analytics("gallery_publish", request.world_id, {"tags": request.tags})
+    
+    return {"message": "Published to gallery", "gallery_id": gallery_entry.id}
+
+@api_router.get("/gallery")
+async def browse_gallery(
+    query: Optional[str] = None,
+    tags: Optional[str] = None,
+    sort_by: str = "recent",
+    limit: int = 20,
+    offset: int = 0
+):
+    """Browse the community gallery"""
+    filter_query = {}
+    
+    if query:
+        filter_query["$or"] = [
+            {"name": {"$regex": query, "$options": "i"}},
+            {"description": {"$regex": query, "$options": "i"}},
+            {"creator_name": {"$regex": query, "$options": "i"}}
+        ]
+    
+    if tags:
+        tag_list = tags.split(",")
+        filter_query["tags"] = {"$in": tag_list}
+    
+    # Sort options
+    sort_options = {
+        "recent": [("published_at", -1)],
+        "popular": [("views", -1)],
+        "downloads": [("downloads", -1)],
+        "likes": [("likes", -1)]
+    }
+    sort = sort_options.get(sort_by, [("published_at", -1)])
+    
+    total = await db.gallery.count_documents(filter_query)
+    entries = await db.gallery.find(filter_query, {"_id": 0}).sort(sort).skip(offset).limit(limit).to_list(limit)
+    
+    return {
+        "total": total,
+        "entries": entries,
+        "limit": limit,
+        "offset": offset
+    }
+
+@api_router.get("/gallery/{gallery_id}")
+async def get_gallery_entry(gallery_id: str):
+    """Get a gallery entry details"""
+    entry = await db.gallery.find_one({"id": gallery_id}, {"_id": 0})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Gallery entry not found")
+    
+    # Increment views
+    await db.gallery.update_one({"id": gallery_id}, {"$inc": {"views": 1}})
+    
+    # Get updated entry with incremented views
+    updated_entry = await db.gallery.find_one({"id": gallery_id}, {"_id": 0})
+    
+    return updated_entry
+
+@api_router.post("/gallery/{gallery_id}/like")
+async def like_gallery_entry(gallery_id: str):
+    """Like a gallery entry"""
+    result = await db.gallery.update_one({"id": gallery_id}, {"$inc": {"likes": 1}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Gallery entry not found")
+    return {"message": "Liked", "gallery_id": gallery_id}
+
+@api_router.post("/gallery/{gallery_id}/download")
+async def download_from_gallery(gallery_id: str):
+    """Download a world from the gallery"""
+    entry = await db.gallery.find_one({"id": gallery_id}, {"_id": 0})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Gallery entry not found")
+    
+    world = await db.worlds.find_one({"id": entry["world_id"]}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World data not found")
+    
+    # Increment downloads
+    await db.gallery.update_one({"id": gallery_id}, {"$inc": {"downloads": 1}})
+    
+    # Track analytics
+    await track_analytics("gallery_download", entry["world_id"], {"gallery_id": gallery_id})
+    
+    return {
+        "world": world,
+        "gallery_info": entry
+    }
+
+@api_router.get("/gallery/featured")
+async def get_featured_worlds():
+    """Get featured worlds from the gallery"""
+    featured = await db.gallery.find({"featured": True}, {"_id": 0}).sort([("likes", -1)]).to_list(10)
+    
+    # Also get top by downloads if not enough featured
+    if len(featured) < 5:
+        top_downloads = await db.gallery.find({}, {"_id": 0}).sort([("downloads", -1)]).limit(5).to_list(5)
+        featured.extend([w for w in top_downloads if w not in featured])
+    
+    return {"featured": featured[:10]}
+
+# ==================== P3: ANALYTICS ====================
+
+async def track_analytics(event_type: str, world_id: str = None, data: dict = None):
+    """Track an analytics event"""
+    event = {
+        "event_type": event_type,
+        "world_id": world_id,
+        "data": data or {},
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    await db.analytics.insert_one(event)
+
+@api_router.post("/analytics/track")
+async def track_event(event: AnalyticsEvent):
+    """Track a custom analytics event"""
+    doc = event.model_dump()
+    doc['timestamp'] = doc['timestamp'].isoformat()
+    await db.analytics.insert_one(doc)
+    return {"message": "Event tracked"}
+
+@api_router.get("/analytics/world/{world_id}")
+async def get_world_analytics(world_id: str):
+    """Get analytics for a specific world"""
+    # Get event counts
+    pipeline = [
+        {"$match": {"world_id": world_id}},
+        {"$group": {"_id": "$event_type", "count": {"$sum": 1}}}
+    ]
+    event_counts = await db.analytics.aggregate(pipeline).to_list(100)
+    
+    # Get recent events
+    recent = await db.analytics.find(
+        {"world_id": world_id}, 
+        {"_id": 0}
+    ).sort([("timestamp", -1)]).limit(50).to_list(50)
+    
+    # Calculate stats
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    
+    return {
+        "world_id": world_id,
+        "event_counts": {e["_id"]: e["count"] for e in event_counts},
+        "recent_events": recent,
+        "world_stats": {
+            "zones": len(world.get("zones", [])) if world else 0,
+            "prefabs": len(world.get("prefabs", [])) if world else 0,
+            "map_size": f"{world.get('map_width', 0)}x{world.get('map_height', 0)}" if world else "0x0"
+        }
+    }
+
+@api_router.get("/analytics/summary")
+async def get_analytics_summary():
+    """Get overall analytics summary"""
+    # Total worlds
+    total_worlds = await db.worlds.count_documents({})
+    
+    # Total gallery entries
+    total_published = await db.gallery.count_documents({})
+    
+    # Total custom prefabs
+    total_prefabs = await db.custom_prefabs.count_documents({})
+    
+    # Event counts by type
+    pipeline = [
+        {"$group": {"_id": "$event_type", "count": {"$sum": 1}}}
+    ]
+    event_counts = await db.analytics.aggregate(pipeline).to_list(100)
+    
+    # Recent activity (last 24h)
+    yesterday = datetime.now(timezone.utc).isoformat()[:10]
+    recent_events = await db.analytics.count_documents({"timestamp": {"$gte": yesterday}})
+    
+    # Popular tags
+    tag_pipeline = [
+        {"$unwind": "$tags"},
+        {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    popular_tags = await db.gallery.aggregate(tag_pipeline).to_list(10)
+    
+    return {
+        "total_worlds": total_worlds,
+        "total_published": total_published,
+        "total_custom_prefabs": total_prefabs,
+        "event_counts": {e["_id"]: e["count"] for e in event_counts},
+        "recent_activity_24h": recent_events,
+        "popular_tags": [{"tag": t["_id"], "count": t["count"]} for t in popular_tags]
+    }
+
+# ==================== P3: PROCEDURAL GENERATION PREVIEW ====================
+
+@api_router.post("/generate/preview")
+async def generate_procedural_preview(
+    template: str = "adventure",
+    map_width: int = 32,
+    map_height: int = 32,
+    steps: int = 5
+):
+    """Generate a step-by-step procedural generation preview"""
+    if template not in WORLD_TEMPLATES:
+        template = "adventure"
+    
+    tmpl = WORLD_TEMPLATES[template]
+    generation_steps = []
+    
+    # Step 1: Initialize terrain
+    terrain = TerrainSettings(**tmpl["terrain"])
+    generation_steps.append({
+        "step": 1,
+        "name": "Terrain Generation",
+        "description": "Creating base terrain heightmap",
+        "terrain": terrain.model_dump(),
+        "zones": [],
+        "prefabs": []
+    })
+    
+    # Step 2-4: Add zones progressively
+    zones = []
+    zone_types = list(tmpl["zone_distribution"].keys())
+    zone_weights = list(tmpl["zone_distribution"].values())
+    
+    zones_per_step = max(1, int(map_width * map_height * 0.15))
+    
+    for step in range(2, min(steps, 5)):
+        for _ in range(zones_per_step):
+            x = random.randint(0, map_width - 1)
+            y = random.randint(0, map_height - 1)
+            zone_type = random.choices(zone_types, weights=zone_weights, k=1)[0]
+            if zone_weights[zone_types.index(zone_type)] > 0:
+                zones.append({
+                    "id": f"zone-{len(zones)}",
+                    "type": zone_type,
+                    "x": x,
+                    "y": y,
+                    "difficulty": random.randint(tmpl["difficulty_range"][0], tmpl["difficulty_range"][1])
+                })
+        
+        generation_steps.append({
+            "step": step,
+            "name": f"Zone Generation (Phase {step - 1})",
+            "description": f"Placing {zone_types[step - 2] if step - 2 < len(zone_types) else 'mixed'} zones",
+            "terrain": terrain.model_dump(),
+            "zones": zones.copy(),
+            "prefabs": []
+        })
+    
+    # Final step: Add prefabs
+    prefabs = []
+    prefab_types = list(tmpl["prefab_weights"].keys())
+    prefab_weights = list(tmpl["prefab_weights"].values())
+    
+    for zone in random.sample(zones, min(len(zones), int(len(zones) * tmpl["prefab_density"] * 10))):
+        prefab_type = random.choices(prefab_types, weights=prefab_weights, k=1)[0]
+        prefabs.append({
+            "id": f"prefab-{len(prefabs)}",
+            "type": prefab_type,
+            "x": zone["x"],
+            "y": zone["y"],
+            "rotation": random.choice([0, 90, 180, 270])
+        })
+    
+    generation_steps.append({
+        "step": steps,
+        "name": "Structure Placement",
+        "description": "Adding dungeons, villages, and other structures",
+        "terrain": terrain.model_dump(),
+        "zones": zones,
+        "prefabs": prefabs
+    })
+    
+    return {
+        "template": template,
+        "dimensions": {"width": map_width, "height": map_height},
+        "total_steps": len(generation_steps),
+        "steps": generation_steps
+    }
+
+# ==================== P3: REAL-TIME WEBSOCKET ====================
+
+@app.websocket("/ws/collab/{world_id}/{user_id}")
+async def websocket_collab(websocket: WebSocket, world_id: str, user_id: str):
+    """Real-time collaboration WebSocket endpoint"""
+    await ws_manager.connect(websocket, world_id, user_id)
+    
+    try:
+        # Send initial state
+        await websocket.send_json({
+            "type": "connected",
+            "user_id": user_id,
+            "world_id": world_id,
+            "users": ws_manager.get_users(world_id)
+        })
+        
+        while True:
+            data = await websocket.receive_json()
+            
+            if data.get("type") == "cursor_move":
+                await ws_manager.update_cursor(world_id, user_id, data.get("x", 0), data.get("y", 0))
+                await ws_manager.broadcast(world_id, {
+                    "type": "cursor_update",
+                    "user_id": user_id,
+                    "x": data.get("x", 0),
+                    "y": data.get("y", 0)
+                }, exclude=websocket)
+            
+            elif data.get("type") == "zone_add":
+                await ws_manager.broadcast(world_id, {
+                    "type": "zone_added",
+                    "user_id": user_id,
+                    "zone": data.get("zone")
+                }, exclude=websocket)
+            
+            elif data.get("type") == "zone_remove":
+                await ws_manager.broadcast(world_id, {
+                    "type": "zone_removed",
+                    "user_id": user_id,
+                    "zone_id": data.get("zone_id")
+                }, exclude=websocket)
+            
+            elif data.get("type") == "prefab_add":
+                await ws_manager.broadcast(world_id, {
+                    "type": "prefab_added",
+                    "user_id": user_id,
+                    "prefab": data.get("prefab")
+                }, exclude=websocket)
+            
+            elif data.get("type") == "prefab_remove":
+                await ws_manager.broadcast(world_id, {
+                    "type": "prefab_removed",
+                    "user_id": user_id,
+                    "prefab_id": data.get("prefab_id")
+                }, exclude=websocket)
+            
+            elif data.get("type") == "terrain_update":
+                await ws_manager.broadcast(world_id, {
+                    "type": "terrain_updated",
+                    "user_id": user_id,
+                    "terrain": data.get("terrain")
+                }, exclude=websocket)
+            
+            elif data.get("type") == "chat":
+                await ws_manager.broadcast(world_id, {
+                    "type": "chat_message",
+                    "user_id": user_id,
+                    "message": data.get("message", "")
+                })
+    
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, world_id, user_id)
+        await ws_manager.broadcast(world_id, {
+            "type": "user_left",
+            "user_id": user_id,
+            "users": ws_manager.get_users(world_id)
+        })
 
 # Include the router in the main app
 app.include_router(api_router)
