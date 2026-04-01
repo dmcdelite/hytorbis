@@ -69,8 +69,8 @@ class WorldConfig(BaseModel):
     terrain: TerrainSettings = Field(default_factory=TerrainSettings)
     zones: List[ZoneConfig] = []
     prefabs: List[PrefabPlacement] = []
-    map_width: int = Field(default=20, ge=5, le=100)
-    map_height: int = Field(default=20, ge=5, le=100)
+    map_width: int = Field(default=64, ge=5, le=512)
+    map_height: int = Field(default=64, ge=5, le=512)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ai_provider: Optional[str] = "openai"
@@ -80,8 +80,8 @@ class WorldCreate(BaseModel):
     name: str
     seed: Optional[str] = None
     description: Optional[str] = ""
-    map_width: int = Field(default=20, ge=5, le=100)
-    map_height: int = Field(default=20, ge=5, le=100)
+    map_width: int = Field(default=64, ge=5, le=512)
+    map_height: int = Field(default=64, ge=5, le=512)
 
 class WorldUpdate(BaseModel):
     name: Optional[str] = None
@@ -89,8 +89,8 @@ class WorldUpdate(BaseModel):
     terrain: Optional[TerrainSettings] = None
     zones: Optional[List[ZoneConfig]] = None
     prefabs: Optional[List[PrefabPlacement]] = None
-    map_width: Optional[int] = None
-    map_height: Optional[int] = None
+    map_width: Optional[int] = Field(default=None, ge=5, le=512)
+    map_height: Optional[int] = Field(default=None, ge=5, le=512)
     ai_provider: Optional[str] = None
 
 class AIMessage(BaseModel):
