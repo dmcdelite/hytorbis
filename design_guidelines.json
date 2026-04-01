@@ -1,0 +1,103 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 5 (Jewel & Luxury / Gaming Adapted)",
+  "rationale": "For a game-specific world builder dashboard, a dark 'command-center' theme with deep obsidian backgrounds and jewel-toned accents (emerald, gold, cyan, arcane purple) provides immersion, reduces eye strain, and mimics the high-end UI found in modern AAA games and modding tools. It leverages the 'Technical' grid aesthetic for precision.",
+  "colors": {
+    "background": {
+      "base": "#0A0B10",
+      "surface": "#12141D",
+      "surface_elevated": "#1A1D2A",
+      "surface_glass": "rgba(18, 20, 29, 0.7)"
+    },
+    "text": {
+      "primary": "#F8FAFC",
+      "secondary": "#94A3B8",
+      "muted": "#475569",
+      "accent": "#10B981"
+    },
+    "brand": {
+      "primary": "#10B981",
+      "primary_hover": "#059669",
+      "secondary": "#6366F1",
+      "accent_ai": "#8B5CF6",
+      "warning": "#F59E0B"
+    },
+    "borders": {
+      "default": "#1E293B",
+      "focus": "#10B981",
+      "glass": "rgba(255, 255, 255, 0.08)"
+    },
+    "zones": {
+      "emerald_grove": "#10B981",
+      "borea": "#06B6D4",
+      "desert": "#F59E0B",
+      "arctic": "#E2E8F0",
+      "corrupted": "#8B5CF6"
+    }
+  },
+  "typography": {
+    "font_families": {
+      "headings": "Exo 2",
+      "body": "IBM Plex Sans",
+      "mono": "JetBrains Mono"
+    },
+    "scales": {
+      "h1": "text-4xl sm:text-5xl font-black tracking-tighter leading-none",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight",
+      "body": "text-sm md:text-base leading-relaxed",
+      "mono_label": "text-xs font-mono uppercase tracking-[0.2em] text-secondary"
+    }
+  },
+  "layout": {
+    "spacing_scale": "Tailwind standard with generous padding on containers (p-6, p-8)",
+    "grid_system": "The 'Control Room' Grid - grid-cols-1 md:grid-cols-12 gap-4 or gap-6 for dense data packing",
+    "surface_styles": {
+      "sidebar": "bg-surface border-r border-borders-default",
+      "cards": "bg-surface border border-borders-default rounded-lg hover:border-brand-primary/50 transition-colors duration-200",
+      "header": "bg-surface_glass backdrop-blur-xl border-b border-borders-glass",
+      "canvas_container": "bg-background rounded-xl border border-borders-default overflow-hidden relative shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-brand-primary text-white font-semibold rounded-md px-6 py-2 hover:bg-brand-primary_hover transition-colors",
+      "secondary": "bg-surface_elevated text-text-primary border border-borders-default hover:bg-white/5 transition-all",
+      "ai_action": "bg-brand-accent_ai/10 text-brand-accent_ai border border-brand-accent_ai/30 hover:bg-brand-accent_ai/20 transition-all shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+    },
+    "inputs": "bg-background border border-borders-default text-text-primary focus:ring-1 focus:ring-brand-primary focus:border-brand-primary rounded-md px-4 py-2",
+    "sliders": "Accent color mapped to zone type (e.g., green for forest density, cyan for snow)",
+    "tabs": "bg-surface_elevated p-1 rounded-lg. Active tab: bg-brand-primary text-white shadow-sm. Inactive tab: text-text-secondary hover:text-text-primary"
+  },
+  "interactions": {
+    "hover": "Subtle border color shifts (border-brand-primary/50) and slight transform (-translate-y-0.5) on interactive cards",
+    "focus": "Clear ring-1 or ring-2 outlines using brand-primary",
+    "animation": "Framer Motion for tab switching, canvas layer fading, and AI chat staggered entrance. Map canvas should have smooth pan/zoom via framer-motion or d3-zoom"
+  },
+  "assets": {
+    "icons": "lucide-react",
+    "images": {
+      "hero_background": {
+        "url": "https://images.pexels.com/photos/9977648/pexels-photo-9977648.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Surreal abstract 3D rendering of a mountain peak. Use as a heavily darkened, low-opacity background for the 'Welcome / Empty State' canvas area."
+      },
+      "ai_avatar": {
+        "url": "https://images.unsplash.com/photo-1641380184601-06e153dec2fc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxnbG93aW5nJTIwcnVuZSUyMG1hZ2ljfGVufDB8fHx8MTc3NTA3NzMyM3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Glowing runes on dark rocks. Crop to a circle to use as the AI Assistant's avatar in the chat panel."
+      }
+    }
+  },
+  "accessibility": {
+    "contrast": "Ensure text-primary against background passes APCA. Use text-muted only for non-critical labels.",
+    "testing": "All interactive elements MUST include data-testid (e.g., data-testid='generate-seed-button', data-testid='biome-painter-tool')"
+  },
+  "instructions_to_main_agent": [
+    "Use standard HTML + Tailwind for structural layouts like the Sidebar and Grid. Use Shadcn components for specific controls (Tabs, Sliders, Select, Buttons).",
+    "Implement the 'Control Room' grid: dense, technical, with clear hierarchy.",
+    "The central piece is the 'Interactive Map Canvas'. Use a large div with a grid pattern background (using CSS radial-gradient or SVG pattern) to simulate a map workspace.",
+    "Incorporate the AI chat as a collapsible side-panel or floating glassmorphism window over the map canvas.",
+    "DO NOT use Inter or Roboto for headings. Use Exo 2 (via Google Fonts).",
+    "Always use the provided image URLs. No placeholders.",
+    "Apply 'data-testid' to all buttons, tabs, and form inputs for testing."
+  ]
+}
