@@ -1,99 +1,101 @@
 # Hytale World Builder - Product Requirements Document
 
 ## Original Problem Statement
-Build a Hytale World Builder web application - a comprehensive tool for creating and generating Hytale game worlds similar to Minecraft world builders.
-
-## Complete Feature List (All Implemented)
-
-### MVP Features
-- [x] World CRUD operations (create, read, update, delete)
-- [x] Seed generation (random and styled)
-- [x] 5 Zone types: Emerald Grove, Borea, Desert, Arctic, Corrupted
-- [x] 6 Prefab types: Dungeon, Village, Ruins, Tower, Cave, Portal
-- [x] Terrain controls (Height, Caves, Rivers, Mountains, Ocean)
-- [x] AI chat with multi-provider support (GPT-5.2, Claude, Gemini)
-- [x] Dark theme professional gaming UI
-
-### P1 Features
-- [x] 512x512 map support with virtualized rendering
-- [x] Undo/Redo (50-state history)
-- [x] Drag-to-paint zones
-- [x] Zone properties (difficulty, biomes with density/variation)
-- [x] Prefab properties (rotation 0-270°, scale 0.5x-2x)
-- [x] Pan & Zoom controls (10%-200%)
-- [x] Biome mixing system per zone
-
-### P2 Features
-- [x] 5 World Templates (Adventure, Peaceful, Challenge, Exploration, Dungeon Crawler)
-- [x] Import JSON/Hytale format configs
-- [x] AI Auto-Generate (natural language world population)
-- [x] 3D Preview (height-mapped terrain visualization)
-- [x] Collaboration session management
-- [x] Export .prefab.json (Hytale prefab format)
-- [x] Export .jar (complete mod package)
-
-### P3 Features (April 1, 2026)
-- [x] **Community Gallery**: Browse, search, like, download shared worlds
-- [x] **Publish to Gallery**: Share worlds with tags and descriptions
-- [x] **Custom Prefabs**: Create and manage custom prefab definitions
-- [x] **Real-time WebSocket Collaboration**: Live cursor sync, zone/prefab sync, team chat
-- [x] **Procedural Generation Preview**: Animated step-by-step generation visualization
-- [x] **Analytics Dashboard**: Platform stats, world stats, popular tags, event tracking
+Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's — using React + FastAPI + MongoDB. Features include AI assistance (GPT, Gemini, Claude), up to 512x512 map grid support, exports in `.prefab.json` and `.jar` formats, and multi-phase feature sets.
 
 ## Architecture
-- **Frontend**: React 19 + Tailwind CSS + Radix UI
-- **Backend**: FastAPI (Python) with async MongoDB
-- **Database**: MongoDB (worlds, gallery, custom_prefabs, analytics collections)
-- **AI**: emergentintegrations library with Emergent LLM Key
-- **Real-time**: WebSocket for collaboration
+- **Frontend**: React 19, Tailwind CSS, Radix UI (Shadcn), Lucide icons
+- **Backend**: FastAPI, Motor (Async MongoDB), WebSockets
+- **Database**: MongoDB
+- **AI**: OpenAI/Anthropic/Gemini via `emergentintegrations` (Emergent LLM Key)
+- **Auth**: Custom JWT with httpOnly cookies, bcrypt password hashing
 
-## Export Formats
-| Format | File | Description |
-|--------|------|-------------|
-| JSON | world.json | Standard JSON export |
-| Hytale | world_hytale.json | Hytale worldgen config |
-| Prefab | world.prefab.json | Prefab definitions for modding |
-| JAR | world_worldgen.jar | Complete mod package with manifest |
+## File Structure
+```
+/app/backend/server.py    — All backend routes, models, websockets (~2500 lines)
+/app/frontend/src/App.js  — All frontend UI, state, dialogs (~2700 lines)
+/app/frontend/src/App.css — All styling (~1550 lines)
+```
 
-## API Endpoints Summary
+## Completed Phases
 
-### Core APIs
-- `GET/POST /api/worlds` - World CRUD
-- `GET/POST /api/seed` - Seed generation
-- `POST /api/worlds/from-template` - Create from template
-- `POST /api/worlds/import` - Import config
-- `GET /api/worlds/{id}/export/{format}` - Export (json, hytale, prefab, jar)
+### MVP (DONE)
+- Basic world builder grid with biome zones
+- MongoDB CRUD for worlds
+- LLM AI integration (GPT-5.2, Claude Sonnet, Gemini Flash) for world design assistance
+- World save/load/delete
 
-### AI APIs
-- `POST /api/ai/chat` - AI chat assistant
-- `POST /api/ai/auto-generate` - AI world population
+### P1: Advanced Map Tools (DONE)
+- 512x512 grid support with virtualized rendering
+- Drag-to-paint functionality
+- Biome mixing and properties panel
+- Undo/Redo history (50 states)
+- Zoom and pan controls
 
-### P3 APIs
-- `GET/POST /api/prefabs/custom` - Custom prefabs CRUD
-- `GET/POST /api/gallery` - Gallery browse/publish
-- `POST /api/gallery/{id}/like` - Like entry
-- `POST /api/gallery/{id}/download` - Download world
-- `GET/POST /api/analytics` - Analytics tracking
-- `POST /api/generate/preview` - Procedural preview
-- `WS /ws/collab/{world_id}/{user_id}` - Real-time collaboration
+### P2: Templates & Exports (DONE)
+- 5 world templates (Adventure, Peaceful, Challenge, Exploration, Dungeon Crawler)
+- Config importing from JSON
+- Export formats: JSON, Hytale (.hytale), Prefab (.prefab.json), JAR (.jar)
+- AI auto-generation for full world population
 
-## Testing Status
-- Backend: 100% (33/33 tests passed)
-- Frontend: 100% (25/25 features working)
-- All MVP, P1, P2, P3 features complete
+### P3: Collaboration & Gallery (DONE)
+- Real-time WebSocket collaboration (multi-user editing)
+- Custom prefab creation/management
+- 3D/height-map terrain preview
+- Procedural generation preview with step-by-step animation
+- Community gallery with publish/download/like
+- Performance analytics dashboard
 
-## Tech Stack
-- React 19, Tailwind CSS, Radix UI, Lucide Icons
-- FastAPI, Motor (async MongoDB), Pydantic
-- WebSocket for real-time collaboration
-- emergentintegrations for LLM (OpenAI, Anthropic, Gemini)
+### P4: Authentication, Profiles & Versioning (DONE - April 1, 2026)
+- User registration/login with JWT httpOnly cookies
+- Brute force protection (5 attempts lockout)
+- Token refresh mechanism
+- User profiles with stats (worlds, published, downloads, likes)
+- Profile editing (name, bio)
+- World version history (create/list/restore snapshots, max 20)
+- World public/private visibility toggle
+- World reviews with star ratings and comments
+- Duplicate review prevention
+- Admin user auto-seeded on startup
 
-## Future Enhancements (P4+)
-- [ ] Real-time cursor visualization on map
-- [ ] World version history
-- [ ] Collaborative undo/redo
-- [ ] Public/private world visibility
-- [ ] User accounts and profiles
-- [ ] World ratings and reviews
-- [ ] Procedural terrain generation algorithms
-- [ ] Mobile responsive design
+## Key API Endpoints
+- `GET /api/worlds` - List worlds
+- `POST /api/worlds` - Create world
+- `GET /api/worlds/{id}` - Get world
+- `PUT /api/worlds/{id}` - Update world
+- `DELETE /api/worlds/{id}` - Delete world
+- `POST /api/chat` - AI chat proxy
+- `POST /api/generate/auto` - AI auto-generate world
+- `GET /api/worlds/export/{format}` - Export world
+- `GET /api/templates` - List templates
+- `POST /api/gallery/publish/{id}` - Publish to gallery
+- `GET /api/gallery` - Browse gallery
+- `WS /api/ws/{world_id}/{user_id}` - WebSocket collaboration
+- `POST /api/auth/register` - Register
+- `POST /api/auth/login` - Login
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me` - Current user
+- `POST /api/auth/refresh` - Refresh token
+- `GET /api/users/{id}/profile` - User profile
+- `PUT /api/users/profile` - Update profile
+- `POST /api/worlds/{id}/versions` - Create version
+- `GET /api/worlds/{id}/versions` - List versions
+- `POST /api/worlds/{id}/versions/{vid}/restore` - Restore version
+- `PUT /api/worlds/{id}/visibility` - Toggle visibility
+- `POST /api/reviews` - Create review
+- `GET /api/reviews/{gallery_id}` - Get reviews
+
+## DB Collections
+- `worlds` - World data (zones, prefabs, terrain, settings)
+- `templates` - World templates
+- `gallery` - Published gallery entries
+- `custom_prefabs` - User-created prefabs
+- `users` - User accounts (email, password_hash, name, role, bio)
+- `login_attempts` - Brute force tracking
+- `world_versions` - Version snapshots
+- `reviews` - Gallery reviews with ratings
+
+## Backlog
+- **P1 (Refactoring)**: Split `App.js` (~2700 lines) and `server.py` (~2500 lines) into modular components/routers
+- **P2**: Enhanced permissions (world ownership, role-based access)
+- **P2**: Social features (follow users, notifications)
