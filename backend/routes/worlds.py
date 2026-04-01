@@ -1,0 +1,421 @@
+from fastapi import APIRouter, HTTPException, Request
+from typing import List, Optional
+from datetime import datetime, timezone
+import json
+import base64
+import io
+import zipfile
+
+from database import db
+from auth_utils import get_current_user, require_auth
+from models import (
+    WorldConfig, WorldCreate, WorldUpdate, WorldFromTemplate, WorldImport,
+    TerrainSettings, ZoneConfig, PrefabPlacement
+)
+from utils import generate_seed, generate_world_from_template
+from templates import WORLD_TEMPLATES
+
+router = APIRouter()
+
+
+# ==================== WORLD CRUD ====================
+
+@router.post("/worlds", response_model=WorldConfig)
+async def create_world(world: WorldCreate, request: Request):
+    seed = world.seed or generate_seed()
+    user = await get_current_user(request)
+
+    world_config = WorldConfig(
+        name=world.name, seed=seed, description=world.description,
+        map_width=world.map_width, map_height=world.map_height,
+        owner_id=user["id"] if user else None
+    )
+
+    doc = world_config.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+
+    await db.worlds.insert_one(doc)
+    return world_config
+
+
+@router.get("/worlds")
+async def list_worlds(request: Request):
+    user = await get_current_user(request)
+    if user:
+        query = {"$or": [{"owner_id": user["id"]}, {"owner_id": None}, {"owner_id": {"$exists": False}}, {"is_public": True}]}
+    else:
+        query = {"$or": [{"owner_id": None}, {"owner_id": {"$exists": False}}, {"is_public": True}]}
+    worlds = await db.worlds.find(query, {"_id": 0}).to_list(100)
+    for world in worlds:
+        if isinstance(world.get('created_at'), str):
+            world['created_at'] = datetime.fromisoformat(world['created_at'])
+        if isinstance(world.get('updated_at'), str):
+            world['updated_at'] = datetime.fromisoformat(world['updated_at'])
+    return worlds
+
+
+@router.get("/worlds/{world_id}", response_model=WorldConfig)
+async def get_world(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if isinstance(world.get('created_at'), str):
+        world['created_at'] = datetime.fromisoformat(world['created_at'])
+    if isinstance(world.get('updated_at'), str):
+        world['updated_at'] = datetime.fromisoformat(world['updated_at'])
+    return world
+
+
+@router.put("/worlds/{world_id}", response_model=WorldConfig)
+async def update_world(world_id: str, update: WorldUpdate, request: Request):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    # Permission check: owner or admin or unowned world
+    user = await get_current_user(request)
+    if world.get("owner_id") and user:
+        if world["owner_id"] != user["id"] and user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized to edit this world")
+
+    update_data = update.model_dump(exclude_unset=True)
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+
+    if 'terrain' in update_data and update_data['terrain']:
+        update_data['terrain'] = update_data['terrain'] if isinstance(update_data['terrain'], dict) else update_data['terrain'].model_dump()
+    if 'zones' in update_data and update_data['zones']:
+        update_data['zones'] = [z if isinstance(z, dict) else z.model_dump() for z in update_data['zones']]
+    if 'prefabs' in update_data and update_data['prefabs']:
+        update_data['prefabs'] = [p if isinstance(p, dict) else p.model_dump() for p in update_data['prefabs']]
+
+    await db.worlds.update_one({"id": world_id}, {"$set": update_data})
+
+    updated_world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if isinstance(updated_world.get('created_at'), str):
+        updated_world['created_at'] = datetime.fromisoformat(updated_world['created_at'])
+    if isinstance(updated_world.get('updated_at'), str):
+        updated_world['updated_at'] = datetime.fromisoformat(updated_world['updated_at'])
+    return updated_world
+
+
+@router.delete("/worlds/{world_id}")
+async def delete_world(world_id: str, request: Request):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    user = await get_current_user(request)
+    if world.get("owner_id") and user:
+        if world["owner_id"] != user["id"] and user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized to delete this world")
+
+    result = await db.worlds.delete_one({"id": world_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="World not found")
+    return {"message": "World deleted", "id": world_id}
+
+
+# ==================== ZONE & PREFAB MANAGEMENT ====================
+
+@router.post("/worlds/{world_id}/zones", response_model=WorldConfig)
+async def add_zone(world_id: str, zone: ZoneConfig):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    zones = world.get('zones', [])
+    zones.append(zone.model_dump())
+    await db.worlds.update_one({"id": world_id}, {"$set": {"zones": zones, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return await get_world(world_id)
+
+
+@router.delete("/worlds/{world_id}/zones/{zone_id}")
+async def remove_zone(world_id: str, zone_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    zones = [z for z in world.get('zones', []) if z.get('id') != zone_id]
+    await db.worlds.update_one({"id": world_id}, {"$set": {"zones": zones, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return {"message": "Zone removed", "zone_id": zone_id}
+
+
+@router.post("/worlds/{world_id}/prefabs", response_model=WorldConfig)
+async def add_prefab(world_id: str, prefab: PrefabPlacement):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    prefabs = world.get('prefabs', [])
+    prefabs.append(prefab.model_dump())
+    await db.worlds.update_one({"id": world_id}, {"$set": {"prefabs": prefabs, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return await get_world(world_id)
+
+
+@router.delete("/worlds/{world_id}/prefabs/{prefab_id}")
+async def remove_prefab(world_id: str, prefab_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    prefabs = [p for p in world.get('prefabs', []) if p.get('id') != prefab_id]
+    await db.worlds.update_one({"id": world_id}, {"$set": {"prefabs": prefabs, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return {"message": "Prefab removed", "prefab_id": prefab_id}
+
+
+# ==================== VISIBILITY ====================
+
+@router.put("/worlds/{world_id}/visibility")
+async def update_world_visibility(world_id: str, is_public: bool, request: Request):
+    user = await require_auth(request)
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if world.get("owner_id") and world["owner_id"] != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    await db.worlds.update_one({"id": world_id}, {"$set": {"is_public": is_public, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return {"message": "Visibility updated", "is_public": is_public}
+
+
+# ==================== TEMPLATES ====================
+
+@router.get("/templates")
+async def get_templates():
+    return {
+        "templates": [
+            {"id": tid, "name": t["name"], "description": t["description"],
+             "terrain_preview": t["terrain"], "difficulty_range": t["difficulty_range"]}
+            for tid, t in WORLD_TEMPLATES.items()
+        ]
+    }
+
+
+@router.post("/worlds/from-template", response_model=WorldConfig)
+async def create_world_from_template(req: WorldFromTemplate, request: Request):
+    if req.template not in WORLD_TEMPLATES:
+        raise HTTPException(status_code=400, detail=f"Unknown template: {req.template}")
+    template = WORLD_TEMPLATES[req.template]
+    seed = generate_seed(req.template)
+    zones, prefabs, terrain = generate_world_from_template(req.template, req.map_width, req.map_height)
+    user = await get_current_user(request)
+
+    world_config = WorldConfig(
+        name=req.name, seed=seed, description=template["description"],
+        terrain=terrain, zones=zones, prefabs=prefabs,
+        map_width=req.map_width, map_height=req.map_height,
+        owner_id=user["id"] if user else None
+    )
+
+    doc = world_config.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    doc['zones'] = [z.model_dump() if hasattr(z, 'model_dump') else z for z in doc['zones']]
+    doc['prefabs'] = [p.model_dump() if hasattr(p, 'model_dump') else p for p in doc['prefabs']]
+    doc['terrain'] = terrain.model_dump() if hasattr(terrain, 'model_dump') else doc['terrain']
+
+    await db.worlds.insert_one(doc)
+    return world_config
+
+
+# ==================== IMPORT ====================
+
+@router.post("/worlds/import", response_model=WorldConfig)
+async def import_world(req: WorldImport, request: Request):
+    config = req.config
+    world_name = req.name or config.get("name") or config.get("worldgen", {}).get("name") or "Imported World"
+    seed = config.get("seed") or config.get("worldgen", {}).get("seed") or generate_seed()
+    user = await get_current_user(request)
+
+    if "worldgen" in config:
+        hytale_config = config["worldgen"]
+        map_width = min(512, max(5, hytale_config.get("size", {}).get("x", 256) // 256))
+        map_height = min(512, max(5, hytale_config.get("size", {}).get("z", 256) // 256))
+        terrain_data = hytale_config.get("terrain", {})
+        terrain = TerrainSettings(
+            height_scale=terrain_data.get("heightScale", 1.0),
+            cave_density=terrain_data.get("caveDensity", 0.5),
+            river_frequency=terrain_data.get("riverFrequency", 0.3),
+            mountain_scale=terrain_data.get("mountainScale", 0.5),
+            ocean_level=terrain_data.get("oceanLevel", 0.3)
+        )
+        zones = [ZoneConfig(type=z.get("type", "emerald_grove"), x=z.get("bounds", {}).get("x", 0) // 256, y=z.get("bounds", {}).get("z", 0) // 256, difficulty=z.get("difficulty", 1)) for z in config.get("zones", [])]
+        prefabs = [PrefabPlacement(type=s.get("type", "dungeon"), x=s.get("position", {}).get("x", 0) // 256, y=s.get("position", {}).get("z", 0) // 256, rotation=s.get("rotation", 0), scale=s.get("scale", 1.0)) for s in config.get("structures", [])]
+    else:
+        map_width = min(512, max(5, config.get("map_width", 64)))
+        map_height = min(512, max(5, config.get("map_height", 64)))
+        terrain_data = config.get("terrain", {})
+        terrain = TerrainSettings(**terrain_data) if terrain_data else TerrainSettings()
+        zones = [ZoneConfig(**z) for z in config.get("zones", [])]
+        prefabs = [PrefabPlacement(**p) for p in config.get("prefabs", [])]
+
+    world_config = WorldConfig(
+        name=world_name, seed=seed, description=config.get("description", "Imported world"),
+        terrain=terrain, zones=zones, prefabs=prefabs,
+        map_width=map_width, map_height=map_height,
+        owner_id=user["id"] if user else None
+    )
+
+    doc = world_config.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    doc['zones'] = [z.model_dump() if hasattr(z, 'model_dump') else z for z in doc['zones']]
+    doc['prefabs'] = [p.model_dump() if hasattr(p, 'model_dump') else p for p in doc['prefabs']]
+    doc['terrain'] = terrain.model_dump() if hasattr(terrain, 'model_dump') else doc['terrain']
+
+    await db.worlds.insert_one(doc)
+    return world_config
+
+
+# ==================== EXPORTS ====================
+
+@router.get("/worlds/{world_id}/export/json")
+async def export_world_json(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if isinstance(world.get('created_at'), datetime):
+        world['created_at'] = world['created_at'].isoformat()
+    if isinstance(world.get('updated_at'), datetime):
+        world['updated_at'] = world['updated_at'].isoformat()
+    return {"format": "json", "version": "1.0", "world": world}
+
+
+@router.get("/worlds/{world_id}/export/hytale")
+async def export_world_hytale(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    hytale_config = {
+        "worldgen": {
+            "seed": world.get('seed', ''), "name": world.get('name', 'Unnamed World'),
+            "size": {"x": world.get('map_width', 20) * 256, "z": world.get('map_height', 20) * 256},
+            "terrain": {
+                "heightScale": world.get('terrain', {}).get('height_scale', 1.0),
+                "caveDensity": world.get('terrain', {}).get('cave_density', 0.5),
+                "riverFrequency": world.get('terrain', {}).get('river_frequency', 0.3),
+                "mountainScale": world.get('terrain', {}).get('mountain_scale', 0.5),
+                "oceanLevel": world.get('terrain', {}).get('ocean_level', 0.3)
+            }
+        },
+        "zones": [{"type": z.get('type'), "bounds": {"x": z.get('x', 0) * 256, "z": z.get('y', 0) * 256, "width": z.get('width', 1) * 256, "height": z.get('height', 1) * 256}, "difficulty": z.get('difficulty', 1), "biomes": z.get('biomes', [])} for z in world.get('zones', [])],
+        "structures": [{"type": p.get('type'), "position": {"x": p.get('x', 0) * 256 + 128, "z": p.get('y', 0) * 256 + 128}, "rotation": p.get('rotation', 0), "scale": p.get('scale', 1.0)} for p in world.get('prefabs', [])],
+        "metadata": {"generator": "Hytale World Builder", "version": "1.0.0", "created": world.get('created_at', ''), "description": world.get('description', '')}
+    }
+    return {"format": "hytale", "version": "1.0", "config": hytale_config}
+
+
+@router.get("/worlds/{world_id}/export/prefab")
+async def export_world_prefab(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    prefab_export = {
+        "formatVersion": 1, "prefabType": "world_prefabs",
+        "metadata": {"name": world.get('name', 'Unnamed World'), "author": "Hytale World Builder", "version": "1.0.0", "seed": world.get('seed', ''), "created": world.get('created_at', ''), "description": world.get('description', '')},
+        "worldSettings": {"dimensions": {"width": world.get('map_width', 64) * 256, "height": 256, "depth": world.get('map_height', 64) * 256}, "terrain": {"heightScale": world.get('terrain', {}).get('height_scale', 1.0), "caveDensity": world.get('terrain', {}).get('cave_density', 0.5), "riverFrequency": world.get('terrain', {}).get('river_frequency', 0.3), "mountainScale": world.get('terrain', {}).get('mountain_scale', 0.5), "oceanLevel": world.get('terrain', {}).get('ocean_level', 0.3)}},
+        "prefabs": [{"id": p.get('id', ''), "type": p.get('type', 'dungeon'), "name": f"{p.get('type', 'structure').replace('_', ' ').title()} at ({p.get('x', 0)}, {p.get('y', 0)})", "position": {"x": p.get('x', 0) * 256 + 128, "y": 64, "z": p.get('y', 0) * 256 + 128}, "rotation": {"y": p.get('rotation', 0)}, "scale": {"x": p.get('scale', 1.0), "y": p.get('scale', 1.0), "z": p.get('scale', 1.0)}, "properties": {"spawnable": True, "destructible": p.get('type') not in ['portal'], "lootTable": f"loot/{p.get('type', 'generic')}"}} for p in world.get('prefabs', [])],
+        "zoneConfigs": [{"id": z.get('id', ''), "zoneType": z.get('type', 'emerald_grove'), "bounds": {"minX": z.get('x', 0) * 256, "minZ": z.get('y', 0) * 256, "maxX": (z.get('x', 0) + z.get('width', 1)) * 256, "maxZ": (z.get('y', 0) + z.get('height', 1)) * 256}, "difficulty": z.get('difficulty', 1), "biomes": [{"type": b.get('type', 'plains'), "weight": b.get('density', 0.5), "variation": b.get('variation', 0.3)} for b in z.get('biomes', [])]} for z in world.get('zones', [])]
+    }
+    return {"format": "prefab.json", "version": "1.0", "filename": f"{world.get('name', 'world').replace(' ', '_').lower()}.prefab.json", "data": prefab_export}
+
+
+@router.get("/worlds/{world_id}/export/jar")
+async def export_world_jar(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    world_name = world.get('name', 'HytaleWorld').replace(' ', '')
+    world_name_lower = world_name.lower()
+    jar_buffer = io.BytesIO()
+    with zipfile.ZipFile(jar_buffer, 'w', zipfile.ZIP_DEFLATED) as jar:
+        jar.writestr("META-INF/MANIFEST.MF", f"Manifest-Version: 1.0\nCreated-By: Hytale World Builder\nMain-Class: com.hytale.worldbuilder.{world_name}\n")
+        jar.writestr("mod.json", json.dumps({"id": world_name_lower, "name": world.get('name'), "version": "1.0.0", "description": world.get('description', ''), "authors": ["Hytale World Builder"], "dependencies": {"hytale": ">=1.0.0"}, "entrypoints": {"main": f"com.hytale.worldbuilder.{world_name}"}, "worldgen": {"seed": world.get('seed', ''), "type": "custom"}}, indent=2))
+        jar.writestr(f"worldgen/{world_name_lower}/world.json", json.dumps({"seed": world.get('seed', ''), "dimensions": {"width": world.get('map_width', 64), "height": world.get('map_height', 64)}, "terrain": world.get('terrain', {}), "zones": world.get('zones', []), "structures": world.get('prefabs', [])}, indent=2))
+        jar.writestr(f"worldgen/{world_name_lower}/terrain.json", json.dumps({"heightScale": world.get('terrain', {}).get('height_scale', 1.0), "caveDensity": world.get('terrain', {}).get('cave_density', 0.5), "riverFrequency": world.get('terrain', {}).get('river_frequency', 0.3), "mountainScale": world.get('terrain', {}).get('mountain_scale', 0.5), "oceanLevel": world.get('terrain', {}).get('ocean_level', 0.3), "biomeBlending": True, "structureSpacing": 256}, indent=2))
+        for i, zone in enumerate(world.get('zones', [])[:100]):
+            jar.writestr(f"worldgen/{world_name_lower}/zones/zone_{i}.json", json.dumps({"type": zone.get('type'), "position": {"x": zone.get('x', 0), "z": zone.get('y', 0)}, "difficulty": zone.get('difficulty', 1), "biomes": zone.get('biomes', [])}, indent=2))
+        for i, prefab in enumerate(world.get('prefabs', [])[:50]):
+            jar.writestr(f"worldgen/{world_name_lower}/structures/structure_{i}.json", json.dumps({"type": prefab.get('type'), "position": {"x": prefab.get('x', 0) * 256 + 128, "y": 64, "z": prefab.get('y', 0) * 256 + 128}, "rotation": prefab.get('rotation', 0), "scale": prefab.get('scale', 1.0)}, indent=2))
+        jar.writestr("README.txt", f"# {world.get('name')}\nGenerated by Hytale World Builder\nSeed: {world.get('seed')}\nSize: {world.get('map_width')}x{world.get('map_height')}\n")
+    jar_buffer.seek(0)
+    jar_bytes = jar_buffer.getvalue()
+    return {"format": "jar", "version": "1.0", "filename": f"{world_name_lower}_worldgen.jar", "size_bytes": len(jar_bytes), "data_base64": base64.b64encode(jar_bytes).decode('utf-8')}
+
+
+# ==================== 3D PREVIEW ====================
+
+@router.get("/worlds/{world_id}/preview-3d")
+async def get_3d_preview_data(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    terrain = world.get("terrain", {})
+    zones = world.get("zones", [])
+    map_width = world.get("map_width", 64)
+    map_height = world.get("map_height", 64)
+    height_map = []
+    zone_map = {(z.get("x"), z.get("y")): z for z in zones}
+    for y in range(map_height):
+        row = []
+        for x in range(map_width):
+            base_height = 0.5
+            zone = zone_map.get((x, y))
+            if zone:
+                zone_heights = {"emerald_grove": 0.5, "borea": 0.7, "desert": 0.3, "arctic": 0.8, "corrupted": 0.4}
+                base_height = zone_heights.get(zone.get("type", "emerald_grove"), 0.5)
+            height = base_height * terrain.get("height_scale", 1.0)
+            height += terrain.get("mountain_scale", 0.5) * 0.2 * (((x + y) % 7) / 7)
+            row.append(round(min(1.0, max(0.0, height)), 2))
+        height_map.append(row)
+    prefabs_3d = [{"type": p.get("type"), "position": {"x": p.get("x"), "y": p.get("y")}, "rotation": p.get("rotation", 0), "scale": p.get("scale", 1.0), "height": height_map[p.get("y", 0)][p.get("x", 0)] if p.get("y", 0) < map_height and p.get("x", 0) < map_width else 0.5} for p in world.get("prefabs", [])]
+    return {"world_id": world_id, "dimensions": {"width": map_width, "height": map_height}, "terrain": terrain, "height_map": height_map, "zones": zones, "prefabs": prefabs_3d, "render_settings": {"water_level": terrain.get("ocean_level", 0.3), "fog_density": 0.02, "ambient_light": 0.4}}
+
+
+# ==================== REFERENCE ====================
+
+@router.get("/reference/zones")
+async def get_zone_types():
+    return {"zones": [
+        {"id": "emerald_grove", "name": "Emerald Grove", "color": "#10B981", "description": "Lush forests and green valleys"},
+        {"id": "borea", "name": "Borea", "color": "#06B6D4", "description": "Icy tundra and frozen peaks"},
+        {"id": "desert", "name": "Desert", "color": "#F59E0B", "description": "Scorching sands and ancient ruins"},
+        {"id": "arctic", "name": "Arctic", "color": "#E2E8F0", "description": "Snow-covered landscapes"},
+        {"id": "corrupted", "name": "Corrupted", "color": "#8B5CF6", "description": "Dark magic-infused lands"}
+    ]}
+
+
+@router.get("/reference/prefabs")
+async def get_prefab_types():
+    return {"prefabs": [
+        {"id": "dungeon", "name": "Dungeon", "icon": "castle", "description": "Underground challenge areas"},
+        {"id": "village", "name": "Village", "icon": "home", "description": "NPC settlements"},
+        {"id": "ruins", "name": "Ruins", "icon": "landmark", "description": "Ancient structures"},
+        {"id": "tower", "name": "Tower", "icon": "building", "description": "Vertical structures"},
+        {"id": "cave_entrance", "name": "Cave Entrance", "icon": "mountain", "description": "Underground access points"},
+        {"id": "portal", "name": "Portal", "icon": "sparkles", "description": "Zone transition points"}
+    ]}
+
+
+@router.get("/reference/biomes")
+async def get_biome_types():
+    return {"biomes": [
+        {"id": "forest", "name": "Forest", "zones": ["emerald_grove"]},
+        {"id": "plains", "name": "Plains", "zones": ["emerald_grove", "desert"]},
+        {"id": "swamp", "name": "Swamp", "zones": ["emerald_grove"]},
+        {"id": "mountains", "name": "Mountains", "zones": ["emerald_grove", "borea", "arctic"]},
+        {"id": "tundra", "name": "Tundra", "zones": ["borea", "arctic"]},
+        {"id": "glacier", "name": "Glacier", "zones": ["arctic"]},
+        {"id": "dunes", "name": "Dunes", "zones": ["desert"]},
+        {"id": "oasis", "name": "Oasis", "zones": ["desert"]},
+        {"id": "void", "name": "Void", "zones": ["corrupted"]},
+        {"id": "wasteland", "name": "Wasteland", "zones": ["corrupted"]}
+    ]}
+
+
+@router.post("/seed/generate")
+async def generate_world_seed(style: Optional[str] = None):
+    from models import SeedGenerateRequest
+    seed = generate_seed(style)
+    return {"seed": seed, "style": style}
+
+
+@router.get("/seed/random")
+async def get_random_seed():
+    return {"seed": generate_seed()}
