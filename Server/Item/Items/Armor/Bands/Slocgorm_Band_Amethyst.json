@@ -1,0 +1,110 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Band_Amethyst.name",
+    "Description": "server.items.Slocgorm_Band_Basic.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "IconProperties": {
+    "Scale": 0.8,
+    "Rotation": [
+      40,
+      45,
+      13
+    ],
+    "Translation": [
+      -3,
+      -10
+    ]
+  },
+  "Model": "Items/Armors/Hands/Band.blockymodel",
+  "Texture": "Items/Armors/Hands/Band_Amethyst.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Amethyst",
+        "Quantity": 5
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Hands"
+        ],
+        "RequiredTierLevel": 2
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Charged": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Signature": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 60,
+  "ItemSoundSetId": "ISS_Default",
+  "Icon": "Icons/ItemsGenerated/Armors/band_amethyst.png",
+  "Light": {
+    "Radius": 1,
+    "Color": "#204"
+  }
+}

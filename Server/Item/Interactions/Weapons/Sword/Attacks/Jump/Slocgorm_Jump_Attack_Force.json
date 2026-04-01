@@ -1,0 +1,53 @@
+{
+  "Type": "ApplyForce",
+  "Effects": {
+    "ItemAnimationId": "SwingDownStrong",
+    "WorldSoundEventId": "SFX_Light_Melee_T2_Swing",
+    "LocalSoundEventId": "SFX_Sword_T2_Swing_Down_Local",
+    "CameraEffect": "Mace_Jump",
+    "Trails": [
+      {
+        "PositionOffset": {
+          "X": 1.3,
+          "Y": 0,
+          "Z": 0
+        },
+        "TargetNodeName": "Handle",
+        "TrailId": "Medium_Sword_Basic",
+        "RotationOffset": {
+          "Roll": 90.0
+        }
+      },
+      {
+        "PositionOffset": {
+          "X": 1.7,
+          "Y": 0,
+          "Z": 0
+        },
+        "TargetNodeName": "Handle",
+        "TrailId": "Sword_Distortion",
+        "RotationOffset": {
+          "Roll": 90.0
+        }
+      }
+    ]
+  },
+  "Force": 5,
+  "Direction": {
+    "X": 0,
+    "Y": 4,
+    "Z": -1
+  },
+  "AdjustVertical": false,
+  "WaitForGround": true,
+  "ChangeVelocityType": "Add",
+  "VelocityConfig": {
+    "AirResistance": 0.97,
+    "AirResistanceMax": 0.96,
+    "GroundResistance": 0.94,
+    "GroundResistanceMax": 0.82,
+    "Threshold": 3.0,
+    "Style": "Exp"
+  },
+  "CollisionNext": "Slocgorm_Sword_Attack_Jump_Selector"
+}

@@ -1,0 +1,16 @@
+{
+  "Type": "Charging",
+  "Next": {
+    "0": "Weapon_Sword_Primary_Chain",
+    "0.2": {
+      "Type": "Replace",
+      "Var": "Thrust_Stamina",
+      "DefaultOk": true,
+      "DefaultValue": {
+        "Interactions": [
+          "Weapon_Sword_Primary_Thrust_StaminaCondition"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "Type": "Simple",
+  "Effects": {
+    "ItemAnimationId": "SpinRightCharging"
+  },
+  "RunTime": 0.25,
+  "Next": {
+    "Type": "Parallel",
+    "$Comment": "Make sure this parallel interaction is needed and can't be optimized away",
+    "Interactions": [
+      {
+        "Interactions": [
+          {
+            "Type": "Replace",
+            "Var": "Vortexstrike_Spin_Force",
+            "DefaultOk": true,
+            "DefaultValue": {
+              "Interactions": [
+                "Weapon_Sword_Signature_Vortexstrike_Spin_Force"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Replace",
+        "Var": "Vortexstrike_Spin_Selector",
+        "DefaultOk": true,
+        "DefaultValue": {
+          "Interactions": [
+            "Weapon_Sword_Signature_Vortexstrike_Spin_Selector"
+          ]
+        },
+        "Interactions": [
+          {
+            "Type": "Replace",
+            "Var": "Finisher",
+            "DefaultOk": true,
+            "DefaultValue": {
+              "Interactions": [
+                "Slocgorm_Sword_Attack_Spin1"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

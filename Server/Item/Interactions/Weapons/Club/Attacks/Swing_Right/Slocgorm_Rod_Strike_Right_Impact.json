@@ -1,0 +1,26 @@
+{
+  "Type": "DamageEntity",
+  "DamageCalculator": {
+    "BaseDamage": {
+      "Physical": 5
+    },
+    "Class": "Light"
+  },
+  "DamageEffects": {
+    "Knockback": {
+      "Force": 200,
+      "RelativeX": 5,
+      "RelativeZ": -5,
+      "VelocityY": 5
+    },
+    "WorldSoundEventId": "SFX_Club_Special_Impact",
+    "LocalSoundEventId": "SFX_Club_Special_Impact",
+    "WorldParticles": [
+      {
+        "SystemId": "Impact_Blade_01",
+        "Scale": 5,
+        "Color": "#a831ff"
+      }
+    ]
+  }
+}

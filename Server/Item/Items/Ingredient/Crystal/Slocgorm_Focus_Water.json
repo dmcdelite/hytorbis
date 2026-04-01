@@ -1,0 +1,72 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Focus_Water.name",
+    "Description": "server.items.Slocgorm_Focus_Water.description"
+  },
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/Resources/Focus.blockymodel",
+  "Texture": "Items/Resources/Focus_Water.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.75,
+    "Translation": [
+      -0.3,
+      0.3
+    ],
+    "Rotation": [
+      34.315,
+      29.815,
+      22.5
+    ]
+  },
+  "Scale": 1.2,
+  "Icon": "Icons/ItemsGenerated/Resources/Water_Focus.png",
+  "Tags": {
+    "Type": [
+      "Ingredient"
+    ],
+    "Family": [
+      "Crystal"
+    ]
+  },
+  "ItemEntity": {
+    "ParticleSystemId": null
+  },
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "DropOnDeath": true,
+  "Light": {
+    "Color": "#00a",
+    "Radius": 1
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Light_Crystal",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Slocgorm_Quartz",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Ingredient_Ice_Essence",
+        "Quantity": 10
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Arcanebench",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 1,
+    "TimeSeconds": 2.4
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Crystal_Amethyst.name",
+    "Description": "server.items.Slocgorm_Crystal_Amethyst.description"
+  },
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/Resources/Crystal.blockymodel",
+  "Texture": "Items/Resources/Amethyst.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.75,
+    "Translation": [
+      -0.3,
+      0.3
+    ],
+    "Rotation": [
+      34.315,
+      29.815,
+      22.5
+    ]
+  },
+  "Scale": 1.2,
+  "Icon": "Icons/ItemsGenerated/Resources/Amethyst.png",
+  "Tags": {
+    "Type": [
+      "Ingredient"
+    ],
+    "Family": [
+      "Crystal"
+    ]
+  },
+  "ItemEntity": {
+    "ParticleSystemId": null
+  },
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "DropOnDeath": true,
+  "Light": {
+    "Color": "#213",
+    "Radius": 1
+  },
+  "Recipe": {
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "Quantity": 2,
+        "ItemId": "Rubble_Volcanic"
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Alchemybench",
+        "Type": "Crafting",
+        "Categories": [
+          "Alchemy_Potions_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 3,
+    "TimeSeconds": 1.6
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Band_Quartz.name",
+    "Description": "server.items.Slocgorm_Band_Quartz.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Uncommon",
+  "ItemLevel": 18,
+  "IconProperties": {
+    "Scale": 0.8,
+    "Rotation": [
+      40,
+      45,
+      13
+    ],
+    "Translation": [
+      -3,
+      -10
+    ]
+  },
+  "Model": "Items/Armors/Hands/Band.blockymodel",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Quartz",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Hands"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 1,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 2,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.01,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.01,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 0,
+  "ItemSoundSetId": "ISS_Default",
+  "Icon": "Icons/ItemsGenerated/Armors/band_quartz.png",
+  "Light": {
+    "Radius": 1,
+    "Color": "#222"
+  },
+  "Texture": "Items/Armors/Hands/Band_Quartz.png"
+}

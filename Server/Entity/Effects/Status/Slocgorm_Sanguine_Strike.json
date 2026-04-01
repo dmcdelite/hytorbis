@@ -1,0 +1,15 @@
+{
+  "Duration": 0.1,
+  "ApplicationEffects": {
+    "Particles": [
+      {
+        "SystemId": "Firework_GS",
+        "Color": "#ff0000",
+        "TargetEntityPart": "Entity",
+        "Scale": 0.25,
+        "TargetNodeName": "Chest"
+      }
+    ]
+  },
+  "OverlapBehavior": "Overwrite"
+}

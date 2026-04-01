@@ -1,0 +1,36 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Wand_Snow",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ingredient_Stick",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Ingredient_Stick",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ore_Silver",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Slocgorm_Quartz"
+    },
+    {
+      "ItemId": "Ingredient_Ice_Essence",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

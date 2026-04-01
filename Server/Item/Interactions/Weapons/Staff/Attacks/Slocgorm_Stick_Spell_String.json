@@ -1,0 +1,27 @@
+{
+  "Type": "Chaining",
+  "ChainingAllowance": 0.7,
+  "ChainId": "Slocgorm_Stick_String",
+  "Next": [
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Swing_Left",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Stick_Spell_Left"
+        ]
+      }
+    },
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Swing_Right",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Stick_Spell_Right"
+        ]
+      }
+    }
+  ]
+}

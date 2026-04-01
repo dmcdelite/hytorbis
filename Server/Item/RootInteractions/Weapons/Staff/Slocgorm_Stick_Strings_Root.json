@@ -1,0 +1,10 @@
+{
+  "RequireNewClick": true,
+  "ClickQueuingTimeout": 0.2,
+  "Cooldown": {
+    "Cooldown": 0.5
+  },
+  "Interactions": [
+    "Slocgorm_Stick_Spell_String"
+  ]
+}

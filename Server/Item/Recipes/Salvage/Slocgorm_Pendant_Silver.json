@@ -1,0 +1,29 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Pendant_Silver",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Silver",
+    "Quantity": 3
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Silver",
+      "Quantity": 3
+    },
+    {
+      "ItemId": "Ingredient_Fibre",
+      "Quantity": 1
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

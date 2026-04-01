@@ -1,0 +1,7 @@
+{
+  "Type": "Condition",
+  "RequiredGameMode": "Adventure",
+  "Crouching": false,
+  "Next": "Slocgorm_Rod_Fire_Primary",
+  "Failed": "Block_Secondary"
+}

@@ -1,0 +1,31 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Band_Earth",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Quartz",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Slocgorm_Quartz",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Slocgorm_Light_Crystal"
+    },
+    {
+      "ItemId": "Ingredient_Life_Essence"
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

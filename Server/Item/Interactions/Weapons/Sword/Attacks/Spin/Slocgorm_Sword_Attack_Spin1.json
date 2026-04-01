@@ -1,0 +1,125 @@
+{
+  "Type": "Selector",
+  "$Comment": "Length of Combat",
+  "Effects": {
+    "ItemAnimationId": "SpinRightCharged",
+    "WorldSoundEventId": "SFX_Sword_T2_Signature_Part_1",
+    "LocalSoundEventId": "SFX_Sword_T2_Signature_Part_1_Local",
+    "CameraEffect": "Sword_Spin"
+  },
+  "RunTime": 0.15,
+  "Selector": {
+    "Id": "Horizontal",
+    "Direction": "ToRight",
+    "TestLineOfSight": true,
+    "ExtendTop": 0.5,
+    "ExtendBottom": 1,
+    "StartDistance": 0.1,
+    "EndDistance": 3,
+    "Length": 360,
+    "RollOffset": 0,
+    "YawStartOffset": -90
+  },
+  "HitEntity": {
+    "Interactions": [
+      {
+        "Type": "Replace",
+        "DefaultOk": true,
+        "DefaultValue": {
+          "Interactions": [
+            "Slocgorm_Sword_Base_Damage"
+          ]
+        },
+        "Var": "Base_Hit_Damage"
+      }
+    ]
+  },
+  "Next": {
+    "Type": "Parallel",
+    "$Comment": "Make sure this parallel interaction is needed and can't be optimized away",
+    "Interactions": [
+      {
+        "Interactions": [
+          {
+            "Type": "Selector",
+            "$Comment": "Length of Combat",
+            "RunTime": 0.75,
+            "Selector": {
+              "Id": "Horizontal",
+              "Direction": "ToRight",
+              "TestLineOfSight": true,
+              "ExtendTop": 0.5,
+              "ExtendBottom": 1,
+              "StartDistance": 0.1,
+              "EndDistance": 3,
+              "Length": 360,
+              "RollOffset": 0,
+              "YawStartOffset": -90
+            },
+            "HitEntity": {
+              "Interactions": [
+                {
+                  "Type": "Replace",
+                  "DefaultOk": true,
+                  "DefaultValue": {
+                    "Interactions": [
+                      "Slocgorm_Sword_Base_Damage"
+                    ]
+                  },
+                  "Var": "Base_Hit_Damage"
+                }
+              ]
+            },
+            "HitBlock": {
+              "Interactions": [
+                {
+                  "Type": "Replace",
+                  "Var": "Spin_Hit_Block",
+                  "DefaultOk": true,
+                  "DefaultValue": {
+                    "Interactions": [
+                      "Block_Break_Adventure"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "Interactions": [
+          {
+            "Type": "Replace",
+            "DefaultOk": true,
+            "DefaultValue": {
+              "Interactions": [
+                "Weapon_Sword_Signature_Vortexstrike_Spin_Effect2"
+              ]
+            },
+            "Var": "Vortexstrike_Spin_Effect2"
+          }
+        ]
+      }
+    ],
+    "Next": {
+      "Type": "Simple",
+      "$Comment": "Pad the interaction length",
+      "RunTime": 0.25
+    }
+  },
+  "HitBlock": {
+    "Interactions": [
+      {
+        "Type": "Replace",
+        "Var": "Spin_Hit_Block",
+        "DefaultOk": true,
+        "DefaultValue": {
+          "Interactions": [
+            "Block_Break_Adventure"
+          ]
+        }
+      }
+    ]
+  }
+}

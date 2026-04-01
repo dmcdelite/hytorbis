@@ -1,0 +1,47 @@
+{
+  "Type": "Chaining",
+  "ChainingAllowance": 0.7,
+  "ChainId": "Slocgorm_Sword_String",
+  "Next": [
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Swing_Left",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Attack_Left"
+        ]
+      }
+    },
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Swing_Right",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Attack_Right"
+        ]
+      }
+    },
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Thrust",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Attack_Thrust"
+        ]
+      }
+    },
+    {
+      "Type": "Replace",
+      "DefaultOk": true,
+      "Var": "Spin_Attack",
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Attack_Chain_Finisher"
+        ]
+      }
+    }
+  ]
+}

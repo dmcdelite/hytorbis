@@ -1,0 +1,14 @@
+{
+  "Interactions": [
+    "Slocgorm_Lantern"
+  ],
+  "Tags": {
+    "Attack": [
+      "Ranged"
+    ]
+  },
+  "RequireNewClick": true,
+  "Cooldown": {
+    "Cooldown": 0.5
+  }
+}

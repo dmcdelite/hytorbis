@@ -1,0 +1,64 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Crystal_Light.name",
+    "Description": "server.items.Slocgorm_Crystal_Light.description"
+  },
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/Resources/Crystal.blockymodel",
+  "Texture": "Items/Resources/Light_Force.png",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.75,
+    "Translation": [
+      -0.3,
+      0.3
+    ],
+    "Rotation": [
+      34.315,
+      29.815,
+      22.5
+    ]
+  },
+  "Scale": 1.2,
+  "Icon": "Icons/ItemsGenerated/Resources/Light Force Shard.png",
+  "Tags": {
+    "Type": [
+      "Ingredient"
+    ],
+    "Family": [
+      "Crystal"
+    ]
+  },
+  "ItemEntity": {
+    "ParticleSystemId": null
+  },
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "DropOnDeath": true,
+  "Light": {
+    "Color": "#442",
+    "Radius": 1
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Amethyst",
+        "Quantity": 2
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Arcanebench",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 2,
+    "TimeSeconds": 1.6
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Slocgorm_Spin_Charge_Sparks3",
+      "StartDelay": 0.2
+    }
+  ],
+  "BoundingRadius": 10
+}

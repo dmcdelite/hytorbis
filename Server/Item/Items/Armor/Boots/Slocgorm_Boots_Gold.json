@@ -1,0 +1,105 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Boots_Gold.name",
+    "Description": "server.items.Slocgorm_Boots_Winged.description"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "Quality": "Uncommon",
+  "ItemLevel": 25,
+  "IconProperties": {
+    "Scale": 0.7,
+    "Rotation": [
+      9,
+      69,
+      3
+    ],
+    "Translation": [
+      -1,
+      -12
+    ]
+  },
+  "Model": "Items/Armors/Legs/Boots.blockymodel",
+  "Texture": "Items/Armors/Legs/Boots_Golden.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Boots",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 7
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Legs"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 1.6
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 8,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 4,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Stamina": [
+        {
+          "Amount": 3,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fall": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Shoes"
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 100,
+  "ItemSoundSetId": "ISS_Items_Leather",
+  "Icon": "Icons/ItemsGenerated/Armors/boots_gold.png",
+  "UsePlayerAnimations": false
+}

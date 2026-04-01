@@ -1,0 +1,15 @@
+{
+  "Interactions": [
+    "Slocgorm_Rod_Spell"
+  ],
+  "Tags": {
+    "Attack": [
+      "Ranged"
+    ]
+  },
+  "RequireNewClick": true,
+  "Cooldown": {
+    "Cooldown": 0.5
+  },
+  "ClickQueuingTimeout": 0.4
+}

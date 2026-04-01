@@ -1,0 +1,108 @@
+{
+  "Type": "Charging",
+  "DisplayProgress": true,
+  "HorizontalSpeedMultiplier": 0.6,
+  "Effects": {
+    "Particles": [
+      {
+        "PositionOffset": {
+          "X": 0.6,
+          "Y": 0,
+          "Z": 0
+        },
+        "RotationOffset": {
+          "Pitch": 0,
+          "Roll": 90,
+          "Yaw": 0
+        },
+        "TargetNodeName": "Handle",
+        "SystemId": "Slocgorm_Spin_Charge2",
+        "Color": "#ffffff"
+      }
+    ],
+    "ItemAnimationId": "SpinRightCharging"
+  },
+  "Next": {
+    "0": {
+      "Type": "Serial",
+      "Interactions": [
+        {
+          "Type": "Replace",
+          "Var": "Spin_StaminaCost2",
+          "DefaultOk": true,
+          "DefaultValue": {
+            "Interactions": [
+              {
+                "Type": "ApplyEffect",
+                "EffectId": "Stamina_Broken_Immune"
+              },
+              {
+                "Type": "ChangeStat",
+                "StatModifiers": {
+                  "Stamina": -4,
+                  "Mana": -4
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Replace",
+          "Var": "Spin_StaminaRegenDelay",
+          "DefaultOk": true,
+          "DefaultValue": {
+            "Interactions": [
+              {
+                "Type": "ChangeStat",
+                "Behaviour": "Set",
+                "StatModifiers": {
+                  "StaminaRegenDelay": -2
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Simple",
+          "RunTime": 0.05,
+          "Next": {
+            "Type": "Serial",
+            "Interactions": [
+              {
+                "Type": "Replace",
+                "Var": "Spin_Attack_Force",
+                "DefaultOk": true,
+                "DefaultValue": {
+                  "Interactions": [
+                    "Weapon_Sword_Signature_Vortexstrike_Spin_Force"
+                  ]
+                }
+              },
+              {
+                "Type": "Replace",
+                "Var": "Spin_Attack2",
+                "DefaultOk": true,
+                "DefaultValue": {
+                  "Interactions": [
+                    "Slocgorm_Sword_Attack_Spin2"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "1.2": {
+      "Type": "Replace",
+      "Var": "Spin_Cost3",
+      "DefaultOk": true,
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Charge_Cost3"
+        ]
+      }
+    }
+  },
+  "AllowIndefiniteHold": false
+}

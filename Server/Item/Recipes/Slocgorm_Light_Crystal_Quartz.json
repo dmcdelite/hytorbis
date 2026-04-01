@@ -1,0 +1,23 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Quartz",
+      "Quantity": 2
+    }
+  ],
+  "OutputQuantity": 3,
+  "TimeSeconds": 1.6,
+  "BenchRequirement": [
+    {
+      "Type": "Crafting",
+      "Id": "Arcanebench",
+      "Categories": [
+        "Arcane_Misc"
+      ]
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Light_Crystal",
+    "Quantity": 3
+  }
+}

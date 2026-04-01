@@ -1,0 +1,21 @@
+{
+  "Group": "Sloc Gorm Collection",
+  "Name": "Sloc Gorm Core - Alpha",
+  "Version": "0.2.0",
+  "Description": "Core asset pack for Tale of the Sunsword and all other Sloc Gorm collection content.",
+  "Authors": [
+    {
+      "Name": "Catcocomics",
+      "Email": "",
+      "Url": ""
+    }
+  ],
+  "Website": "",
+  "ServerVersion": "2026.02.17-255364b8e",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "LoadBefore": {},
+  "DisabledByDefault": false,
+  "IncludesAssetPack": false,
+  "SubPlugins": []
+}

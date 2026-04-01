@@ -1,0 +1,139 @@
+{
+  "Parent": "Slocgorm_Munitions_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Frost_Blade.name"
+  },
+  "Model": "Items/Weapons/Swords/Sunsword.blockymodel",
+  "Texture": "Items/Weapons/Swords/Frostblade.png",
+  "Quality": "Epic",
+  "Icon": "Icons/ItemsGenerated/Weapons/Frost_Blade.png",
+  "ItemLevel": 40,
+  "Recipe": {
+    "TimeSeconds": 4,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Focus_Water",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Silver",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 8
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 3
+      }
+    ]
+  },
+  "InteractionVars": {
+    "Base_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Base_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Ice": 16
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        },
+        {
+          "Type": "ApplyEffect",
+          "Entity": "Target",
+          "EffectId": "Slocgorm_Rod_Freeze"
+        }
+      ]
+    },
+    "Critical_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Critical_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Ice": 32
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        },
+        {
+          "Type": "ApplyEffect",
+          "Entity": "Target",
+          "EffectId": "Slocgorm_Rod_Freeze"
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "DurabilityLossOnHit": 0.21,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      38,
+      111,
+      22.5
+    ],
+    "Translation": [
+      -36,
+      -39
+    ]
+  },
+  "Light": {
+    "Color": "#7cd",
+    "Radius": 1
+  },
+  "Trails": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "PositionOffset": {
+        "X": 1.2
+      },
+      "RotationOffset": {
+        "Roll": 90
+      },
+      "TargetNodeName": "Handle",
+      "TrailId": "Sunsword_Frost"
+    }
+  ],
+  "Particles": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Blade",
+      "SystemId": "Weapon_Frost_Mist"
+    }
+  ],
+  "Animation": "Items/Weapons/Swords/Slocgorm_Sunsword_Pulse.blockyanim"
+}

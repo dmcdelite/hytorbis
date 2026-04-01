@@ -1,0 +1,19 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Slocgorm_Spin_AoE2_Bright"
+    },
+    {
+      "SpawnerId": "Slocgorm_Spin_AoE2_Alpha"
+    },
+    {
+      "SpawnerId": "Slocgorm_Spin_AoE2_Sparks",
+      "FixedRotation": false
+    },
+    {
+      "SpawnerId": "Slocgorm_Spin_AoE2_Bright2"
+    }
+  ],
+  "BoundingRadius": 10,
+  "IsImportant": false
+}

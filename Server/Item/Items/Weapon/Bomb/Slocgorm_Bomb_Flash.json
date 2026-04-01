@@ -1,0 +1,86 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Bomb_Flash.name",
+    "Description": "server.items.Slocgorm_Bomb_Flash.description"
+  },
+  "Categories": [
+    "Items.Weapons"
+  ],
+  "PlayerAnimationsId": "Item",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        "Slocgorm_Throw_Bomb_Flash"
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 0.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Powder_Boom",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Fibre",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Slocgorm_Light_Crystal",
+        "Quantity": 2
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Alchemybench",
+        "Type": "Crafting",
+        "Categories": [
+          "Alchemy_Bombs"
+        ]
+      }
+    ],
+    "OutputQuantity": 2
+  },
+  "IconProperties": {
+    "Scale": 0.87,
+    "Rotation": [
+      0,
+      328,
+      331
+    ],
+    "Translation": [
+      -4,
+      -4
+    ]
+  },
+  "Model": "Items/Weapons/Bombs/Bomb.blockymodel",
+  "Texture": "Items/Weapons/Bombs/Bomb_Flash.png",
+  "Icon": "Icons/ItemsGenerated/Throwables/Bomb_Flash.png",
+  "Particles": [
+    {
+      "SystemId": "Fuse_Bomb",
+      "TargetNodeName": "Fuse_Lit",
+      "TargetEntityPart": "PrimaryItem"
+    }
+  ],
+  "MaxStack": 10,
+  "Utility": {
+    "Compatible": false
+  },
+  "Tags": {
+    "Type": [
+      "Weapon"
+    ],
+    "Family": [
+      "Bomb"
+    ]
+  },
+  "Weapon": {},
+  "Quality": "Uncommon",
+  "SoundEventId": "SFX_Bomb_Fuse"
+}

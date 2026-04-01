@@ -1,0 +1,9 @@
+{
+  "ValueType": "Absolute",
+  "OverlapBehavior": "Overwrite",
+  "Duration": 0.1,
+  "DamageCalculatorCooldown": 0,
+  "StatModifiers": {
+    "Mana": 20
+  }
+}

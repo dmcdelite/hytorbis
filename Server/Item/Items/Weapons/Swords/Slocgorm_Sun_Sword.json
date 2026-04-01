@@ -1,0 +1,130 @@
+{
+  "Parent": "Slocgorm_Munitions_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Sun_Sword.name"
+  },
+  "Model": "Items/Weapons/Swords/Sunsword.blockymodel",
+  "Texture": "Items/Weapons/Swords/Sunsword.png",
+  "Quality": "Legendary",
+  "Icon": "Icons/ItemsGenerated/Weapons/Sun_Sword.png",
+  "ItemLevel": 50,
+  "InteractionVars": {
+    "Base_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Base_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Elemental": 24
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Critical_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Critical_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Elemental": 48
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 10,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 0,
+  "DurabilityLossOnHit": 0,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      38,
+      111,
+      22.5
+    ],
+    "Translation": [
+      -36,
+      -39
+    ]
+  },
+  "Light": {
+    "Radius": 1,
+    "Color": "#feb"
+  },
+  "Trails": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Handle",
+      "TrailId": "Sunsword_Sun",
+      "PositionOffset": {
+        "X": 1.2,
+        "Y": 0
+      },
+      "RotationOffset": {
+        "Roll": 90
+      }
+    }
+  ],
+  "Particles": [
+    {
+      "SystemId": "Sword_Charge3",
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Handle"
+    }
+  ],
+  "Recipe": {
+    "TimeSeconds": 4,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Focus_Heavens",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Leather_Storm",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Mithril",
+        "Quantity": 8
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 3
+      }
+    ]
+  },
+  "Animation": "Items/Weapons/Swords/Slocgorm_Sunsword_Pulse.blockyanim"
+}

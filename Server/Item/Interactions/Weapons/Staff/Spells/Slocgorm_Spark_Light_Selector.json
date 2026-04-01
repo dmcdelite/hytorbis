@@ -1,0 +1,61 @@
+{
+  "Type": "Selector",
+  "$Comment": "Length of Combat",
+  "RunTime": 0.05,
+  "Selector": {
+    "Id": "Stab",
+    "TestLineOfSight": true,
+    "ExtendTop": 0.5,
+    "ExtendLeft": 0.5,
+    "ExtendRight": 0.5,
+    "ExtendBottom": 0.5,
+    "StartDistance": 0.1,
+    "EndDistance": 12
+  },
+  "HitBlock": {
+    "Interactions": [
+      "Block_Break_Adventure"
+    ]
+  },
+  "HitEntity": {
+    "Interactions": [
+      {
+        "Parent": "DamageEntityParent",
+        "DamageCalculator": {
+          "Class": "Light",
+          "BaseDamage": {
+            "Elemental": 4
+          }
+        },
+        "DamageEffects": {
+          "Knockback": {
+            "Type": "Force",
+            "VelocityConfig": {
+              "AirResistance": 0.97,
+              "AirResistanceMax": 0.96,
+              "GroundResistance": 0.94,
+              "GroundResistanceMax": 0.3,
+              "Threshold": 3.0,
+              "Style": "Exp"
+            },
+            "Direction": {
+              "X": 0.0,
+              "Y": 3,
+              "Z": -1
+            },
+            "Force": 2,
+            "VelocityType": "Set"
+          },
+          "WorldParticles": [
+            {
+              "SystemId": "Firework_GS",
+              "Color": "#fffdb4",
+              "Scale": 0.5
+            }
+          ],
+          "WorldSoundEventId": "SFX_Fireball_Death"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "Type": "Simple",
+  "RunTime": 0.117,
+  "Effects": {
+    "ItemAnimationId": "SwingRight",
+    "WorldSoundEventId": "SFX_Light_Melee_T2_Swing"
+  },
+  "Next": {
+    "Type": "Replace",
+    "Var": "Spell_Attack",
+    "DefaultOk": true,
+    "DefaultValue": {
+      "Interactions": [
+        "Slocgorm_Rod_Spark_Primary"
+      ]
+    }
+  }
+}

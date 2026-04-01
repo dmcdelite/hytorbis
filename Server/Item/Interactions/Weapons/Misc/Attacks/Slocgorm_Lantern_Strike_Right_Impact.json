@@ -1,0 +1,31 @@
+{
+  "Type": "DamageEntity",
+  "DamageCalculator": {
+    "BaseDamage": {
+      "Fire": 5
+    },
+    "Class": "Light"
+  },
+  "DamageEffects": {
+    "Knockback": {
+      "Force": 2,
+      "RelativeX": 5,
+      "RelativeZ": -5,
+      "VelocityY": 5
+    },
+    "WorldSoundEventId": "SFX_Torch_Impact",
+    "LocalSoundEventId": "SFX_Torch_Impact",
+    "WorldParticles": [
+      {
+        "SystemId": "Firework_GS",
+        "Scale": 1,
+        "Color": "#ff7d31"
+      }
+    ]
+  },
+  "Next": {
+    "Type": "ApplyEffect",
+    "Entity": "Target",
+    "EffectId": "Slocgorm_Rod_Burn"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "Rubble"
+    },
+    {
+      "ItemId": "Ingredient_Life_Essence"
+    }
+  ],
+  "OutputQuantity": 1,
+  "BenchRequirement": [
+    {
+      "Id": "Fieldcraft",
+      "Type": "Crafting",
+      "Categories": [
+        "Tools"
+      ]
+    },
+    {
+      "Id": "Workbench",
+      "Type": "Crafting",
+      "Categories": [
+        "Workbench_Survival"
+      ]
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Quartz",
+    "Quantity": 1
+  }
+}

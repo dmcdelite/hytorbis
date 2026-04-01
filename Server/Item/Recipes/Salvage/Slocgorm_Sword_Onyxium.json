@@ -1,0 +1,32 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Sword_Onyxium",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Onyxium",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Onyxium",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ore_Silver",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ingredient_Hide_Storm"
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

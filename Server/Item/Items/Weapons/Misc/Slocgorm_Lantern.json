@@ -1,0 +1,157 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Lantern.name",
+    "Description": "server.items.Slocgorm_Lantern.description"
+  },
+  "Categories": [
+    "Items.Weapons"
+  ],
+  "Quality": "Common",
+  "ItemLevel": 10,
+  "PlayerAnimationsId": "Torch",
+  "Utility": {
+    "Compatible": false,
+    "Usable": true
+  },
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      8,
+      56,
+      9
+    ],
+    "Translation": [
+      -1,
+      -25
+    ]
+  },
+  "MaxDurability": 40,
+  "DurabilityLossOnHit": 0.56,
+  "Tags": {
+    "Type": [
+      "Weapon"
+    ],
+    "Family": [
+      "Club"
+    ]
+  },
+  "Weapon": {},
+  "ItemSoundSetId": "ISS_Weapons_Blunt_Small",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Quartz",
+        "Quantity": 4
+      },
+      {
+        "Quantity": 2,
+        "ItemId": "Ingredient_Bar_Iron"
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Tree_Sap",
+        "Quantity": 8
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tools"
+        ]
+      }
+    ],
+    "OutputQuantity": 1,
+    "TimeSeconds": 2.4
+  },
+  "InteractionVars": {
+    "Club_Swing_Left_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Lantern_Strike_Left_Effect",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Swing"
+          }
+        }
+      ]
+    },
+    "Club_Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Lantern_Strike_Left_Impact",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Fire": 4
+            },
+            "RandomPercentageModifier": 0.2
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Impact"
+          }
+        }
+      ]
+    },
+    "Club_Swing_Right_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Lantern_Strike_Right_Effect",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Swing"
+          }
+        }
+      ]
+    },
+    "Club_Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Lantern_Strike_Right_Impact",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Fire": 4
+            },
+            "RandomPercentageModifier": 0.2
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Impact"
+          }
+        }
+      ]
+    },
+    "Club_Swing_Down_Charged_Effect": "Club_Swing_Down_Charged_Effect",
+    "Club_Swing_Down_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Club_Swing_Down_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 10
+            },
+            "Type": "Absolute",
+            "RandomPercentageModifier": 0.2
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Impact"
+          }
+        }
+      ]
+    }
+  },
+  "Icon": "Icons/ItemsGenerated/Weapons/Lantern.png",
+  "Model": "Items/Weapons/Misc/Lantern.blockymodel",
+  "Texture": "Items/Weapons/Misc/Lantern.png",
+  "Animation": "Items/Weapons/Misc/Lantern_Flicker.blockyanim",
+  "Light": {
+    "Color": "#fc3",
+    "Radius": 1
+  },
+  "Interactions": {
+    "Primary": "Slocgorm_Root_Lantern",
+    "Secondary": "Slocgorm_Root_Lantern"
+  }
+}

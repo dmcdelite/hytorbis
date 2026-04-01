@@ -1,0 +1,125 @@
+{
+  "Parent": "Template_Weapon_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Sword_Mithril.name",
+    "Description": "server.items.Slocgorm_Sword_Mithril.description"
+  },
+  "Model": "Items/Weapons/Swords/Munitions_Sword.blockymodel",
+  "Texture": "Items/Weapons/Swords/Mithril_Sword.png",
+  "Quality": "Epic",
+  "Icon": "Icons/ItemsGenerated/Weapons/Mithril_Sword.png",
+  "ItemLevel": 50,
+  "Recipe": {
+    "TimeSeconds": 4,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Mithril",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Leather_Storm",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Voidheart"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 3
+      }
+    ]
+  },
+  "InteractionVars": {
+    "Base_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Base_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 20
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Critical_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Critical_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 40
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 10,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 220,
+  "DurabilityLossOnHit": 0.21,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      38,
+      111,
+      22.5
+    ],
+    "Translation": [
+      -28,
+      -31
+    ]
+  },
+  "Interactions": {
+    "Primary": "Slocgorm_Sword_Strings_Root",
+    "Secondary": "Root_Weapon_Sword_Secondary_Guard",
+    "Ability1": "Slocgorm_Sword_Signature_Root"
+  },
+  "Weapon": {
+    "EntityStatsToClear": [
+      "SignatureEnergy"
+    ],
+    "StatModifiers": {
+      "SignatureEnergy": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "Utility": {
+    "Compatible": true
+  }
+}

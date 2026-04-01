@@ -1,0 +1,14 @@
+{
+  "Interactions": [
+    "Slocgorm_Rod_Wind_Primary"
+  ],
+  "Tags": {
+    "Attack": [
+      "Ranged"
+    ]
+  },
+  "RequireNewClick": true,
+  "Cooldown": {
+    "Cooldown": 0.5
+  }
+}

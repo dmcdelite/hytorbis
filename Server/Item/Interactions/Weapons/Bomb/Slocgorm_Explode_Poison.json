@@ -1,0 +1,55 @@
+{
+  "Type": "Parallel",
+  "Interactions": [
+    {
+      "Interactions": [
+        {
+          "Type": "Selector",
+          "Selector": {
+            "Id": "AOECircle",
+            "Range": 9
+          },
+          "HitEntity": {
+            "Interactions": [
+              {
+                "Type": "ApplyEffect",
+                "Entity": "Target",
+                "EffectId": "Poison"
+              }
+            ]
+          },
+          "RunTime": 0.1
+        }
+      ]
+    },
+    {
+      "Interactions": [
+        {
+          "Type": "Explode",
+          "Parent": "Explode_Generic_Entities",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Goblin_Lobber_Bomb_Death",
+            "LocalSoundEventId": "SFX_Goblin_Lobber_Bomb_Death",
+            "Particles": [
+              {
+                "SystemId": "Explosion_Medium",
+                "TargetEntityPart": "Entity"
+              }
+            ]
+          },
+          "Config": {
+            "DamageBlocks": true,
+            "DamageEntities": true,
+            "BlockDamageRadius": 3,
+            "BlockDamageFalloff": 0.1,
+            "EntityDamageRadius": 3,
+            "EntityDamage": 10,
+            "EntityDamageFalloff": 0.8
+          },
+          "RunTime": 0.1
+        }
+      ]
+    }
+  ],
+  "RunTime": 0.1
+}

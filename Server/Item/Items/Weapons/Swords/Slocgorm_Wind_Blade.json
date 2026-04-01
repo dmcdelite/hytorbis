@@ -1,0 +1,131 @@
+{
+  "Parent": "Slocgorm_Munitions_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Wind_Blade.name"
+  },
+  "Model": "Items/Weapons/Swords/Sunsword.blockymodel",
+  "Texture": "Items/Weapons/Swords/Windblade.png",
+  "Quality": "Epic",
+  "ItemLevel": 40,
+  "InteractionVars": {
+    "Base_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Base_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Elemental": 16
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Critical_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Critical_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Elemental": 32
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 0,
+  "DurabilityLossOnHit": 0,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      38,
+      111,
+      22.5
+    ],
+    "Translation": [
+      -36,
+      -39
+    ]
+  },
+  "Light": {
+    "Radius": 1,
+    "Color": "#7c9"
+  },
+  "Trails": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Handle",
+      "TrailId": "Sunsword_Wind",
+      "PositionOffset": {
+        "X": 1.2,
+        "Y": 0
+      },
+      "RotationOffset": {
+        "Roll": 90
+      }
+    }
+  ],
+  "Particles": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Handle",
+      "SystemId": "Sword_Charge3",
+      "Color": "#00ff43"
+    }
+  ],
+  "Icon": "Icons/ItemsGenerated/Weapons/Wind_Blade.png",
+  "Recipe": {
+    "TimeSeconds": 4,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Focus_Earth",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 8
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 3
+      }
+    ]
+  },
+  "Animation": "Items/Weapons/Swords/Slocgorm_Sunsword_Pulse.blockyanim"
+}

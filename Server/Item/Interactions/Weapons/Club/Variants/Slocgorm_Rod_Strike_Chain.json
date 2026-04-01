@@ -1,0 +1,8 @@
+{
+  "Type": "Chaining",
+  "ChainingAllowance": 1.25,
+  "Next": [
+    "Slocgorm_Rod_Strike_Left",
+    "Slocgorm_Rod_Strike_Right"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Band_Mithril",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Mithril",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Mithril",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Void_Essence",
+      "Quantity": 3
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

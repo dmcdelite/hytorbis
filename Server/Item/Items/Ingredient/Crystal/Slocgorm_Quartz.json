@@ -1,0 +1,68 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Crystal_Quartz.name",
+    "Description": "server.items.Slocgorm_Crystal_Quartz.description"
+  },
+  "Categories": [
+    "Items.Ingredients"
+  ],
+  "Model": "Items/Resources/Crystal.blockymodel",
+  "Texture": "Items/Resources/Quartz.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 15,
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.75,
+    "Translation": [
+      -0.3,
+      0.3
+    ],
+    "Rotation": [
+      34.315,
+      29.815,
+      22.5
+    ]
+  },
+  "Scale": 1.2,
+  "Icon": "Icons/ItemsGenerated/Resources/Quartz.png",
+  "Tags": {
+    "Type": [
+      "Ingredient"
+    ],
+    "Family": [
+      "Crystal"
+    ]
+  },
+  "ItemEntity": {
+    "ParticleSystemId": null
+  },
+  "ItemSoundSetId": "ISS_Items_Gems",
+  "DropOnDeath": true,
+  "Light": {
+    "Color": "#222",
+    "Radius": 1
+  },
+  "Recipe": {
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "Quantity": 2,
+        "ItemId": "Rubble_Quartzite"
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Alchemybench",
+        "Type": "Crafting",
+        "Categories": [
+          "Alchemy_Potions_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 3,
+    "TimeSeconds": 1.6
+  }
+}

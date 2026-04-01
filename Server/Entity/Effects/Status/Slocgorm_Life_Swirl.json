@@ -1,0 +1,18 @@
+{
+  "Duration": 0.1,
+  "ApplicationEffects": {
+    "EntityBottomTint": "#00ff2f",
+    "EntityTopTint": "#ff0000",
+    "LocalSoundEventId": "SFX_Potion_Drink_Success",
+    "Particles": [
+      {
+        "SystemId": "Effect_Heal",
+        "Color": "#ff0000",
+        "TargetEntityPart": "Entity"
+      }
+    ]
+  },
+  "StatModifiers": {
+    "Health": 16
+  }
+}

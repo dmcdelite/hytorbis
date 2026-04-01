@@ -1,0 +1,239 @@
+
+# === Tale of the Sunsword ===
+
+items.Slocgorm_Sword_Copper.name = Copper Arming Sword
+items.Slocgorm_Sword_Copper.description = <i>A Sloc Gorm-style cruciform arming sword made from copper.</i> \n\nBase <color is="#FFFFff">8 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Munitions_Sword.name = Munitions_Sword
+items.Slocgorm_Munitions_Sword.description = <i>Standard-issue sword used by knights of Sloc Gorm.</i> \n\nBase <color is="#FFFFff">10 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sword_Thorium.name = Thorium Arming Sword
+items.Slocgorm_Sword_Thorium.description = <i>A Slocgorm-style cruciform arming sword made from thorium.</i> \n\nBase <color is="#FFFFff">12 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sword_Cobalt.name = Cobalt Arming Sword
+items.Slocgorm_Sword_Cobalt.description = <i>A Slocgorm-style cruciform arming sword made from cobalt.</i> \n\nBase <color is="#FFFFff">12 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sword_Adamantite.name = Adamantite Arming Sword
+items.Slocgorm_Sword_Adamantite.description = <i>A Slocgorm-style cruciform arming sword made from adamantite.</i> \n\nBase <color is="#FFFFff">16 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sword_Mithril.name = Mithril Arming Sword
+items.Slocgorm_Sword_Mithril.description = <i>A Slocgorm-style cruciform arming sword made from mithril.</i> \n\nBase <color is="#FFFFff">20 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sword_Onyxium.name = Onyxium Arming Sword
+items.Slocgorm_Sword_Onyxium.description = <i>A Slocgorm-style cruciform arming sword made from onyxium.</i> \n\nBase <color is="#FFFFff">20 Physical</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+
+
+items.Slocgorm_Flame_Blade.name = Flame Blade
+items.Slocgorm_Flame_Blade.description = <i>A coppery sword hilt that blazes with a jet of Fire magic.</i> \n\nBase <color is="#FFFFff">16 Fire</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Frost_Blade.name = Frost Blade
+items.Slocgorm_Frost_Blade.description = <i>A silvery sword hilt that shimmers with a jet of Ice magic.</i> \n\nBase <color is="#FFFFff">16 Ice</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Wind_Blade.name = Wind Blade
+items.Slocgorm_Wind_Blade.description = <i>A ferrous sword hilt that howls with a jet of Wind magic.</i> \n\nBase <color is="#FFFFff">16 Elemental</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Storm_Blade.name = Storm Blade
+items.Slocgorm_Storm_Blade.description = <i>A ferrous sword hilt that crackles with a jet of Lightning magic.</i> \n\nBase <color is="#FFFFff">16 Elemental</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sun_Blade.name = Sun Blade
+items.Slocgorm_Sun_Blade.description = <i>A silvery sword hilt that shines with a jet of Light magic.</i> \n\nBase <color is="#FFFFff">16 Elemental</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Shadow_Blade.name = Shadow Blade
+items.Slocgorm_Shadow_Blade.description = <i>An shadowy sword hilt that glows with a jet of Shadow magic.</i> \n\nBase <color is="#FFFFff">16 Elemental</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+items.Slocgorm_Sun_Sword.name = Sun Sword
+items.Slocgorm_Sun_Sword.description = <i>The legendary <item is="Slocgorm_Sun_Sword"/> of Sloc Gorm. It radiates warm Sun Light and harbors a great, sacred power...</i>Base <color is="#FFFFff">24 Elemental</color> Damage. \nPrimary Attack String: Left, Right, Thrust, T1 Spin. \nJump Attack for x2 Damage. \nCharging has 3 tiers of Spin Attack consuming mana. \nSignature is Tier Spin attack.
+
+items.Slocgorm_Sanguine_Star.name = Sanguine Star
+items.Slocgorm_Sanguine_Star.description = <i>The Hero of the Heart's Keyblade, shorter than most and unusual in its design (as far as Keyblades go), yet familiar to the denizens of Sloc Gorm.</i>
+
+items.Slocgorm_Lantern.name = Lantern
+items.Slocgorm_Lantern.description = <i>A handy flame-carrying device that can channel basic magic abilities.</i> \n\nPrimary & Secondary: \nCasts a <color is="#FFFFff">4 Fire</color> Damage melee burst for <color is="#FFFFff">2 Mana</color> that ignites targets.
+items.Slocgorm_Stick.name = Hardened Stick
+items.Slocgorm_Stick.description = <i>A big stick quickly hardened into a crude combat implement.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">4 Elemental</color> Damage projectile for <color is="#FFFFff">1 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+
+items.Slocgorm_Wand_Ember.name = Ember Wand
+items.Slocgorm_Wand_Ember.description = <i>A gold-trim wand that channels Fire magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Fire</color> Damage projectile that ignites foes for <color is="#FFFFff">4 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Wand_Snow.name = Snow Wand
+items.Slocgorm_Wand_Snow.description = <i>A silver-trim wand that channels Ice magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Ice</color> Damage projectile that freezes foes for <color is="#FFFFff">4 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Wand_Gust.name = Gust Wand
+items.Slocgorm_Wand_Gust.description = <i>A silver-trim wand that channels Wind magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Elemental</color> Damage projectile that launches foes for <color is="#FFFFff">4 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Wand_Spark.name = Spark Wand
+items.Slocgorm_Wand_Spark.description = <i>A steel-trim wand that channels Lightning magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Elemental</color> Damage projectile that shocks foes for <color is="#FFFFff">4 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Wand_Shine.name = Shine Wand
+items.Slocgorm_Wand_Shine.description = <i>A light, gold-trim wand that channels Light magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Elemental</color> Damage projectile for <color is="#FFFFff">3 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Wand_Heal.name = Healing Wand
+items.Slocgorm_Wand_Heal.description = <i>A gold-trim wand that channels Life magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 HP</color> Life projectile for <color is="#FFFFff">4 Mana</color> that heals either the target or the caster. \n\nSecondary: \n5 Damage Physical Melee attack.
+items.Slocgorm_Wand_Shade.name = Shade Wand
+items.Slocgorm_Wand_Shade.description = <i>A dark, steel-trim wand that channels Shadow magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Elemental</color> Damage projectile that weakens foes for <color is="#FFFFff">4 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+
+items.Slocgorm_Rod_Spark.name = Spark Rod
+items.Slocgorm_Rod_Spark.description = <i>A simple wooden rod that channels basic Light magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">8 Elemental</color> Damage projectile for <color is="#FFFFff">2 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Fire.name = Fire Rod
+items.Slocgorm_Rod_Fire.description = <i>A golden rod that channels Fire magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Fire</color> Damage projectile that ignites foes for <color is="#FFFFff">8 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Ice.name = Ice Rod
+items.Slocgorm_Rod_Ice.description = <i>A silver rod that channels Ice magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Ice</color> Damage projectile that freezes foes for <color is="#FFFFff">8 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Wind.name = Wind Rod
+items.Slocgorm_Rod_Wind.description = <i>A wooden rod that channels Wind magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Elemental</color> Damage projectile that launches foes for <color is="#FFFFff">8 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Storm.name = Storm Rod
+items.Slocgorm_Rod_Storm.description = <i>A steel rod that channels Lightning magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Elemental</color> Damage projectile that shocks foes for <color is="#FFFFff">8 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Light.name = Light Rod
+items.Slocgorm_Rod_Light.description = <i>A silver rod that channels Light magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Elemental</color> Damage projectile for <color is="#FFFFff">6 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Life.name = Life Rod
+items.Slocgorm_Rod_Life.description = <i>A wooden rod that channels Life magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 HP</color> Life projectile for <color is="#FFFFff">8 Mana</color> that heals either the target or the caster. \n\nSecondary: \n5 Damage Physical Melee attack.
+items.Slocgorm_Rod_Shadow.name = Shadow Rod
+items.Slocgorm_Rod_Shadow.description = <i>A dark, wooden rod that channels Shadow magic.</i> \n\nPrimary: \nCasts a <color is="#FFFFff">16 Elemental</color> Damage projectile that weakens foes for <color is="#FFFFff">8 Mana</color>. \n\nSecondary: \n<color is="#FFFFff">8 Physical</color> Damage Melee attack.
+items.Slocgorm_Rod_Dusk.name = Dusk Rod
+items.Slocgorm_Rod_Dusk.description = <i>A dark, wooden rod that channels Death magic.</i> \n\nPrimary: \nCasts an Umbral projectile for 10 Mana that may instantly slay its target. \n\nSecondary: \n5 Damage Physical Melee attack.
+
+items.Slocgorm_Pendant_Basic.description = <i>A Slocgorm alternative to traditional armoring. By wearing a Force conduit close over the heart, the wearer's natural energy field is bolstered, granting a regenerative effect.</i>
+items.Slocgorm_Pendant_Copper.name = Copper Pendant
+items.Slocgorm_Pendant_Engraved.name = Engraved Pendant
+items.Slocgorm_Pendant_Amethyst.name = Amethyst Pendant
+items.Slocgorm_Pendant_Adamantite.name = Adamantite Pendant
+
+items.Slocgorm_Pendant_Gold.name = Gold Pendant
+items.Slocgorm_Pendant_Gold.description = <i>A golden pendant with the symbol of the Sun engraved on it. It provides enhanced Vitality compared to its contemporaries.</i>
+items.Slocgorm_Pendant_Thorium.name = Thorium Pendant
+items.Slocgorm_Pendant_Thorium.description = <i>A cobalt pendant with a silvery Sun symbol. Provides greater Force capacity than its contemporaries.</i>
+items.Slocgorm_Pendant_Sun.name = Sun Pendant
+items.Slocgorm_Pendant_Sun.description = <i>A mithril pendant with a gilded Sun symbol. Provides greater Vitality than its contemporaries.</i>
+items.Slocgorm_Pendant_Sanguine.name = Sanguine Pendant
+items.Slocgorm_Pendant_Sanguine.description = <i>The pinnacle of physical might in a single medallion. Rapidly drains your Life Force in exchange for massive Stamina and Signature Energy regeneration.</i>
+
+items.Slocgorm_Pendant_Silver.name = Silver Pendant
+items.Slocgorm_Pendant_Silver.description = <i>A silver pendant with the symbol of the Moon engraved on it. It provides enhanced Force capacity compared to its contemporaries.</i>
+items.Slocgorm_Pendant_Cobalt.name = Cobalt Pendant
+items.Slocgorm_Pendant_Cobalt.description = <i>A cobalt pendant with a silvery Sun symbol. Provides greater Force capacity than its contemporaries.</i>
+items.Slocgorm_Pendant_Moon.name = Moon Pendant
+items.Slocgorm_Pendant_Moon.description = <i>An onyxium pendant with a silvery Sun symbol. Provides greater Force capacity than its contemporaries.</i>
+items.Slocgorm_Pendant_Sylvan.name = Sylvan Pendant
+items.Slocgorm_Pendant_Sylvan.description = <i>An exemplary medallion that provide maximal Force capacity in addition to rapidly regenerating more Light Force.</i>
+
+
+items.Slocgorm_Band_Basic.description = <i>A Slocgorm alternative to traditional armoring. By wearing Force conduits on the wrists, the wearer's natural energy field is bolstered, granting enhanced combat power.</i>
+items.Slocgorm_Band_Copper.name = Copper Bands
+items.Slocgorm_Band_Iron.name = Iron Bands
+items.Slocgorm_Band_Amethyst.name = Amethyst Bands
+items.Slocgorm_Band_Adamantite.name = Adamantite Bands
+
+items.Slocgorm_Band_Gold.name = Gold Bands
+items.Slocgorm_Band_Gold.description = <i>Golden wrist bands specialized for enhanced physical capabilities.</i>
+items.Slocgorm_Band_Thorium.name = Thorium Bands
+items.Slocgorm_Band_Thorium.description = <i>Thorium wrist bands specialized for enhanced physical capabilities.</i>
+items.Slocgorm_Band_Mithril.name = Mithril Bands
+items.Slocgorm_Band_Mithril.description = <i>Mithril wrist bands specialized for enhanced physical capabilities.</i>
+
+items.Slocgorm_Band_Silver.name = Silver Bands
+items.Slocgorm_Band_Silver.description = <i>Silver wrist bands specialized for enhanced magical capabilities.</i>
+items.Slocgorm_Band_Cobalt.name = Cobalt Bands
+items.Slocgorm_Band_Cobalt.description = <i>Cobalt wrist bands specialized for enhanced magical capabilities.</i>
+items.Slocgorm_Band_Onyxium.name = Onyxium Bands
+items.Slocgorm_Band_Onyxium.description = <i>Onyxium wrist bands specialized for enhanced magical capabilities.</i>
+
+items.Slocgorm_Band_Quartz.name = Quartz Bands
+items.Slocgorm_Band_Quartz.description = <i>Crystal wrist bands that offer little power in their current state, but hold greater untapped potential.</i>
+items.Slocgorm_Band_Fire.name = Fire Bands
+items.Slocgorm_Band_Fire.description = <i>Red crystal wrist bands that offer greatly enhanced power with Fire attacks.</i>
+items.Slocgorm_Band_Water.name = Water Bands
+items.Slocgorm_Band_Water.description = <i>Blue crystal wrist bands that offer greatly enhanced power with Ice attacks.</i>
+items.Slocgorm_Band_Earth.name = Earth Bands
+items.Slocgorm_Band_Earth.description = <i>Green crystal wrist bands that offer greatly enhanced power with Natural attacks.</i>
+items.Slocgorm_Band_Heavenly.name = Heavenly Bands
+items.Slocgorm_Band_Heavenly.description = <i>Pale crystal wrist bands that offer greatly enhanced power with Celestial attacks.</i>
+items.Slocgorm_Band_Shadow.name = Shadow Bands
+items.Slocgorm_Band_Shadow.description = <i>Violet crystal wrist bands that offer greatly enhanced power with Illusory attacks.</i>
+items.Slocgorm_Band_Umbral.name = Umbral Bands
+items.Slocgorm_Band_Umbral.description = <i>Dark crystal wrist bands that offer greatly enhanced power with Umbral attacks.</i>
+
+
+items.Slocgorm_Boots_Basic.description = <i>Slocgorm boots reinforced with conduit materials. Offers decent protection and increased general mobility in addition to Force flow.</i>
+items.Slocgorm_Boots_Travel.name = Travel Boots
+items.Slocgorm_Boots_Travel.description = <i>Common traveling boots of Slocgorm make. Made to withstand mountain and mire alike, they may be further reinforced with conduit materials.</i>
+items.Slocgorm_Boots_Copper.name = Copper Boots
+items.Slocgorm_Boots_Iron.name = Iron Boots
+items.Slocgorm_Boots_Amethyst.name = Amethyst Boots
+items.Slocgorm_Boots_Adamantite.name = Adamantite Boots
+
+items.Slocgorm_Boots_Pegasus.name = Pegasus Boots
+items.Slocgorm_Boots_Pegasus.description = <i>Special boots granted fluttering wings and greatly enhanced mobility.</i>
+
+items.Slocgorm_Boots_Winged.description = <i>Reinforced Slocgorm boots adorned with wings, signifying a specialized enchantment within.</i>
+items.Slocgorm_Boots_Silver.name = Silver Boots
+items.Slocgorm_Boots_Gold.name = Gold Boots
+items.Slocgorm_Boots_Thorium.name = Thorium Boots
+items.Slocgorm_Boots_Cobalt.name = Cobalt Boots
+items.Slocgorm_Boots_Mithril.name = Mithril Boots
+items.Slocgorm_Boots_Onyxim.name = Onyxium Boots
+
+
+items.Slocgorm_Crystal_Quartz.name = Quartz
+items.Slocgorm_Crystal_Quartz.description = <i>A cut piece of clear crystal, suitable for housing Force. Be it Saguinated or Gilded, the limitless potential to create miracles is now within your reach.</i> \n\nCan be synthesized into <item is="Slocgorm_Life_Crystal"/>s or <item is="Slocgorm_Light_Crystal"/>s at a <item is="Bench_Arcane"/> \nMore suitable to the synthesis of <item is="Slocgorm_Life_Crystal"/>s.
+items.Slocgorm_Crystal_Amethyst.name = Amethyst
+items.Slocgorm_Crystal_Amethyst.description = <i>A cut piece of violet crystal, suitable for housing Force. Be it Saguinated or Gilded, the limitless potential to create miracles is now within your reach.</i> \n\nCan be synthesized into <item is="Slocgorm_Life_Crystal"/>s or <item is="Slocgorm_Light_Crystal"/>s at a <item is="Bench_Arcane"/> \nMore suitable to the synthesis of <item is="Slocgorm_Light_Crystal"/>s.
+items.Slocgorm_Crystal_Life.name = Life Force Shard
+items.Slocgorm_Crystal_Life.description = <i>A cut piece of crystal housing Life Force energy - a staple of the "living technology" found in Sloc Gorm and its homeworld.
+items.Slocgorm_Crystal_Light.name = Light Force Shard
+items.Slocgorm_Crystal_Light.description = <i>A cut piece of crystal housing Light Force energy - not immediately usable in this condition, but can be worked into a focusing catalyst for a variety of magical devices.</i> \n\nCan be synthesized into a variety of magic foci at a <item is="Bench_Arcane"/>.
+
+items.Slocgorm_Focus_Quartz.name = Quartz Focus
+items.Slocgorm_Focus_Quartz.description = <i>A larger mass of clear crystal given spherical form, it houses limitless potential.</i>
+items.Slocgorm_Focus_Amethyst.name = Amethyst Focus
+items.Slocgorm_Focus_Amethyst.description = <i>A larger mass of amethyst given spherical form, its power is attuned to healing and protection energies.</i>
+items.Slocgorm_Focus_Fire.name = Fire Focus
+items.Slocgorm_Focus_Fire.description = <i>A larger mass of red crystal given spherical form, its power is attuned to fire and vitality energies.</i>
+items.Slocgorm_Focus_Water.name = Water Focus
+items.Slocgorm_Focus_Water.description = <i>A larger mass of blue crystal given spherical form, its power is attuned to water and sagely energies.</i>
+items.Slocgorm_Focus_Earth.name = Earth Focus
+items.Slocgorm_Focus_Earth.description = <i>A larger mass of green crystal given spherical form, its power is attuned to wind and sylvan energies.</i>
+items.Slocgorm_Focus_Heavens.name = Heavenly Focus
+items.Slocgorm_Focus_Heavens.description = <i>A larger mass of golden crystal given spherical form, its power is attuned to light and diaurnal energies.</i>
+items.Slocgorm_Focus_Shadow.name = Shadow Focus
+items.Slocgorm_Focus_Shadow.description = <i>A larger mass of purplee crystal given spherical form, its power is attuned to shadow and pycholigcal energies.</i>
+items.Slocgorm_Focus_Umbral.name = Umbral Focus
+items.Slocgorm_Focus_Umbral.description = <i>A larger mass of ebony crystal given spherical form, its power is attuned to dark and nocturnal energies.</i>
+
+items.Slocgorm_Spring_Water.name = Spring Water
+items.Slocgorm_Spring_Water.description = <i>A bottle containing ordinary water, shimmering with faint traces of stored Life Force energy.</i> \n\nConsume to instantly restore <color is="#FFFFff">20 Life</color>.
+items.Slocgorm_Vial_Red.name = Red Vial
+items.Slocgorm_Vial_Red.description = <i>A bottle containing a fluid shimmering faintly red with Life Force.</i> \n\nConsume to instantly restore <color is="#FFFFff">40 Life</color>.
+items.Slocgorm_Vial_Crimson.name = Crimson Vial
+items.Slocgorm_Vial_Crimson.description = <i>A bottle containing a bold, crimson fluid glowing with Life Force.</i> \n\nConsume to instantly restore <color is="#FFFFff">80 Life</color>.
+items.Slocgorm_Vial_Ruby.name = Ruby Vial
+items.Slocgorm_Vial_Ruby.description = <i>A bottle containing a fluid that shines red with Life Force energy.</i> \n\nConsume to instantly restore <color is="#FFFFff">160 Life</color>.
+items.Slocgorm_Tea_Shine.name = Shine Tea
+items.Slocgorm_Tea_Shine.description = <i>A bottle filled with a bright, shining tea. Holds properties similar to Black Tea, Green Tea, and other energizing teas from the same leaf.</i> \n\nConsume to instantly restore <color is="#FFFFff">10 Mana</color>.
+items.Slocgorm_Vial_Forest.name = Forest Vial
+items.Slocgorm_Vial_Forest.description = <i>A bottle filled with a dark-green herbal mixture.</i> \n\nConsume to instantly restore <color is="#FFFFff">20 Mana</color>.
+items.Slocgorm_Vial_Green.name = Green Vial
+items.Slocgorm_Vial_Green.description = <i>A bottle filled with a green herbal mixture that glows with Light Force.</i> \n\nConsume to instantly restore <color is="#FFFFff">40 Mana</color>.
+items.Slocgorm_Vial_Emerald.name = Emerald Vial
+items.Slocgorm_Vial_Emerald.description = <i>A bottle filled with a radiant, emerald-green herbal mixture brimming with Life Force.</i> \n\nConsume to instantly restore <color is="#FFFFff">80 Mana</color>.
+items.Slocgorm_Tea_Mugwort.name = Mugwort Tea
+items.Slocgorm_Tea_Mugwort.description = <i>A bottle of a dark-colored tea. Mugwort is said to have cleansing properties of both body and spirit.</i> \n\nProvides <color is="#ffffff">Will Power 1</color> for <color is="#ffffff">6:00</color>, \nincreasing Mana and Stamina regeneration rates <color is="#ffffff">Slightly</color>.
+items.Slocgorm_Vial_Blue.name = Blue Vial
+items.Slocgorm_Vial_Blue.description = <i>A bottle of a blue, mystical mixture.</i> \n\nProvides <color is="#ffffff">Will Power 2</color> for <color is="#ffffff">6:00</color>, \nincreasing Mana and Stamina regeneration rates <color is="#ffffff">Moderately</color>.
+items.Slocgorm_Vial_Cobalt.name = Cobalt Vial
+items.Slocgorm_Vial_Cobalt.description = <i>A bottle of a dark-blue, mystical mixture.</i> \n\nProvides <color is="#ffffff">Will Power 3</color> for <color is="#ffffff">6:00</color>, \nincreasing Mana and Stamina regeneration rates <color is="#ffffff">Decently</color>.
+items.Slocgorm_Vial_Sapphire.name = Sapphire Vial
+items.Slocgorm_Vial_Sapphire.description = <i>A bottle of a sapphire-blue mixture shining with mystical light.</i> \n\nProvides <color is="#ffffff">Will Power 4</color> for <color is="#ffffff">6:00</color>, \nincreasing Mana and Stamina regeneration rates <color is="#ffffff">Greatly</color>.
+
+
+items.Slocgorm_Bomb_Weak.name = LE Bomb
+items.Slocgorm_Bomb_Weak.description = <i>Easy to produce low-explosive bomb that can cause some terrain damage.</i>
+items.Slocgorm_Bomb_Strong.name = HE Bomb
+items.Slocgorm_Bomb_Strong.description = <i>High-explosive bomb that can causes serious terrain and entity damage.</i>
+items.Slocgorm_Bomb_Fire.name = Incendiary Bomb
+items.Slocgorm_Bomb_Fire.description = <i>Easy to produce low-explosive bomb that immolates its surroundings.</i>
+items.Slocgorm_Bomb_Inert.name = Training Bomb
+items.Slocgorm_Bomb_Inert.description = <i>Easy to produce dummy bomb that makes a playful snap on impact.</i>
+items.Slocgorm_Bomb_Poison.name = Chemical Bomb
+items.Slocgorm_Bomb_Poison.description = <i>Easy to produce smoke bomb that poisons surrounding entities.</i>
+items.Slocgorm_Bomb_Flash.name = Flash Bomb
+items.Slocgorm_Bomb_Flash.description = <i>Easy to produce flash bomb that stuns surrounding entities.</i>
+items.Slocgorm_Bomb_Shrapnel.name = Fragment Bomb
+items.Slocgorm_Bomb_Shrapnel.description = <i>Easy to produce bomb that can causes severe damage to surrounding entities.</i>
+
+
+# === Joke Weapons ===
+
+items.Slocgorm_Bomb_Pie.name = Factory Pie
+items.Slocgorm_Bomb_Pie.description = Oh no, these aren't home-made, they were made in a factory. A bomb factory. They're bombs.
+
+
+# === Chrono Bunnies ===
+
+items.Slocgorm_Hand_Hours.name = Hand of Hours
+items.Slocgorm_Hand_Hours.description = <i>A strange sword of great size, resembling a minute hand and a cog of clock-work machinery both. Its presence instills the fear of running out of time...</i>
+
+
+
+

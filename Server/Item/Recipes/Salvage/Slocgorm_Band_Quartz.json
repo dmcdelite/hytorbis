@@ -1,0 +1,25 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Band_Quartz",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Quartz",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Slocgorm_Quartz",
+      "Quantity": 1
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

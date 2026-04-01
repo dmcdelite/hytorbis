@@ -1,0 +1,53 @@
+{
+  "Duration": 31,
+  "ApplicationEffects": {
+    "EntityBottomTint": "#000000",
+    "EntityTopTint": "#8600ff",
+    "EntityAnimationId": "Hurt",
+    "Particles": [
+      {
+        "SystemId": "Effect_Death",
+        "Color": "#8600ff"
+      }
+    ]
+  },
+  "DamageResistance": {
+    "Physical": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": -0.2,
+        "Target": "Min"
+      }
+    ],
+    "Projectile": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": -0.2,
+        "Target": "Min"
+      }
+    ],
+    "Fire": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": -0.2,
+        "Target": "Min"
+      }
+    ],
+    "Ice": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": -0.2,
+        "Target": "Min"
+      }
+    ],
+    "Elemental": [
+      {
+        "CalculationType": "Multiplicative",
+        "Amount": -0.2,
+        "Target": "Min"
+      }
+    ]
+  },
+  "OverlapBehavior": "Overwrite",
+  "StatusEffectIcon": "UI/StatusEffects/Poison.png"
+}

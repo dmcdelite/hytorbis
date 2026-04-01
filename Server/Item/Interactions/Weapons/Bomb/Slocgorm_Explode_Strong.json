@@ -1,0 +1,24 @@
+{
+  "Type": "Explode",
+  "Parent": "Explode_Generic_Entities",
+  "RunTime": 0.1,
+  "Effects": {
+    "WorldSoundEventId": "SFX_Goblin_Lobber_Bomb_Death",
+    "LocalSoundEventId": "SFX_Goblin_Lobber_Bomb_Death",
+    "Particles": [
+      {
+        "SystemId": "Explosion_Big",
+        "TargetEntityPart": "Entity"
+      }
+    ]
+  },
+  "Config": {
+    "DamageBlocks": true,
+    "DamageEntities": true,
+    "BlockDamageRadius": 6,
+    "BlockDamageFalloff": 0.45,
+    "EntityDamageRadius": 12,
+    "EntityDamage": 60,
+    "EntityDamageFalloff": 0.6
+  }
+}

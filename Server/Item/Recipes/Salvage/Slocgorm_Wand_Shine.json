@@ -1,0 +1,36 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Wand_Shine",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ingredient_Stick",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Ingredient_Stick",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ore_Gold",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Slocgorm_Quartz"
+    },
+    {
+      "ItemId": "Ingredient_Life_Essence",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

@@ -1,0 +1,118 @@
+{
+  "Parent": "Template_Weapon_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Sword_Copper.name",
+    "Description": "server.items.Slocgorm_Sword_Copper.description"
+  },
+  "Model": "Items/Weapons/Swords/Munitions_Sword.blockymodel",
+  "Texture": "Items/Weapons/Swords/Copper_Sword.png",
+  "Quality": "Common",
+  "Icon": "Icons/ItemsGenerated/Weapons/Copper_Sword.png",
+  "ItemLevel": 10,
+  "Recipe": {
+    "TimeSeconds": 4,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Copper",
+        "Quantity": 6
+      },
+      {
+        "ItemId": "Ingredient_Fibre",
+        "Quantity": 2
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 1
+      }
+    ]
+  },
+  "InteractionVars": {
+    "Base_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Base_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 8
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Critical_Hit_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Slocgorm_Sword_Critical_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 16
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 10,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.21,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      38,
+      111,
+      22.5
+    ],
+    "Translation": [
+      -28,
+      -31
+    ]
+  },
+  "Interactions": {
+    "Primary": "Slocgorm_Sword_Strings_Root",
+    "Secondary": "Root_Weapon_Sword_Secondary_Guard",
+    "Ability1": "Slocgorm_Sword_Signature_Root"
+  },
+  "Weapon": {
+    "EntityStatsToClear": [
+      "SignatureEnergy"
+    ],
+    "StatModifiers": {
+      "SignatureEnergy": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "Utility": {
+    "Compatible": true
+  }
+}

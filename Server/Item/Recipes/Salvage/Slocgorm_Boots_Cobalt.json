@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Boots_Cobalt",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Boots",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Slocgorm_Boots",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ore_Cobalt",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Fabric_Scrap_Shadoweave",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

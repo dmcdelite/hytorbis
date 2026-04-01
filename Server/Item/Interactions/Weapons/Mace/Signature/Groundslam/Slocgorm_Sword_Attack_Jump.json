@@ -1,0 +1,43 @@
+{
+  "Type": "StatsCondition",
+  "Costs": {
+    "Stamina": 0.1
+  },
+  "ValueType": "Absolute",
+  "Next": {
+    "Type": "Serial",
+    "Interactions": [
+      {
+        "Type": "Replace",
+        "Var": "Jump_Attack_Force",
+        "DefaultOk": true,
+        "DefaultValue": {
+          "Interactions": [
+            "Slocgorm_Jump_Attack_Force"
+          ]
+        }
+      },
+      {
+        "Type": "Simple",
+        "RunTime": 0.05
+      },
+      {
+        "Type": "Replace",
+        "Var": "Jump_Attack_Selector",
+        "DefaultOk": true,
+        "DefaultValue": {
+          "Interactions": [
+            "Slocgorm_Sword_Attack_Jump_Selector"
+          ]
+        }
+      },
+      {
+        "Type": "ChangeStat",
+        "StatModifiers": {
+          "SignatureEnergy": -1
+        },
+        "ValueType": "Absolute"
+      }
+    ]
+  }
+}

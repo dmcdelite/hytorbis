@@ -1,0 +1,32 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Rod_Fire",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Gold",
+    "Quantity": 1
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Gold",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Slocgorm_Focus_Fire",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Slocgorm_Focus_Amethyst"
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

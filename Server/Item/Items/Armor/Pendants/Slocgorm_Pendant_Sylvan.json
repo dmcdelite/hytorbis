@@ -1,0 +1,100 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Pendant_Sylvan.name",
+    "Description": "server.items.Slocgorm_Pendant_Sylvan.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Legendary",
+  "ItemLevel": 60,
+  "IconProperties": {
+    "Scale": 0.9,
+    "Rotation": [
+      9,
+      47.3,
+      5.6
+    ],
+    "Translation": [
+      -4.2,
+      -4
+    ]
+  },
+  "Model": "Items/Armors/Chest/Pendant.blockymodel",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Pendant_Moon",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Slocgorm_Light_Crystal",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Mana": [
+        {
+          "Amount": 36,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "Regenerating": {
+      "Mana": [
+        {
+          "Interval": 1,
+          "Amount": 1,
+          "RegenType": "Additive"
+        }
+      ],
+      "Health": [
+        {
+          "Amount": 8,
+          "Interval": 5,
+          "RegenType": "Additive"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Default",
+  "Icon": "Icons/ItemsGenerated/Armors/pendant_sylvan.png",
+  "Texture": "Items/Armors/Chest/Pendant_Sylvan.png"
+}

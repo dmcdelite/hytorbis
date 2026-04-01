@@ -1,0 +1,12 @@
+{
+  "ValueType": "Absolute",
+  "OverlapBehavior": "Overwrite",
+  "Duration": 480,
+  "DamageCalculatorCooldown": 1,
+  "StatModifiers": {
+    "Mana": 4,
+    "Stamina": 2
+  },
+  "RemovalBehavior": "Duration",
+  "Debuff": false
+}

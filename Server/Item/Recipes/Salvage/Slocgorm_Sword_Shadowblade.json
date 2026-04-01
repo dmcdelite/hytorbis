@@ -1,0 +1,35 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Shadow_Blade",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Adamantite",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Adamantite",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Voidheart",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ingredient_Hide_Heavy"
+    },
+    {
+      "ItemId": "Slocgorm_Focus_Shadow"
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

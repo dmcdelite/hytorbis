@@ -1,0 +1,25 @@
+{
+  "Type": "Simple",
+  "$Comment": "Length of Effect",
+  "RunTime": 0.177,
+  "Effects": {
+    "Trails": [
+      {
+        "PositionOffset": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "RotationOffset": {
+          "Pitch": 0,
+          "Roll": 90,
+          "Yaw": 0
+        },
+        "TargetNodeName": "Cage",
+        "TrailId": "Sunsword_Flame",
+        "TargetEntityPart": "SecondaryItem"
+      }
+    ],
+    "WorldSoundEventId": "SFX_Torch_Swing"
+  }
+}

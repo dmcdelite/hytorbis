@@ -1,0 +1,110 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Boots_Adamantite.name",
+    "Description": "server.items.Slocgorm_Boots_Basic.description"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "IconProperties": {
+    "Scale": 0.7,
+    "Rotation": [
+      9,
+      69,
+      3
+    ],
+    "Translation": [
+      -1,
+      -12
+    ]
+  },
+  "Model": "Items/Armors/Legs/Boots.blockymodel",
+  "Texture": "Items/Armors/Legs/Boots_Adamantite.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Boots",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 11
+      },
+      {
+        "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Legs"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 1.6
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 8,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 8,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Stamina": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fall": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Shoes"
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 150,
+  "ItemSoundSetId": "ISS_Items_Leather",
+  "Icon": "Icons/ItemsGenerated/Armors/boots_adamantite.png",
+  "UsePlayerAnimations": false
+}

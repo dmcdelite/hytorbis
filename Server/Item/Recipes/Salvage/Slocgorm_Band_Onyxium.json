@@ -1,0 +1,25 @@
+{
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Band_Onyxium",
+      "Quantity": 1
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Onyxium",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Onyxium",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

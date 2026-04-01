@@ -1,0 +1,133 @@
+{
+  "Model": "Slocgorm_Rod_Hail_Stone",
+  "LaunchForce": 30,
+  "Physics": {
+    "Type": "Standard",
+    "Gravity": 4.4,
+    "TerminalVelocityAir": 42.5,
+    "TerminalVelocityWater": 15,
+    "RotationMode": "VelocityDamped",
+    "Bounciness": 0,
+    "SticksVertically": true
+  },
+  "LaunchWorldSoundEventId": "SFX_Staff_Ice_Shoot",
+  "Interactions": {
+    "ProjectileHit": {
+      "Cooldown": {
+        "Cooldown": 0
+      },
+      "Interactions": [
+        {
+          "Type": "Simple",
+          "RunTime": 0,
+          "Effects": {
+            "WorldSoundEventId": "SFX_Ice_Ball_Death",
+            "WorldParticles": [
+              {
+                "SystemId": "Impact_Ice"
+              },
+              {
+                "SystemId": "IceBall_Explosion"
+              }
+            ],
+            "Particles": [
+              {
+                "SystemId": "Firework_GS",
+                "TargetEntityPart": "Entity",
+                "TargetNodeName": "",
+                "Color": "#77e6ff",
+                "Scale": 0.5
+              }
+            ]
+          }
+        },
+        {
+          "Parent": "DamageEntityParent",
+          "DamageCalculator": {
+            "Class": "Charged",
+            "BaseDamage": {
+              "Ice": 16
+            }
+          },
+          "DamageEffects": {
+            "Knockback": {
+              "Type": "Force",
+              "VelocityConfig": {
+                "AirResistance": 0.97,
+                "AirResistanceMax": 0.96,
+                "GroundResistance": 0.94,
+                "GroundResistanceMax": 0.3,
+                "Threshold": 3.0,
+                "Style": "Exp"
+              },
+              "Direction": {
+                "X": 0.0,
+                "Y": 3,
+                "Z": -1
+              },
+              "Force": 2,
+              "VelocityType": "Set"
+            },
+            "WorldParticles": [
+              {
+                "SystemId": "Impact_Ice"
+              },
+              {
+                "SystemId": "IceBall_Explosion"
+              }
+            ],
+            "WorldSoundEventId": "SFX_Ice_Ball_Death"
+          }
+        },
+        {
+          "Type": "ApplyEffect",
+          "EffectId": "Slocgorm_Rod_Freeze",
+          "Entity": "Target"
+        },
+        {
+          "Type": "RemoveEntity",
+          "Entity": "User"
+        }
+      ]
+    },
+    "ProjectileMiss": {
+      "Cooldown": {
+        "Cooldown": 0
+      },
+      "Interactions": [
+        {
+          "Type": "Simple",
+          "RunTime": 0,
+          "Effects": {
+            "WorldSoundEventId": "SFX_Ice_Ball_Death",
+            "WorldParticles": [
+              {
+                "SystemId": "Impact_Ice"
+              },
+              {
+                "SystemId": "IceBall_Explosion"
+              }
+            ],
+            "Particles": [
+              {
+                "SystemId": "Firework_GS",
+                "TargetEntityPart": "Entity",
+                "Scale": 0.5,
+                "Color": "#77e6ff"
+              }
+            ]
+          }
+        },
+        {
+          "Type": "RemoveEntity",
+          "Entity": "User"
+        }
+      ]
+    }
+  },
+  "SpawnOffset": {
+    "X": 0,
+    "Y": 0,
+    "Z": -2
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "Type": "Condition",
+  "Failed": "Slocgorm_Sword_Attack_Fork_Charge",
+  "Jumping": true,
+  "Next": "Slocgorm_Sword_Attack_Jump"
+}

@@ -1,0 +1,133 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Pendant_Sanguine.name",
+    "Description": "server.items.Slocgorm_Pendant_Sanguine.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Legendary",
+  "ItemLevel": 60,
+  "IconProperties": {
+    "Scale": 0.9,
+    "Rotation": [
+      9,
+      47.3,
+      5.6
+    ],
+    "Translation": [
+      -4.2,
+      -4
+    ]
+  },
+  "Model": "Items/Armors/Chest/Pendant.blockymodel",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Pendant_Sun",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Slocgorm_Life_Crystal",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 36,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 0,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "Amount": 1.5,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Charged": [
+        {
+          "Amount": 1.5,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Signature": [
+        {
+          "Amount": 1.5,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "Regenerating": {
+      "Health": [
+        {
+          "RegenType": "Percentage",
+          "Amount": -0.025,
+          "Interval": 1
+        }
+      ],
+      "Stamina": [
+        {
+          "RegenType": "Percentage",
+          "Amount": 0.5,
+          "Interval": 1
+        }
+      ],
+      "SignatureEnergy": [
+        {
+          "RegenType": "Percentage",
+          "Amount": 0.01,
+          "Interval": 0.1
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Cloth_Silk"
+    ]
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Default",
+  "Icon": "Icons/ItemsGenerated/Armors/pendant_sanguine.png",
+  "Texture": "Items/Armors/Chest/Pendant_Sanguine.png"
+}

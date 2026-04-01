@@ -1,0 +1,78 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Slocgorm_Bomb_Pie.name",
+    "Description": "server.items.Slocgorm_Bomb_Pie.description"
+  },
+  "Categories": [
+    "Items.Weapons"
+  ],
+  "PlayerAnimationsId": "Item",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        "Slocgorm_Throw_Bomb_Pie"
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 0.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Slocgorm_Bomb_Strong",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Food_Pie_Apple",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Alchemybench",
+        "Type": "Crafting",
+        "Categories": [
+          "Alchemy_Bombs"
+        ]
+      }
+    ],
+    "OutputQuantity": 1
+  },
+  "IconProperties": {
+    "Scale": 0.87,
+    "Rotation": [
+      0,
+      328,
+      331
+    ],
+    "Translation": [
+      -4,
+      -4
+    ]
+  },
+  "Model": "Items/Consumables/Food/Pie.blockymodel",
+  "Texture": "Items/Consumables/Food/Pie_Textures/Apple.png",
+  "Icon": "Icons/ItemsGenerated/Food_Pie_Apple.png",
+  "Particles": [
+    {
+      "SystemId": "Fuse_Bomb",
+      "TargetNodeName": "Fuse_Lit",
+      "TargetEntityPart": "PrimaryItem"
+    }
+  ],
+  "MaxStack": 10,
+  "Utility": {
+    "Compatible": false
+  },
+  "Tags": {
+    "Type": [
+      "Weapon"
+    ],
+    "Family": [
+      "Bomb"
+    ]
+  },
+  "Weapon": {},
+  "Quality": "Uncommon",
+  "SoundEventId": "SFX_Bomb_Fuse"
+}

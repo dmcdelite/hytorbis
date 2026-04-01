@@ -1,0 +1,18 @@
+{
+  "Type": "Charging",
+  "DisplayProgress": true,
+  "Next": {
+    "0": "Slocgorm_Sword_Attack_String",
+    "0.2": {
+      "Type": "Replace",
+      "Var": "Spin_Cost1",
+      "DefaultOk": true,
+      "DefaultValue": {
+        "Interactions": [
+          "Slocgorm_Sword_Charge_Cost1"
+        ]
+      }
+    }
+  },
+  "AllowIndefiniteHold": false
+}

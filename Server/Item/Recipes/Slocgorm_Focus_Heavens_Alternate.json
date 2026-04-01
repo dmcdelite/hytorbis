@@ -1,0 +1,31 @@
+{
+  "OutputQuantity": 1,
+  "TimeSeconds": 2.4,
+  "BenchRequirement": [
+    {
+      "Type": "Crafting",
+      "Id": "Arcanebench",
+      "Categories": [
+        "Arcane_Misc"
+      ]
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Slocgorm_Focus_Heavens",
+    "Quantity": 1
+  },
+  "Input": [
+    {
+      "ItemId": "Slocgorm_Light_Crystal",
+      "Quantity": 4
+    },
+    {
+      "ItemId": "Slocgorm_Quartz",
+      "Quantity": 4
+    },
+    {
+      "ItemId": "Ingredient_Life_Essence",
+      "Quantity": 10
+    }
+  ]
+}
