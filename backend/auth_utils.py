@@ -72,6 +72,12 @@ async def require_auth(request: Request) -> dict:
 
 async def require_subscription(request: Request, feature: str = "ai") -> dict:
     user = await require_auth(request)
+
+    # Admins bypass all subscription gates
+    if user.get("role") == "admin":
+        user["subscription_plan"] = "developer"
+        return user
+
     sub = await db.subscriptions.find_one(
         {"user_id": user["id"], "status": "active"}, {"_id": 0}
     )
