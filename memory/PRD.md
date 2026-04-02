@@ -71,9 +71,10 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 2. Subscription Plans — Explorer (Free), Creator ($9/mo), Developer ($29/mo)
 3. AI Feature Gating — Free users blocked from AI chat & auto-generate (403 backend + frontend UI)
 4. Stripe Checkout Integration — Checkout URL generation, status verification, webhook handling
-5. Pricing Modal — 3-tier comparison with feature checkmarks/X, upgrade CTAs
-6. Header Upgrade Button — Visible for free users, plan badge for paid users
-7. AI Panel Gating UI — Shows upgrade message with crown icon instead of chat for free users
+5. PayPal Checkout Integration — Sandbox order creation, capture, subscription activation
+6. 2-Step Pricing Modal — Plan selection → Payment method (Stripe or PayPal)
+7. Header Upgrade Button — Visible for free users, plan badge for paid users
+8. AI Panel Gating UI — Shows upgrade message with crown icon instead of chat for free users
 
 ## Subscription Tiers
 | Feature | Explorer (Free) | Creator ($9/mo) | Developer ($29/mo) |
@@ -90,7 +91,7 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics, subscriptions, payment_transactions
 
 ## Backlog
-- PayPal integration (user has PayPal, requested both Stripe + PayPal)
 - Email notifications on subscription events
-- Further split AppContext.js (~1040 lines) into smaller context providers
+- Further split AppContext.js (~1060 lines) into smaller context providers
 - Code obfuscation for production builds
+- Switch PayPal from sandbox to live environment for production
