@@ -68,3 +68,25 @@ async def require_auth(request: Request) -> dict:
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
+
+
+async def require_subscription(request: Request, feature: str = "ai") -> dict:
+    user = await require_auth(request)
+    sub = await db.subscriptions.find_one(
+        {"user_id": user["id"], "status": "active"}, {"_id": 0}
+    )
+    plan_id = sub.get("plan_id", "free") if sub else "free"
+    user["subscription_plan"] = plan_id
+
+    PLAN_FEATURES = {
+        "free": {"ai": False, "collab": False, "analytics": False, "version_history": False},
+        "creator": {"ai": True, "collab": True, "analytics": False, "version_history": True},
+        "developer": {"ai": True, "collab": True, "analytics": True, "version_history": True},
+    }
+    plan_perms = PLAN_FEATURES.get(plan_id, PLAN_FEATURES["free"])
+    if not plan_perms.get(feature, False):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Upgrade to a paid plan to access {feature} features"
+        )
+    return user

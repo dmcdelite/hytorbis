@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   Map, Undo2, Redo2, Users, Box, Globe, BarChart3, History,
   Lock, Unlock, PanelRightOpen, PanelRightClose, LogIn, LogOut,
-  UserCircle, Bell, Search, Activity, UserPlus, Menu
+  UserCircle, Bell, Search, Activity, UserPlus, Menu, Crown
 } from "lucide-react";
 
 export function Header() {
   const ctx = useApp();
+  const plan = ctx.subscription?.plan || "free";
 
   return (
     <header className="app-header" data-testid="app-header">
@@ -16,8 +17,13 @@ export function Header() {
         <Button variant="ghost" size="icon" className="mobile-toggle-sidebar" onClick={() => ctx.setMobileSidebarOpen(!ctx.mobileSidebarOpen)} data-testid="mobile-sidebar-toggle">
           <Menu size={18} />
         </Button>
-        <img src="/logo-small.png" alt="Hyt Orbis World Builder" className="header-logo" />
+        <img src="/hytorbis-logo.png" alt="Hyt Orbis World Builder" className="header-logo" />
         <h1 className="header-title">Hyt Orbis World Builder</h1>
+        {plan !== "free" && (
+          <Badge className="header-plan-badge" data-testid="header-plan-badge">
+            <Crown size={12} /> {plan === "creator" ? "Creator" : "Developer"}
+          </Badge>
+        )}
       </div>
       <div className="header-center">
         {ctx.currentWorld && (
@@ -112,6 +118,11 @@ export function Header() {
         {/* Auth */}
         {ctx.currentUser ? (
           <div className="user-menu">
+            {plan === "free" && (
+              <Button variant="outline" size="sm" onClick={() => ctx.setShowPricingDialog(true)} className="header-upgrade-btn" data-testid="header-upgrade-btn">
+                <Crown size={14} /> Upgrade
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => { ctx.fetchProfile(ctx.currentUser.id); ctx.setShowProfileDialog(true); }} className="user-btn" data-testid="profile-btn">
               <UserCircle size={18} />
               <span className="user-name">{ctx.currentUser.name}</span>

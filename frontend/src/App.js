@@ -6,6 +6,8 @@ import { AIPanel } from "@/components/app/AIPanel";
 import { MapArea } from "@/components/app/MapArea";
 import { AppDialogs } from "@/components/app/Dialogs";
 import { CollabChat } from "@/components/app/CollabChat";
+import { AuthGate } from "@/components/app/AuthGate";
+import { PricingModal } from "@/components/app/PricingModal";
 
 function App() {
   return (
@@ -17,6 +19,12 @@ function App() {
 
 function AppContent() {
   const ctx = useApp();
+
+  // Show auth gate when not logged in
+  if (!ctx.currentUser) {
+    return <AuthGate />;
+  }
+
   const mobileSidebar = ctx.mobileSidebarOpen;
   const mobileAi = ctx.mobileAiPanelOpen;
   const anyOpen = mobileSidebar || mobileAi;
@@ -36,6 +44,7 @@ function AppContent() {
       {anyOpen && <div className={`mobile-overlay${anyOpen ? " visible" : ""}`} onClick={() => { ctx.setMobileSidebarOpen(false); ctx.setMobileAiPanelOpen(false); }} />}
       <AppDialogs />
       <CollabChat />
+      <PricingModal />
     </div>
   );
 }

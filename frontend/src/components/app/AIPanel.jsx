@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Loader2, Send } from "lucide-react";
+import { Bot, Loader2, Send, Lock, Crown } from "lucide-react";
 
 export function AIPanel() {
   const ctx = useApp();
   if (!ctx.aiPanelOpen) return null;
+
+  const aiGated = ctx.isFeatureGated("ai");
 
   return (
     <aside className="sidebar-right" data-testid="ai-panel">
@@ -15,6 +17,7 @@ export function AIPanel() {
         <div className="ai-title">
           <img src="https://images.unsplash.com/photo-1641380184601-06e153dec2fc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxnbG93aW5nJTIwcnVuZSUyMG1hZ2ljfGVufDB8fHx8MTc3NTA3NzMyM3ww&ixlib=rb-4.1.0&q=85" alt="AI" className="ai-avatar" />
           <span>World Architect AI</span>
+          {aiGated && <Lock size={14} className="ai-lock-icon" />}
         </div>
         <Select value={ctx.aiProvider} onValueChange={ctx.setAiProvider}>
           <SelectTrigger className="ai-provider-select" data-testid="ai-provider-select"><SelectValue /></SelectTrigger>
@@ -27,7 +30,18 @@ export function AIPanel() {
       </div>
 
       <ScrollArea className="ai-messages">
-        {ctx.aiMessages.length === 0 ? (
+        {aiGated ? (
+          <div className="ai-gated-message" data-testid="ai-gated-message">
+            <div className="ai-gated-icon">
+              <Crown size={36} />
+            </div>
+            <h3>AI Features Require a Paid Plan</h3>
+            <p>Upgrade to Creator or Developer to unlock AI-powered world generation, intelligent suggestions, and auto-generation.</p>
+            <Button onClick={() => ctx.setShowPricingDialog(true)} className="ai-upgrade-btn" data-testid="ai-upgrade-btn">
+              <Crown size={16} /> View Plans
+            </Button>
+          </div>
+        ) : ctx.aiMessages.length === 0 ? (
           <div className="ai-welcome">
             <Bot size={32} className="ai-welcome-icon" />
             <p>I can help you design your world!</p>
@@ -51,13 +65,13 @@ export function AIPanel() {
         <Textarea
           value={ctx.aiInput}
           onChange={(e) => ctx.setAiInput(e.target.value)}
-          placeholder={ctx.currentWorld ? "Ask for suggestions..." : "Create a world first"}
-          disabled={!ctx.currentWorld || ctx.aiLoading}
+          placeholder={aiGated ? "Upgrade to use AI features" : ctx.currentWorld ? "Ask for suggestions..." : "Create a world first"}
+          disabled={!ctx.currentWorld || ctx.aiLoading || aiGated}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ctx.sendAiMessage(); } }}
           data-testid="ai-input"
         />
-        <Button onClick={ctx.sendAiMessage} disabled={!ctx.currentWorld || !ctx.aiInput.trim() || ctx.aiLoading} className="ai-send-btn" data-testid="ai-send-btn">
-          <Send size={16} />
+        <Button onClick={aiGated ? () => ctx.setShowPricingDialog(true) : ctx.sendAiMessage} disabled={!aiGated && (!ctx.currentWorld || !ctx.aiInput.trim() || ctx.aiLoading)} className="ai-send-btn" data-testid="ai-send-btn">
+          {aiGated ? <Lock size={16} /> : <Send size={16} />}
         </Button>
       </div>
     </aside>

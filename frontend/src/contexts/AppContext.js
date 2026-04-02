@@ -149,16 +149,28 @@ export function AppProvider({ children }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mobileAiPanelOpen, setMobileAiPanelOpen] = useState(false);
 
+  // Subscription
+  const [subscription, setSubscription] = useState({ plan: "free", limits: null });
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
   // Notification WebSocket ref
   const notifWsRef = useRef(null);
 
   // ========== INIT ==========
   useEffect(() => {
-    fetchWorlds();
-    fetchTemplates();
-    fetchCustomPrefabs();
     checkAuth();
   }, []);
+
+  // When user changes, fetch subscription + worlds
+  useEffect(() => {
+    if (currentUser) {
+      fetchWorlds();
+      fetchTemplates();
+      fetchCustomPrefabs();
+      fetchSubscriptionStatus();
+    }
+  }, [currentUser]);
 
   // ========== THUMBNAILS ==========
   const fetchThumbnail = async (worldId) => {
@@ -213,6 +225,53 @@ export function AppProvider({ children }) {
   const handleLogout = async () => {
     try { await axios.post(`${API}/auth/logout`); } catch (e) {}
     setCurrentUser(null);
+    setSubscription({ plan: "free", limits: null });
+  };
+
+  // ========== SUBSCRIPTION ==========
+  const fetchSubscriptionStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/subscription/status`);
+      setSubscription(response.data);
+    } catch (e) { setSubscription({ plan: "free", limits: null }); }
+  };
+
+  const startCheckout = async (planId) => {
+    setCheckoutLoading(true);
+    try {
+      const response = await axios.post(`${API}/subscription/checkout/stripe`, {
+        plan_id: planId,
+        origin_url: window.location.origin,
+      });
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (e) {
+      alert(e.response?.data?.detail || "Failed to start checkout");
+    }
+    setCheckoutLoading(false);
+  };
+
+  const verifyCheckout = async (sessionId) => {
+    try {
+      const response = await axios.get(`${API}/subscription/checkout/status/${sessionId}`);
+      if (response.data.status === "paid") {
+        await fetchSubscriptionStatus();
+        return "paid";
+      }
+      return response.data.status;
+    } catch (e) { return "error"; }
+  };
+
+  const isFeatureGated = (feature) => {
+    const plan = subscription?.plan || "free";
+    const gateMap = {
+      ai: plan === "free",
+      collab: plan === "free",
+      analytics: plan === "free" || plan === "creator",
+      version_history: plan === "free",
+    };
+    return gateMap[feature] || false;
   };
 
   // ========== PROFILE ==========
@@ -634,6 +693,7 @@ export function AppProvider({ children }) {
   // ========== AI ==========
   const sendAiMessage = async () => {
     if (!currentWorld || !aiInput.trim()) return;
+    if (isFeatureGated("ai")) { setShowPricingDialog(true); return; }
     const userMsg = { role: "user", content: aiInput };
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput(""); setAiLoading(true);
@@ -733,6 +793,7 @@ export function AppProvider({ children }) {
   // ========== AI AUTO-GENERATE ==========
   const autoGenerate = async () => {
     if (!currentWorld || !autoGenPrompt.trim()) return;
+    if (isFeatureGated("ai")) { setShowPricingDialog(true); return; }
     setAutoGenLoading(true);
     try {
       const response = await axios.post(`${API}/ai/auto-generate`, { world_id: currentWorld.id, prompt: autoGenPrompt, provider: aiProvider });
@@ -971,6 +1032,9 @@ export function AppProvider({ children }) {
     thumbnails, fetchThumbnail, regenerateThumbnail,
     mobileSidebarOpen, setMobileSidebarOpen, mobileAiPanelOpen, setMobileAiPanelOpen,
     wsRef,
+    // Subscription
+    subscription, showPricingDialog, setShowPricingDialog, checkoutLoading,
+    fetchSubscriptionStatus, startCheckout, verifyCheckout, isFeatureGated,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

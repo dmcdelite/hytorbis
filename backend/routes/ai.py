@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
 import random
 
@@ -8,12 +8,14 @@ from models import (
 )
 from utils import get_ai_response, ai_auto_generate
 from templates import WORLD_TEMPLATES
+from auth_utils import require_subscription
 
 router = APIRouter()
 
 
 @router.post("/ai/chat", response_model=AIChatResponse)
-async def ai_chat(request: AIChatRequest):
+async def ai_chat(request: AIChatRequest, req: Request):
+    await require_subscription(req, feature="ai")
     world = await db.worlds.find_one({"id": request.world_id}, {"_id": 0})
     if not world:
         raise HTTPException(status_code=404, detail="World not found")
@@ -22,7 +24,8 @@ async def ai_chat(request: AIChatRequest):
 
 
 @router.post("/ai/auto-generate")
-async def ai_auto_generate_world(request: AIAutoGenerateRequest):
+async def ai_auto_generate_world(request: AIAutoGenerateRequest, req: Request):
+    await require_subscription(req, feature="ai")
     world = await db.worlds.find_one({"id": request.world_id}, {"_id": 0})
     if not world:
         raise HTTPException(status_code=404, detail="World not found")
