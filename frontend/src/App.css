@@ -326,7 +326,9 @@ body {
 
 /* Worlds List */
 .worlds-list {
-  max-height: 180px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .world-item {
