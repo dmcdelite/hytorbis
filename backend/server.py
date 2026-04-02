@@ -38,6 +38,7 @@ from routes.gallery import router as gallery_router
 from routes.reviews import router as reviews_router
 from routes.versions import router as versions_router
 from routes.misc import router as misc_router
+from routes.subscription import router as subscription_router
 
 # Include all routers
 api_router.include_router(auth_router)
@@ -48,6 +49,7 @@ api_router.include_router(gallery_router)
 api_router.include_router(reviews_router)
 api_router.include_router(versions_router)
 api_router.include_router(misc_router)
+api_router.include_router(subscription_router)
 
 
 @api_router.get("/")
