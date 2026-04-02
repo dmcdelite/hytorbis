@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyt Orbis - Your Voxel Modding Compass | Mods, Addons, Dev Hub & Tools</title>
+    <meta name="description" content="Hyt Orbis is your ultimate voxel modding compass. Build worlds, create mods, share addons, and access powerful developer tools for Hytale and voxel gaming.">
+    <meta name="keywords" content="Hytale mods, Hytale addons, voxel world builder, Hytale developer tools, Hytale modding, world generator, Hyt Orbis, game modding, voxel art, Hytale map maker">
+    <meta name="author" content="Hyt Orbis">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://hytorbis.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Hyt Orbis - Your Voxel Modding Compass">
+    <meta property="og:description" content="Build worlds, create mods, share addons, and access powerful developer tools for Hytale and voxel gaming.">
+    <meta property="og:image" content="https://hytorbis.com/assets/images/logo.png">
+    <meta property="og:url" content="https://hytorbis.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Hyt Orbis">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hyt Orbis - Your Voxel Modding Compass">
+    <meta name="twitter:description" content="Build worlds, create mods, share addons, and access powerful developer tools for Hytale.">
+    <meta name="twitter:image" content="https://hytorbis.com/assets/images/logo.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/style.css">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Hyt Orbis",
+        "url": "https://hytorbis.com",
+        "logo": "https://hytorbis.com/assets/images/logo.png",
+        "description": "Your Voxel Modding Compass - Mods, Addons, Dev Hub & Tools for Hytale",
+        "sameAs": []
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Hyt Orbis World Builder",
+        "url": "https://hytorbisworldbuilder.com",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "description": "AI-powered world builder for Hytale with up to 512x512 map support, real-time collaboration, and community gallery.",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <!-- Particles Background -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- ======== NAVBAR ======== -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-brand">
+                <img src="assets/images/logo.png" alt="Hyt Orbis Logo" width="42" height="42">
+                <span class="nav-brand-text"><span>HYT</span><span>ORBIS</span></span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#world-builder">World Builder</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="https://hytorbisworldbuilder.com" target="_blank" class="nav-cta">Launch App</a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ======== HERO ======== -->
+    <section class="hero section" id="home">
+        <div class="container">
+            <div class="hero-inner">
+                <div class="hero-content">
+                    <div class="hero-badge"><i class="fas fa-compass"></i> Your Voxel Modding Compass</div>
+                    <h1>Build <span class="text-gradient">Worlds.</span> Create <span class="text-warm">Mods.</span> Shape the Future.</h1>
+                    <p>Hyt Orbis is the premier modding ecosystem for Hytale. From AI-powered world generation to community-driven addons, we give creators the tools to build without limits.</p>
+                    <div class="hero-buttons">
+                        <a href="https://hytorbisworldbuilder.com" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i> Launch World Builder
+                        </a>
+                        <a href="#features" class="btn btn-secondary">
+                            <i class="fas fa-compass"></i> Explore Features
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <h3>512x512</h3>
+                            <p>Max Map Size</p>
+                        </div>
+                        <div class="hero-stat">
+                            <h3>3 AIs</h3>
+                            <p>GPT, Gemini, Claude</p>
+                        </div>
+                        <div class="hero-stat">
+                            <h3>Real-time</h3>
+                            <p>Multiplayer Collab</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <img src="assets/images/logo.png" alt="Hyt Orbis - Voxel World Building Platform" width="480" height="480">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== FEATURES ======== -->
+    <section class="features section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Platform Features</p>
+                <h2 class="section-title">Everything You Need to <span class="text-gradient">Create</span></h2>
+                <p class="section-subtitle">A complete toolkit for Hytale world builders, modders, and developers.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <h3>AI World Generation</h3>
+                    <p>Describe your vision and let GPT-5.2, Gemini, or Claude auto-generate complete worlds with zones, prefabs, and terrain.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon warm"><i class="fas fa-map"></i></div>
+                    <h3>512x512 Map Editor</h3>
+                    <p>Massive canvas support with drag-to-paint, zone brushes, undo/redo, and zoom/pan controls for precision building.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon gold"><i class="fas fa-users"></i></div>
+                    <h3>Real-time Collaboration</h3>
+                    <p>Invite friends to edit worlds together in real-time with WebSocket-powered live sync and built-in chat.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon purple"><i class="fas fa-store"></i></div>
+                    <h3>Community Gallery</h3>
+                    <p>Publish, discover, and fork worlds from the community. Rate, review, and download creations from builders worldwide.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon cyan"><i class="fas fa-file-export"></i></div>
+                    <h3>Multi-Format Export</h3>
+                    <p>Export as JSON, Prefab JSON, Hytale format, or JAR packages ready for game integration and mod distribution.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-cube"></i></div>
+                    <h3>Custom Prefabs & Templates</h3>
+                    <p>Create reusable structures, use pre-built templates, or fork and remix existing worlds as starting points.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== WORLD BUILDER SHOWCASE ======== -->
+    <section class="showcase section" id="world-builder">
+        <div class="container">
+            <div class="showcase-inner">
+                <div class="showcase-preview">
+                    <img src="assets/images/brand-card.png" alt="Hyt Orbis World Builder Application Preview" width="600" height="400">
+                    <div class="badge-live">LIVE</div>
+                </div>
+                <div class="showcase-content">
+                    <p class="section-label">Flagship Product</p>
+                    <h2>Hyt Orbis <span class="text-gradient">World Builder</span></h2>
+                    <p>Our flagship application lets you design, generate, and share entire game worlds with the power of AI and a community of creators.</p>
+                    <ul class="showcase-features">
+                        <li><i class="fas fa-check-circle"></i> AI-powered world auto-generation with 3 LLM providers</li>
+                        <li><i class="fas fa-check-circle"></i> Interactive map editor with 6 zone types and terrain sliders</li>
+                        <li><i class="fas fa-check-circle"></i> Real-time multiplayer with editor/viewer permissions</li>
+                        <li><i class="fas fa-check-circle"></i> Version history with restore and world forking</li>
+                        <li><i class="fas fa-check-circle"></i> Community gallery with ratings, reviews, and search</li>
+                        <li><i class="fas fa-check-circle"></i> Export to .prefab.json, .jar, and Hytale-native format</li>
+                    </ul>
+                    <div class="hero-buttons">
+                        <a href="https://hytorbisworldbuilder.com" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt"></i> Open World Builder
+                        </a>
+                        <a href="#pricing" class="btn btn-secondary">
+                            <i class="fas fa-tag"></i> View Pricing
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== PRICING ======== -->
+    <section class="pricing section" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Pricing</p>
+                <h2 class="section-title">Start Building for <span class="text-warm">Free</span></h2>
+                <p class="section-subtitle">Scale up as your creations grow. No credit card required.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <p class="price-name">Explorer</p>
+                    <p class="price-amount text-gradient">Free <span>forever</span></p>
+                    <p class="price-desc">Perfect for getting started</p>
+                    <ul class="price-features">
+                        <li><i class="fas fa-check"></i> Up to 128x128 maps</li>
+                        <li><i class="fas fa-check"></i> 5 world saves</li>
+                        <li><i class="fas fa-check"></i> AI chat assistant</li>
+                        <li><i class="fas fa-check"></i> Community gallery access</li>
+                        <li><i class="fas fa-check"></i> JSON & Prefab export</li>
+                        <li class="disabled"><i class="fas fa-times"></i> Real-time collaboration</li>
+                        <li class="disabled"><i class="fas fa-times"></i> Priority AI generation</li>
+                    </ul>
+                    <a href="https://hytorbisworldbuilder.com" target="_blank" class="btn btn-secondary" style="width:100%;justify-content:center;">Get Started</a>
+                </div>
+                <div class="price-card featured">
+                    <p class="price-name">Creator</p>
+                    <p class="price-amount text-gradient">$9 <span>/month</span></p>
+                    <p class="price-desc">For serious world builders</p>
+                    <ul class="price-features">
+                        <li><i class="fas fa-check"></i> Up to 512x512 maps</li>
+                        <li><i class="fas fa-check"></i> Unlimited world saves</li>
+                        <li><i class="fas fa-check"></i> All AI providers (GPT, Gemini, Claude)</li>
+                        <li><i class="fas fa-check"></i> Real-time collaboration</li>
+                        <li><i class="fas fa-check"></i> All export formats including JAR</li>
+                        <li><i class="fas fa-check"></i> Version history & restore</li>
+                        <li><i class="fas fa-check"></i> Priority support</li>
+                    </ul>
+                    <a href="https://hytorbisworldbuilder.com" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;">Start Creating</a>
+                </div>
+                <div class="price-card">
+                    <p class="price-name">Developer</p>
+                    <p class="price-amount text-warm">$29 <span>/month</span></p>
+                    <p class="price-desc">For teams & mod developers</p>
+                    <ul class="price-features">
+                        <li><i class="fas fa-check"></i> Everything in Creator</li>
+                        <li><i class="fas fa-check"></i> API access for automation</li>
+                        <li><i class="fas fa-check"></i> Team workspaces (up to 10)</li>
+                        <li><i class="fas fa-check"></i> Bulk export & import</li>
+                        <li><i class="fas fa-check"></i> Custom prefab library</li>
+                        <li><i class="fas fa-check"></i> Analytics dashboard</li>
+                        <li><i class="fas fa-check"></i> Dedicated support</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-secondary" style="width:100%;justify-content:center;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== ABOUT ======== -->
+    <section class="about section" id="about">
+        <div class="container">
+            <div class="about-inner">
+                <div class="about-content">
+                    <p class="section-label">About Hyt Orbis</p>
+                    <h2>Built by <span class="text-gradient">Modders,</span> for Modders</h2>
+                    <p>Hyt Orbis was born from a passion for voxel gaming and the belief that every player should have access to powerful creation tools. We're building the modding ecosystem that Hytale deserves.</p>
+                    <p>Our mission is to democratize game world creation with AI-powered tools, collaborative features, and a thriving community of creators sharing their best work.</p>
+                    <div class="about-values">
+                        <div class="about-value">
+                            <h4><i class="fas fa-bolt"></i> Innovation</h4>
+                            <p>AI-first approach to world generation and game modding.</p>
+                        </div>
+                        <div class="about-value">
+                            <h4><i class="fas fa-handshake"></i> Community</h4>
+                            <p>Open gallery, sharing, and real-time collaboration.</p>
+                        </div>
+                        <div class="about-value">
+                            <h4><i class="fas fa-unlock"></i> Accessibility</h4>
+                            <p>Free tier forever. No barriers to start creating.</p>
+                        </div>
+                        <div class="about-value">
+                            <h4><i class="fas fa-shield-halved"></i> Quality</h4>
+                            <p>Production-grade exports ready for game integration.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-visual">
+                    <img src="assets/images/logo.png" alt="Hyt Orbis Brand" style="max-width:400px;width:100%;filter:drop-shadow(0 0 40px rgba(0,191,255,0.15));border-radius:16px;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== CONTACT ======== -->
+    <section class="contact section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Get in Touch</p>
+                <h2 class="section-title">Let's <span class="text-gradient">Connect</span></h2>
+                <p class="section-subtitle">Questions, partnerships, or feedback? We'd love to hear from you.</p>
+            </div>
+            <div class="contact-inner">
+                <form class="contact-form" id="contactForm" action="#" method="POST">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject" name="subject">
+                            <option value="general">General Inquiry</option>
+                            <option value="support">Technical Support</option>
+                            <option value="partnership">Partnership</option>
+                            <option value="developer">Developer API Access</option>
+                            <option value="feedback">Feedback</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+                <div class="contact-info">
+                    <h3>Other Ways to <span class="text-gradient">Reach Us</span></h3>
+                    <p>We're always building and improving. Join our community or drop us a line through any of these channels.</p>
+                    <div class="contact-channels">
+                        <div class="contact-channel">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email</h4>
+                                <p>hello@hytorbis.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-channel">
+                            <i class="fab fa-discord"></i>
+                            <div>
+                                <h4>Discord Community</h4>
+                                <p>Join 1,000+ builders</p>
+                            </div>
+                        </div>
+                        <div class="contact-channel">
+                            <i class="fab fa-twitter"></i>
+                            <div>
+                                <h4>Twitter / X</h4>
+                                <p>@HytOrbis</p>
+                            </div>
+                        </div>
+                        <div class="contact-channel">
+                            <i class="fab fa-youtube"></i>
+                            <div>
+                                <h4>YouTube</h4>
+                                <p>Tutorials & showcases</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======== FOOTER ======== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <a href="#" class="nav-brand">
+                        <img src="assets/images/logo.png" alt="Hyt Orbis" width="42" height="42">
+                        <span class="nav-brand-text"><span>HYT</span><span>ORBIS</span></span>
+                    </a>
+                    <p>Your Voxel Modding Compass. Building the future of Hytale modding with AI-powered tools and community-driven innovation.</p>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Products</h4>
+                    <a href="https://hytorbisworldbuilder.com" target="_blank">World Builder</a>
+                    <a href="#features">Mod Tools</a>
+                    <a href="#features">Addon Library</a>
+                    <a href="#pricing">Developer API</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <a href="#">Documentation</a>
+                    <a href="#">Tutorials</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Changelog</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a href="#about">About</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Hyt Orbis. All rights reserved.</p>
+                <p>Crafted with <i class="fas fa-heart" style="color:var(--energy-coral);"></i> for the voxel community</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ======== SCRIPTS ======== -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Mobile nav toggle
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+            const icon = navToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // Close mobile menu on link click
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('open');
+                const icon = navToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            });
+        });
+
+        // Active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const top = section.offsetTop - 100;
+                if (scrollY >= top) current = section.getAttribute('id');
+            });
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+            });
+        });
+
+        // Particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            p.style.animationDuration = (10 + Math.random() * 15) + 's';
+            p.style.width = (2 + Math.random() * 3) + 'px';
+            p.style.height = p.style.width;
+            const colors = ['#00BFFF', '#FF8C00', '#FFD700', '#00E5EE', '#4B0082'];
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            particlesContainer.appendChild(p);
+        }
+
+        // Contact form (basic)
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thanks for reaching out! We\'ll get back to you soon.');
+            this.reset();
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .price-card, .about-value, .contact-channel').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
