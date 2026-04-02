@@ -15,10 +15,11 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 ├── templates.py           # WORLD_TEMPLATES constant
 ├── utils.py               # AI functions, world generation, seed helpers
 ├── websocket_manager.py   # WebSocket ConnectionManager + notification channels
+├── thumbnail.py           # Pillow-based thumbnail generation
 └── routes/
     ├── auth.py            # /auth/* (register, login, logout, me, refresh) + admin seeding
     ├── users.py           # /users/* (profile, search, suggested, follow, notifications, activity feed)
-    ├── worlds.py          # /worlds/* (CRUD, zones, prefabs, export, import, visibility, templates, fork, collaborators)
+    ├── worlds.py          # /worlds/* (CRUD, zones, prefabs, export, import, visibility, templates, fork, collaborators, thumbnails)
     ├── ai.py              # /ai/* (chat, auto-generate, procedural preview)
     ├── gallery.py         # /gallery/* (publish, browse with filters, like, download, fork)
     ├── reviews.py         # /reviews/* (create, list, delete)
@@ -29,24 +30,24 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 ### Frontend (Component Architecture)
 ```
 /app/frontend/src/
-├── App.js                     # Thin wrapper (~30 lines)
-├── App.css                    # All global styles
+├── App.js                     # Wrapper with mobile sidebar logic
+├── App.css                    # All global styles + responsive breakpoints
 ├── config.js                  # Zone/Prefab/Biome configs, API URL
 ├── contexts/
-│   └── AppContext.js           # All shared state + functions
+│   └── AppContext.js           # All shared state + functions (~970 lines)
 └── components/app/
-    ├── Header.jsx              # Header: auth, notifications, activity, search, collaborators
+    ├── Header.jsx              # Header: auth, notifications, activity, search, collaborators, mobile toggle
     ├── Sidebar.jsx             # Worlds list, tools, zoom, actions, exports
     ├── AIPanel.jsx             # AI chat panel
     ├── MapArea.jsx             # Map canvas (virtualized), terrain, properties sheets
-    ├── Dialogs.jsx             # All dialogs (auth, profile, gallery, reviews, versions, user search, activity feed, collaborators)
+    ├── Dialogs.jsx             # All dialogs (auth, profile, gallery, reviews, versions, user search, activity feed, collaborators) — all with DialogDescription
     └── CollabChat.jsx          # Collaboration chat overlay
 ```
 
 ### Tech Stack
 - Frontend: React 19, Tailwind CSS, Radix UI (Shadcn), Lucide icons
 - Backend: FastAPI, Motor (Async MongoDB), WebSockets
-- Database: MongoDB (10 collections)
+- Database: MongoDB (10+ collections)
 - AI: OpenAI/Anthropic/Gemini via `emergentintegrations` (Emergent LLM Key)
 - Auth: Custom JWT with httpOnly cookies, bcrypt
 
@@ -58,14 +59,19 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 ### P3 (DONE) - WebSocket collaboration, gallery, analytics, 3D preview
 ### P4 (DONE) - Auth, profiles, versions, reviews, visibility
 ### P5 (DONE) - Backend + Frontend refactoring into modular architecture
-### P6 (DONE - April 2, 2026) - All 6 enhancement features:
+### P6 (DONE - April 2, 2026) - Enhancements:
+1. Dialog Accessibility — DialogDescription on all dialogs
+2. Enhanced Social — User search, activity feed, suggested users
+3. World Forking — Fork worlds directly or from gallery
+4. Advanced Gallery Filtering — Zone types, map size range, min rating, following-only
+5. Real-time Notifications — WebSocket push, auto-reconnect, ping/pong
+6. Multiplayer World Permissions — Collaborator management, editor/viewer roles
+7. Auto-generated World Thumbnails — Pillow-based mini-map thumbnails
 
-1. **Dialog Accessibility** — Added DialogDescription to new dialogs
-2. **Enhanced Social** — User search, activity feed, suggested users
-3. **World Forking** — Fork worlds directly or from gallery, forked_from tracking
-4. **Advanced Gallery Filtering** — Zone types, map size range, min rating, following-only, sort by rating
-5. **Real-time Notifications** — WebSocket push (/api/ws/notifications/{user_id}), auto-reconnect, ping/pong keepalive
-6. **Multiplayer World Permissions** — Collaborator management (add/update/remove), editor/viewer roles, permission enforcement on world edits
+### P7 (DONE - April 2, 2026) - Polish:
+1. Full Accessibility Compliance — HiddenDesc on all 17 dialogs
+2. Mobile Responsiveness — Breakpoints at 1200/900/768/480px, slide-in sidebars, hamburger menu, mobile overlay
+3. Enhanced Collaborator UI — Search dropdown, role descriptions, improved empty states
 
 ## DB Collections
 worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics
@@ -92,6 +98,7 @@ worlds, templates, gallery, custom_prefabs, users, login_attempts, world_version
 - POST /api/worlds/{id}/fork
 - GET/POST/PUT/DELETE /api/worlds/{id}/collaborators(/{user_id})
 - GET/POST /api/worlds/{id}/versions, POST /api/worlds/{id}/versions/{vid}/restore
+- GET/POST /api/worlds/{id}/thumbnail
 
 ### Templates & Exports
 - GET /api/templates, POST /api/worlds/from-template, POST /api/worlds/import
@@ -117,3 +124,4 @@ worlds, templates, gallery, custom_prefabs, users, login_attempts, world_version
 
 ## Backlog
 - All requested features are now COMPLETE
+- Potential future: Further split AppContext.js (~970 lines) into smaller context providers
