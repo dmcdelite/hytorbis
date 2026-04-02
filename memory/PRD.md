@@ -93,21 +93,19 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics, subscriptions, payment_transactions
 
 ## Backlog
-- Further split AppContext.js (~1080 lines) into smaller context providers
-- Code obfuscation for production builds
-- Monitor production CORS with wildcard subdomains
-- Verify mobile scroll constraints with new modals
+- Monitor production CORS logs for new subdomain issues
 
-## P9 (DONE - April 2, 2026) - Premium Features & PWA:
-1. Install to Game — Premium-gated ZIP package generator with world files (Hytale config, Prefab, JAR, README)
-2. How-To Guide — 6-step onboarding modal with Hyt Orbis logo, auto-shows on first visit, "Don't show again" checkbox (localStorage), reopenable via header HelpCircle button
-3. PWA / Install App — manifest.json, service worker, beforeinstallprompt capture for "Install App" button in header
-4. PayPal Live Endpoint — Verified working (returns order_id + url)
+## P11 (DONE - April 2, 2026) - Architecture & Infrastructure:
+1. AppContext split — AuthContext, SubscriptionContext, SocialContext extracted. useApp() facade keeps all imports unchanged
+2. OG meta tags — /api/og/{token} serves HTML with og:title, og:description, og:image, twitter:card for social crawlers + client-side meta injection
+3. Facebook share button added to Share dialog
+4. CORS monitoring — Middleware logs rejected origins
+5. Code obfuscation — GENERATE_SOURCEMAP=false for production
 
 ## P10 (DONE - April 2, 2026) - Share World Feature:
 1. Per-world share toggle — Owner enables/disables public sharing with unique share token
-2. Share dialog — Copy link, Twitter/Discord/Reddit social share buttons, iframe embed code
+2. Share dialog — Copy link, Facebook/Twitter/Discord/Reddit social share buttons, iframe embed code
 3. Public shared page — World preview with mini-map, stats, creator info, description, seed
-4. Marketing CTA — "Start Building — It's Free" button with feature highlights (AI generation, real-time collab, game exports)
-5. Embed mode — Compact iframe-friendly view of shared world with "View on Hyt Orbis" link
+4. Marketing CTA — "Start Building — It's Free" with feature highlights
+5. Embed mode — Compact iframe-friendly view with "View on Hyt Orbis" link
 6. Backend: POST /api/worlds/{id}/share (toggle), GET /api/shared/{token} (public, no auth)
