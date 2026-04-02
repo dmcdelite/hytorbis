@@ -14,7 +14,14 @@ app = FastAPI(title="Hyt Orbis World Builder API")
 # CORS
 cors_origins = os.environ.get("CORS_ORIGINS", "*")
 if cors_origins == "*":
-    origins = ["*"]
+    origins = [
+        "https://hytale-frontend-b661.vercel.app",
+        "https://hytaleworldbuilder.com",
+        "https://hytorbisworldbuilder.com",
+        "https://www.hytaleworldbuilder.com",
+        "https://www.hytorbisworldbuilder.com",
+        "http://localhost:3000",
+    ]
 else:
     origins = [o.strip() for o in cors_origins.split(",")]
 
