@@ -3317,6 +3317,12 @@ body {
   color: white;
 }
 
+.share-facebook:hover {
+  background: #1877f2;
+  border-color: #1877f2;
+  color: white;
+}
+
 .share-discord:hover {
   background: #5865f2;
   border-color: #5865f2;

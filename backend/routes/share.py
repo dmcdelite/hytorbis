@@ -1,11 +1,56 @@
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from datetime import datetime, timezone
 import uuid
+import os
 
 from database import db
 from auth_utils import get_current_user, require_auth
 
 router = APIRouter()
+
+FRONTEND_URL = os.environ.get("CORS_ORIGINS", "https://hytorbisworldbuilder.com").split(",")[0].strip()
+
+
+@router.get("/og/{share_token}", response_class=HTMLResponse)
+async def og_page(share_token: str):
+    """Serve HTML with Open Graph meta tags for social media crawlers. Redirects humans to frontend."""
+    world = await db.worlds.find_one(
+        {"share_token": share_token, "share_enabled": True},
+        {"_id": 0, "id": 1, "name": 1, "description": 1, "map_width": 1, "map_height": 1, "zones": 1, "prefabs": 1}
+    )
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    name = world.get("name", "Untitled World")
+    desc = world.get("description", "")
+    zones = len(world.get("zones", []))
+    prefabs = len(world.get("prefabs", []))
+    size = f"{world.get('map_width', 64)}x{world.get('map_height', 64)}"
+    og_desc = desc if desc else f"A {size} world with {zones} zones and {prefabs} prefabs — built with Hyt Orbis World Builder"
+    share_url = f"{FRONTEND_URL}?share={share_token}"
+    logo = f"{FRONTEND_URL}/hytorbis-logo.png"
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{name} — Hyt Orbis World Builder</title>
+<meta property="og:title" content="{name} — Built with Hyt Orbis">
+<meta property="og:description" content="{og_desc}">
+<meta property="og:image" content="{logo}">
+<meta property="og:url" content="{share_url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hyt Orbis World Builder">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{name} — Hyt Orbis">
+<meta name="twitter:description" content="{og_desc}">
+<meta name="twitter:image" content="{logo}">
+<meta http-equiv="refresh" content="0;url={share_url}">
+</head>
+<body><p>Redirecting to <a href="{share_url}">{name} on Hyt Orbis</a>...</p></body>
+</html>"""
+    return HTMLResponse(content=html)
 
 
 @router.post("/worlds/{world_id}/share")

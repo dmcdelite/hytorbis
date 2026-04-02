@@ -1,0 +1,118 @@
+{
+  "summary": "Iteration 14 - Context Split & OG Meta Tags Testing Complete. All features tested and verified. Context split (AuthContext, SubscriptionContext, SocialContext + AppContext) works correctly - no regression. OG endpoint returns proper HTML with all meta tags. Facebook share button added to Share dialog. CORS monitoring middleware in place.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "frontend/.env",
+        "issues": ["FIXED: ENABLE_HEALTH_CHECK and GENERATE_SOURCEMAP were concatenated on same line - separated them"]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "Login works with admin@hytorbis.com / Lucky420420$ (AuthContext split verified)",
+    "World list loads after login (34 worlds found - AppContext split verified)",
+    "How-To Guide auto-opens on first visit and can be dismissed",
+    "Share dialog opens with Facebook + Twitter + Discord + Reddit buttons",
+    "Share toggle works (enables/disables sharing)",
+    "Public shared page loads at ?share=298a3d8d-81c with OG meta tags",
+    "OG endpoint GET /api/og/298a3d8d-81c returns HTML with og:title, og:description, og:image, twitter:card",
+    "Embed view loads at ?embed=298a3d8d-81c",
+    "Subscription status endpoint works (SubscriptionContext verified)",
+    "Notifications endpoint works (SocialContext verified)",
+    "Templates endpoint works (AppContext verified)",
+    "Custom prefabs endpoint works (AppContext verified)",
+    "CORS allows valid origins",
+    "Health endpoint returns healthy status"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_iteration14_features.py",
+    "/app/backend/tests/test_share_world.py",
+    "/app/test_reports/pytest/pytest_iteration14.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Context split implemented correctly - AuthContext, SubscriptionContext, SocialContext extracted from AppContext",
+    "useApp() facade hook merges all contexts seamlessly - no component changes needed",
+    "OG endpoint in share.py correctly generates HTML with all required meta tags",
+    "CORS monitoring middleware logs rejected origins to server logger",
+    "GENERATE_SOURCEMAP=false added to frontend/.env for production obfuscation",
+    "Facebook share button added to ShareWorld.jsx alongside Twitter, Discord, Reddit"
+  ],
+
+  "updated_files": [
+    "/app/frontend/.env",
+    "/app/backend/tests/test_iteration14_features.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (23/23 tests passed - 14 iteration14 + 9 share_world)",
+    "frontend": "100% (All features working)"
+  },
+
+  "test_credentials": {
+    "admin": {
+      "email": "admin@hytorbis.com",
+      "password": "Lucky420420$",
+      "role": "admin"
+    },
+    "known_share_token": "298a3d8d-81c",
+    "share_url": "https://hytale-base.preview.emergentagent.com?share=298a3d8d-81c",
+    "embed_url": "https://hytale-base.preview.emergentagent.com?embed=298a3d8d-81c",
+    "og_url": "https://hytale-base.preview.emergentagent.com/api/og/298a3d8d-81c"
+  },
+
+  "seed_data_creation": "No new seed data created. Used existing 'Test World' with share token '298a3d8d-81c'.",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "Iteration 14 tested context split and OG meta tags. AppContext.js was split into 4 files: AuthContext.js (auth state), SubscriptionContext.js (subscription/pricing), SocialContext.js (profile/notifications/social), and slimmer AppContext.js (world/map/AI state). The useApp() hook is a facade that merges all contexts. All APIs verified working: /auth/me, /subscription/status, /notifications, /worlds, /templates, /prefabs/custom. OG endpoint at /api/og/{token} returns HTML with og:title, og:description, og:image, og:url, og:type, og:site_name, twitter:card, twitter:title, twitter:description, twitter:image. Facebook share button added to Share dialog. CORS monitoring middleware logs rejected origins.",
+
+  "features_tested": {
+    "context_split": {
+      "AuthContext": "Login, logout, checkAuth, authForm state - WORKING",
+      "SubscriptionContext": "Subscription status, pricing, checkout - WORKING",
+      "SocialContext": "Profile, notifications, user search, activity feed - WORKING",
+      "AppContext": "Worlds, AI, templates, prefabs, map state - WORKING",
+      "useApp_facade": "Merges all contexts - WORKING"
+    },
+    "og_meta_tags": {
+      "endpoint": "GET /api/og/{share_token}",
+      "og_title": "Present - World name + branding",
+      "og_description": "Present - World description or auto-generated",
+      "og_image": "Present - Logo URL",
+      "og_url": "Present - Share URL",
+      "og_type": "Present - website",
+      "og_site_name": "Present - Hyt Orbis World Builder",
+      "twitter_card": "Present - summary_large_image",
+      "redirect": "Present - meta http-equiv refresh"
+    },
+    "share_dialog": {
+      "facebook_button": "ADDED - data-testid='share-facebook'",
+      "twitter_button": "Present - data-testid='share-twitter'",
+      "discord_button": "Present - data-testid='share-discord'",
+      "reddit_button": "Present - data-testid='share-reddit'",
+      "share_toggle": "Present - data-testid='share-toggle'",
+      "embed_code": "Present - data-testid='share-embed-code'"
+    },
+    "cors_monitoring": {
+      "middleware": "Added to server.py",
+      "logging": "Logs rejected origins with path and method"
+    },
+    "code_obfuscation": {
+      "GENERATE_SOURCEMAP": "Set to false in frontend/.env"
+    }
+  }
+}

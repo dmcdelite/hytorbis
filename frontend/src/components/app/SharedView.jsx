@@ -10,17 +10,39 @@ export function SharedView({ shareToken, isEmbed }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const setMetaTag = (name, content) => {
+    const attr = name.startsWith("og:") || name.startsWith("twitter:") ? "property" : "name";
+    let el = document.querySelector(`meta[${attr}="${name}"]`);
+    if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+    el.setAttribute("content", content);
+  };
+
   useEffect(() => {
     const fetchShared = async () => {
       try {
         const res = await axios.get(`${API}/shared/${shareToken}`);
         setData(res.data);
+        // Set OG meta tags for crawlers that render JS (Discord, Telegram)
+        if (res.data?.world) {
+          document.title = `${res.data.world.name} — Hyt Orbis World Builder`;
+          setMetaTag("og:title", `${res.data.world.name} — Built with Hyt Orbis`);
+          setMetaTag("og:description", res.data.world.description || `A ${res.data.stats?.map_size} world with ${res.data.stats?.zones} zones and ${res.data.stats?.prefabs} prefabs`);
+          setMetaTag("og:image", res.data.thumbnail || `${window.location.origin}/hytorbis-logo.png`);
+          setMetaTag("og:url", window.location.href);
+          setMetaTag("og:type", "website");
+          setMetaTag("og:site_name", "Hyt Orbis World Builder");
+          setMetaTag("twitter:card", "summary_large_image");
+          setMetaTag("twitter:title", `${res.data.world.name} — Hyt Orbis`);
+          setMetaTag("twitter:description", res.data.world.description || "Check out this world on Hyt Orbis World Builder");
+          setMetaTag("twitter:image", res.data.thumbnail || `${window.location.origin}/hytorbis-logo.png`);
+        }
       } catch (e) {
         setError(e.response?.status === 404 ? "This world is no longer shared." : "Failed to load shared world.");
       }
       setLoading(false);
     };
     fetchShared();
+    return () => { document.title = "Hyt Orbis World Builder"; };
   }, [shareToken]);
 
   // Build a mini map preview from zone data

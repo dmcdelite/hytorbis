@@ -33,6 +33,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logger = logging.getLogger("server")
+
+# CORS monitoring middleware
+@app.middleware("http")
+async def cors_monitor(request, call_next):
+    origin = request.headers.get("origin")
+    response = await call_next(request)
+    if origin and origin not in origins:
+        logger.warning(f"CORS_REJECTED origin={origin} path={request.url.path} method={request.method}")
+    return response
+
 # Create the main API router
 api_router = APIRouter(prefix="/api")
 
