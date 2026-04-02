@@ -103,3 +103,11 @@ worlds, templates, gallery, custom_prefabs, users, login_attempts, world_version
 2. How-To Guide — 6-step onboarding modal with Hyt Orbis logo, auto-shows on first visit, "Don't show again" checkbox (localStorage), reopenable via header HelpCircle button
 3. PWA / Install App — manifest.json, service worker, beforeinstallprompt capture for "Install App" button in header
 4. PayPal Live Endpoint — Verified working (returns order_id + url)
+
+## P10 (DONE - April 2, 2026) - Share World Feature:
+1. Per-world share toggle — Owner enables/disables public sharing with unique share token
+2. Share dialog — Copy link, Twitter/Discord/Reddit social share buttons, iframe embed code
+3. Public shared page — World preview with mini-map, stats, creator info, description, seed
+4. Marketing CTA — "Start Building — It's Free" button with feature highlights (AI generation, real-time collab, game exports)
+5. Embed mode — Compact iframe-friendly view of shared world with "View on Hyt Orbis" link
+6. Backend: POST /api/worlds/{id}/share (toggle), GET /api/shared/{token} (public, no auth)
