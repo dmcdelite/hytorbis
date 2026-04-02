@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from typing import Optional
 from bson import ObjectId
 from datetime import datetime, timezone
+import base64
+import uuid
 
 from database import db
 from auth_utils import get_current_user, require_auth
@@ -155,6 +157,40 @@ async def update_profile(profile: UserProfileUpdate, request: Request):
     if update_data:
         await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": update_data})
     return {"message": "Profile updated"}
+
+
+@router.post("/users/avatar")
+async def upload_avatar(request: Request, file: UploadFile = File(...)):
+    user = await require_auth(request)
+
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    contents = await file.read()
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be under 2MB")
+
+    # Resize to 256x256 max
+    from PIL import Image
+    import io
+    img = Image.open(io.BytesIO(contents))
+    img.thumbnail((256, 256), Image.LANCZOS)
+    if img.mode == "RGBA":
+        img = img.convert("RGB")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85)
+    buf.seek(0)
+
+    # Store as base64 data URI in MongoDB
+    b64 = base64.b64encode(buf.read()).decode("utf-8")
+    avatar_url = f"data:image/jpeg;base64,{b64}"
+
+    await db.users.update_one(
+        {"_id": ObjectId(user["id"])},
+        {"$set": {"avatar_url": avatar_url}}
+    )
+
+    return {"avatar_url": avatar_url}
 
 
 @router.get("/users/{user_id}/worlds")

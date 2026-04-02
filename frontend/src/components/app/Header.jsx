@@ -124,7 +124,11 @@ export function Header() {
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={() => { ctx.fetchProfile(ctx.currentUser.id); ctx.setShowProfileDialog(true); }} className="user-btn" data-testid="profile-btn">
-              <UserCircle size={18} />
+              {ctx.currentUser.avatar_url ? (
+                <img src={ctx.currentUser.avatar_url} alt="" className="header-avatar" />
+              ) : (
+                <UserCircle size={18} />
+              )}
               <span className="user-name">{ctx.currentUser.name}</span>
             </Button>
             <Button variant="ghost" size="icon" onClick={ctx.handleLogout} title="Logout" data-testid="logout-btn">

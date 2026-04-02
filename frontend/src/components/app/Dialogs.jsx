@@ -15,7 +15,7 @@ import {
   Plus, Wand2, Loader2, FileJson, Upload, Download, ThumbsUp, Search, Tag,
   TrendingUp, Activity, Eye, Star, History, Lock, Unlock, UserCircle,
   LogIn, User, Save, Send, RefreshCw, Play, Pause, SkipForward, Package, Box, Edit3, Bell,
-  GitFork, UserPlus, UserMinus, Filter, X, Trash2, Shield, Pencil, Users
+  GitFork, UserPlus, UserMinus, Filter, X, Trash2, Shield, Pencil, Users, Camera
 } from "lucide-react";
 import { ZONE_CONFIG } from "@/config";
 
@@ -269,7 +269,38 @@ export function AppDialogs() {
           <DialogHeader><DialogTitle className="flex items-center gap-2"><User size={20} />My Profile</DialogTitle></DialogHeader>
           <HiddenDesc>View and edit your profile information</HiddenDesc>
           <div className="profile-container">
-            <div className="profile-info"><div className="profile-avatar"><UserCircle size={64} /></div>
+            <div className="profile-info">
+              <label className="profile-avatar-upload" data-testid="profile-avatar-upload">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    try {
+                      const axios = (await import("axios")).default;
+                      const { API } = await import("@/config");
+                      const res = await axios.post(`${API}/users/avatar`, formData, { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } });
+                      ctx.setEditProfile({ ...ctx.editProfile, avatar_url: res.data.avatar_url });
+                      ctx.fetchProfile(ctx.currentUser.id);
+                      ctx.checkAuth();
+                    } catch (err) {
+                      alert(err.response?.data?.detail || "Upload failed");
+                    }
+                  }}
+                />
+                <div className="profile-avatar">
+                  {(ctx.profileData?.avatar_url || ctx.currentUser?.avatar_url) ? (
+                    <img src={ctx.profileData?.avatar_url || ctx.currentUser?.avatar_url} alt="Avatar" className="profile-avatar-img" />
+                  ) : (
+                    <UserCircle size={64} />
+                  )}
+                  <div className="profile-avatar-overlay"><Camera size={18} /></div>
+                </div>
+              </label>
               <div className="profile-details">
                 <h3 data-testid="profile-name">{ctx.profileData?.name || ctx.currentUser?.name || "User"}</h3>
                 <p className="text-muted">{ctx.currentUser?.email}</p>
