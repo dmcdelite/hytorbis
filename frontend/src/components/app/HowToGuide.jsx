@@ -7,7 +7,8 @@ import { Map, Wand2, Users, Download, Crown, Zap, Sparkles, ChevronLeft, Chevron
 
 const STEPS = [
   {
-    icon: Rocket,
+    icon: null,
+    useLogo: true,
     title: "Welcome to Hyt Orbis",
     color: "#10b981",
     content: (
@@ -181,9 +182,15 @@ export function HowToGuide() {
         </div>
 
         <div className="howto-body">
-          <div className="howto-icon-wrap" style={{ background: `${current.color}15`, color: current.color }}>
-            <Icon size={36} />
-          </div>
+          {current.useLogo ? (
+            <div className="howto-logo-wrap">
+              <img src="/hytorbis-logo.png" alt="Hyt Orbis" className="howto-logo-img" />
+            </div>
+          ) : Icon ? (
+            <div className="howto-icon-wrap" style={{ background: `${current.color}15`, color: current.color }}>
+              <Icon size={36} />
+            </div>
+          ) : null}
           <h2 className="howto-title">{current.title}</h2>
           <div className="howto-content">{current.content}</div>
         </div>

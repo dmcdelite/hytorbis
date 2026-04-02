@@ -9,6 +9,8 @@ import { CollabChat } from "@/components/app/CollabChat";
 import { AuthGate } from "@/components/app/AuthGate";
 import { PricingModal } from "@/components/app/PricingModal";
 import { ManageSubscription } from "@/components/app/ManageSubscription";
+import { InstallToGame } from "@/components/app/InstallToGame";
+import { HowToGuide } from "@/components/app/HowToGuide";
 
 function App() {
   return (
@@ -47,6 +49,8 @@ function AppContent() {
       <CollabChat />
       <PricingModal />
       <ManageSubscription />
+      <InstallToGame />
+      <HowToGuide />
     </div>
   );
 }

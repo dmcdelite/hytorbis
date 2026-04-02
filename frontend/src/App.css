@@ -3215,3 +3215,396 @@ body {
   opacity: 0.7;
   text-decoration: underline;
 }
+
+
+/* ========== INSTALL TO GAME ========== */
+.install-dialog {
+  max-width: 480px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.install-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.install-dialog-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.install-gated {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.install-gated h3 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.install-gated p {
+  font-size: 0.85rem;
+  max-width: 280px;
+  margin: 0;
+}
+
+.install-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--brand-primary);
+}
+
+.install-done h3 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.install-done p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.install-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.install-world-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.install-world-info strong {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.install-world-info span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.install-path-hint {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+
+.install-contents {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.install-contents-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.install-contents ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.install-contents li {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding-left: 14px;
+  position: relative;
+}
+
+.install-contents li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+}
+
+.install-btn {
+  width: 100%;
+  gap: 8px;
+}
+
+.install-game-btn {
+  width: 100%;
+  gap: 6px;
+  margin-top: 4px;
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.install-game-btn:hover {
+  background: var(--brand-primary);
+  color: var(--bg-primary);
+}
+
+/* ========== HOW-TO GUIDE ========== */
+.howto-dialog {
+  max-width: 520px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 85vh;
+}
+
+.howto-step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.howto-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.howto-dot.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  transform: scale(1.2);
+}
+
+.howto-dot.done {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  opacity: 0.5;
+}
+
+.howto-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  min-height: 220px;
+}
+
+.howto-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.howto-logo-wrap {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.howto-logo-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  object-fit: contain;
+}
+
+.howto-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.howto-content {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.howto-content p {
+  margin: 0 0 8px 0;
+}
+
+.howto-content strong {
+  color: var(--text-primary);
+}
+
+.howto-badge-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.howto-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.howto-badge-premium {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.howto-plans {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.howto-plan {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.howto-plan-highlight {
+  border-color: var(--brand-primary);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.howto-plan-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.howto-plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.howto-plan li {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.howto-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.howto-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.howto-dismiss-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.howto-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.howto-next-btn, .howto-done-btn {
+  gap: 4px;
+}
+
+.howto-done-btn {
+  background: var(--brand-primary);
+}
+
+/* ========== PWA INSTALL BUTTON ========== */
+.header-pwa-btn {
+  gap: 4px;
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+  font-size: 0.78rem;
+}
+
+.header-pwa-btn:hover {
+  background: var(--brand-primary);
+  color: var(--bg-primary);
+}
+
+/* ========== MOBILE RESPONSIVENESS FOR NEW COMPONENTS ========== */
+@media (max-width: 768px) {
+  .howto-dialog {
+    max-width: 95vw;
+    padding: 16px;
+    max-height: 80vh;
+  }
+
+  .howto-plans {
+    flex-direction: column;
+  }
+
+  .howto-body {
+    min-height: 180px;
+  }
+
+  .install-dialog {
+    max-width: 95vw;
+  }
+
+  .header-pwa-btn span {
+    display: none;
+  }
+}

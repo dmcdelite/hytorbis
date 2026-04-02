@@ -8,7 +8,7 @@ import { ZONE_CONFIG, PREFAB_CONFIG } from "@/config";
 import {
   FolderOpen, Plus, LayoutTemplate, Upload, Settings, MousePointer,
   Paintbrush, Castle, Move, Wand2, ZoomIn, ZoomOut, Maximize2,
-  Save, Share2, FileJson, Download, Layers, Package, Trash2
+  Save, Share2, FileJson, Download, Layers, Package, Trash2, FolderDown
 } from "lucide-react";
 
 export function Sidebar() {
@@ -140,6 +140,9 @@ export function Sidebar() {
             <Button variant="secondary" onClick={() => ctx.exportWorld("prefab")} data-testid="export-prefab-btn" title="Export as .prefab.json"><Layers size={16} />Prefab</Button>
             <Button variant="secondary" onClick={() => ctx.exportWorld("jar")} data-testid="export-jar-btn" title="Export as .jar mod package"><Package size={16} />JAR</Button>
           </div>
+          <Button variant="outline" onClick={() => ctx.setShowInstallDialog(true)} className="install-game-btn" data-testid="install-to-game-btn">
+            <FolderDown size={16} />Install to Game
+          </Button>
         </div>
       )}
     </aside>

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Map, Undo2, Redo2, Users, Box, Globe, BarChart3, History,
   Lock, Unlock, PanelRightOpen, PanelRightClose, LogIn, LogOut,
-  UserCircle, Bell, Search, Activity, UserPlus, Menu, Crown
+  UserCircle, Bell, Search, Activity, UserPlus, Menu, Crown, HelpCircle, Smartphone
 } from "lucide-react";
 
 export function Header() {
@@ -118,6 +118,14 @@ export function Header() {
         {/* Auth */}
         {ctx.currentUser ? (
           <div className="user-menu">
+            {ctx.pwaInstallable && (
+              <Button variant="outline" size="sm" onClick={ctx.triggerPwaInstall} className="header-pwa-btn" data-testid="pwa-install-btn" title="Install App">
+                <Smartphone size={14} /> Install App
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" onClick={() => ctx.setShowHowToDialog(true)} title="How-To Guide" data-testid="howto-btn">
+              <HelpCircle size={18} />
+            </Button>
             {plan === "free" && (
               <Button variant="outline" size="sm" onClick={() => ctx.setShowPricingDialog(true)} className="header-upgrade-btn" data-testid="header-upgrade-btn">
                 <Crown size={14} /> Upgrade

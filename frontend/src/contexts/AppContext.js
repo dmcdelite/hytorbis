@@ -156,6 +156,16 @@ export function AppProvider({ children }) {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  // Install to Game
+  const [showInstallDialog, setShowInstallDialog] = useState(false);
+
+  // How-To Guide
+  const [showHowToDialog, setShowHowToDialog] = useState(false);
+
+  // PWA Install
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [pwaInstallable, setPwaInstallable] = useState(false);
+
   // Notification WebSocket ref
   const notifWsRef = useRef(null);
 
@@ -163,6 +173,26 @@ export function AppProvider({ children }) {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  // ========== PWA INSTALL PROMPT ==========
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setPwaInstallable(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const triggerPwaInstall = async () => {
+    if (!deferredPrompt) return false;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    setPwaInstallable(false);
+    return result.outcome === "accepted";
+  };
 
   // When user changes, fetch subscription + worlds
   useEffect(() => {
@@ -1085,6 +1115,12 @@ export function AppProvider({ children }) {
     fetchSubscriptionStatus, startCheckout, verifyCheckout, isFeatureGated,
     createPaypalOrder, capturePaypalOrder,
     fetchPaymentHistory, cancelSubscription,
+    // Install to Game
+    showInstallDialog, setShowInstallDialog,
+    // How-To Guide
+    showHowToDialog, setShowHowToDialog,
+    // PWA
+    pwaInstallable, triggerPwaInstall,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
