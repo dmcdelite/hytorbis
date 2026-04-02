@@ -274,6 +274,30 @@ export function AppProvider({ children }) {
     return gateMap[feature] || false;
   };
 
+  // PayPal
+  const createPaypalOrder = async (planId) => {
+    try {
+      const response = await axios.post(`${API}/subscription/checkout/paypal`, {
+        plan_id: planId,
+        origin_url: window.location.origin,
+      });
+      return response.data.order_id;
+    } catch (e) {
+      throw new Error(e.response?.data?.detail || "Failed to create PayPal order");
+    }
+  };
+
+  const capturePaypalOrder = async (orderId) => {
+    try {
+      const response = await axios.post(`${API}/subscription/paypal/capture/${orderId}`);
+      if (response.data.status === "paid") {
+        await fetchSubscriptionStatus();
+        return "paid";
+      }
+      return response.data.status;
+    } catch (e) { return "error"; }
+  };
+
   // ========== PROFILE ==========
   const fetchProfile = async (uid) => {
     try {
@@ -1035,6 +1059,7 @@ export function AppProvider({ children }) {
     // Subscription
     subscription, showPricingDialog, setShowPricingDialog, checkoutLoading,
     fetchSubscriptionStatus, startCheckout, verifyCheckout, isFeatureGated,
+    createPaypalOrder, capturePaypalOrder,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

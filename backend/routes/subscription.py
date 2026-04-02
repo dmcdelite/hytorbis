@@ -219,3 +219,123 @@ async def _activate_subscription(user_id: str, plan_id: str, provider: str, sess
         {"$set": {"subscription_plan": plan_id}}
     )
     logger.info(f"Subscription activated: user={user_id}, plan={plan_id}, provider={provider}")
+
+
+# ========== PAYPAL ==========
+
+def _get_paypal_client():
+    from paypalserversdk.paypal_serversdk_client import PaypalServersdkClient
+    from paypalserversdk.http.auth.o_auth_2 import ClientCredentialsAuthCredentials
+    from paypalserversdk.configuration import Environment
+
+    client_id = os.environ.get("PAYPAL_CLIENT_ID")
+    secret = os.environ.get("PAYPAL_SECRET")
+    if not client_id or not secret:
+        return None
+
+    return PaypalServersdkClient(
+        client_credentials_auth_credentials=ClientCredentialsAuthCredentials(
+            o_auth_client_id=client_id,
+            o_auth_client_secret=secret,
+        ),
+        environment=Environment.SANDBOX
+    )
+
+
+@router.post("/subscription/checkout/paypal")
+async def create_paypal_checkout(request: Request):
+    user = await require_auth(request)
+    body = await request.json()
+    plan_id = body.get("plan_id")
+    origin_url = body.get("origin_url")
+
+    if plan_id not in ["creator", "developer"]:
+        raise HTTPException(status_code=400, detail="Invalid plan")
+    if not origin_url:
+        raise HTTPException(status_code=400, detail="Origin URL required")
+
+    plan = PLANS[plan_id]
+    paypal_client = _get_paypal_client()
+    if not paypal_client:
+        raise HTTPException(status_code=500, detail="PayPal not configured")
+
+    from paypalserversdk.models.order_request import OrderRequest
+    from paypalserversdk.models.checkout_payment_intent import CheckoutPaymentIntent
+    from paypalserversdk.models.purchase_unit_request import PurchaseUnitRequest
+    from paypalserversdk.models.amount_with_breakdown import AmountWithBreakdown
+
+    order_request = OrderRequest(
+        intent=CheckoutPaymentIntent.CAPTURE,
+        purchase_units=[
+            PurchaseUnitRequest(
+                amount=AmountWithBreakdown(
+                    currency_code="USD",
+                    value=f"{plan['price']:.2f}"
+                ),
+                description=f"Hyt Orbis - {plan['name']} Plan (Monthly)",
+                custom_id=f"{user['id']}|{plan_id}",
+            )
+        ]
+    )
+
+    result = paypal_client.orders.create_order({"body": order_request})
+    order = result.body
+
+    approve_url = None
+    for link in order.links:
+        if link.rel == "approve":
+            approve_url = link.href
+            break
+
+    if not approve_url:
+        raise HTTPException(status_code=500, detail="Failed to get PayPal approval URL")
+
+    await db.payment_transactions.insert_one({
+        "session_id": order.id,
+        "user_id": user["id"],
+        "plan_id": plan_id,
+        "amount": plan["price"],
+        "currency": "usd",
+        "provider": "paypal",
+        "payment_status": "pending",
+        "metadata": {"user_email": user.get("email", "")},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    return {"url": approve_url, "order_id": order.id}
+
+
+@router.post("/subscription/paypal/capture/{order_id}")
+async def capture_paypal_order(order_id: str, request: Request):
+    user = await require_auth(request)
+
+    txn = await db.payment_transactions.find_one(
+        {"session_id": order_id, "user_id": user["id"], "provider": "paypal"}, {"_id": 0}
+    )
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if txn.get("payment_status") == "paid":
+        return {"status": "paid", "plan_id": txn["plan_id"]}
+
+    paypal_client = _get_paypal_client()
+    if not paypal_client:
+        raise HTTPException(status_code=500, detail="PayPal not configured")
+
+    try:
+        result = paypal_client.orders.capture_order({"id": order_id})
+        captured = result.body
+
+        if captured.status == "COMPLETED":
+            await db.payment_transactions.update_one(
+                {"session_id": order_id},
+                {"$set": {"payment_status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            await _activate_subscription(txn["user_id"], txn["plan_id"], "paypal", order_id)
+            return {"status": "paid", "plan_id": txn["plan_id"]}
+        else:
+            return {"status": captured.status.lower()}
+    except Exception as e:
+        logger.error(f"PayPal capture error: {e}")
+        raise HTTPException(status_code=400, detail="Failed to capture PayPal payment")
+
