@@ -141,9 +141,10 @@ async def seed_admin():
         )
         logger.info(f"Admin password updated: {admin_email}")
 
-    creds_path = Path("/app/memory/test_credentials.md")
-    creds_path.parent.mkdir(parents=True, exist_ok=True)
-    creds_path.write_text(f"""# Test Credentials
+    try:
+        creds_path = Path("/app/memory/test_credentials.md")
+        creds_path.parent.mkdir(parents=True, exist_ok=True)
+        creds_path.write_text(f"""# Test Credentials
 
 ## Admin Account
 - Email: {admin_email}
@@ -160,3 +161,5 @@ async def seed_admin():
 ## Test User
 Create via registration or use admin account above.
 """)
+    except (PermissionError, OSError):
+        logger.info("Skipping test_credentials.md write (not in dev environment)")
