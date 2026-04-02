@@ -12,9 +12,15 @@ load_dotenv(ROOT_DIR / '.env')
 app = FastAPI(title="Hytale World Builder API")
 
 # CORS
+cors_origins = os.environ.get("CORS_ORIGINS", "*")
+if cors_origins == "*":
+    origins = ["*"]
+else:
+    origins = [o.strip() for o in cors_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
