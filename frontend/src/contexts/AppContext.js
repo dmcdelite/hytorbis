@@ -142,7 +142,10 @@ export function AppProvider({ children }) {
   const [collabInviteEmail, setCollabInviteEmail] = useState("");
   const [collabInviteRole, setCollabInviteRole] = useState("viewer");
 
-  // Notification WebSocket
+  // Thumbnails cache
+  const [thumbnails, setThumbnails] = useState({});
+
+  // Notification WebSocket ref
   const notifWsRef = useRef(null);
 
   // ========== INIT ==========
@@ -152,6 +155,26 @@ export function AppProvider({ children }) {
     fetchCustomPrefabs();
     checkAuth();
   }, []);
+
+  // ========== THUMBNAILS ==========
+  const fetchThumbnail = async (worldId) => {
+    if (thumbnails[worldId]) return;
+    try {
+      const response = await axios.get(`${API}/worlds/${worldId}/thumbnail`);
+      if (response.data.thumbnail) {
+        setThumbnails(prev => ({ ...prev, [worldId]: response.data.thumbnail }));
+      }
+    } catch (e) { /* ignore */ }
+  };
+
+  const regenerateThumbnail = async (worldId) => {
+    try {
+      const response = await axios.post(`${API}/worlds/${worldId}/thumbnail`);
+      if (response.data.thumbnail) {
+        setThumbnails(prev => ({ ...prev, [worldId]: response.data.thumbnail }));
+      }
+    } catch (e) { /* ignore */ }
+  };
 
   // ========== AUTH ==========
   const checkAuth = async () => {
@@ -439,6 +462,7 @@ export function AppProvider({ children }) {
         zones: currentWorld.zones, prefabs: currentWorld.prefabs,
         ai_provider: aiProvider
       });
+      regenerateThumbnail(currentWorld.id);
     } catch (e) { console.error("Failed to save world:", e); }
     setLoading(false);
   };
@@ -934,6 +958,7 @@ export function AppProvider({ children }) {
     forkWorld, forkFromGallery,
     updateZoneProperty, updateZoneBiomes, deleteZone,
     updatePrefabProperty, deletePrefab, updateTerrain,
+    thumbnails, fetchThumbnail, regenerateThumbnail,
     wsRef,
   };
 

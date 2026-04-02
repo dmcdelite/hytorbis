@@ -178,6 +178,34 @@ async def update_world_visibility(world_id: str, is_public: bool, request: Reque
     return {"message": "Visibility updated", "is_public": is_public}
 
 
+# ==================== THUMBNAIL ====================
+
+@router.post("/worlds/{world_id}/thumbnail")
+async def generate_world_thumbnail(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    from thumbnail import generate_thumbnail
+    thumb = generate_thumbnail(world)
+    await db.worlds.update_one({"id": world_id}, {"$set": {"thumbnail": thumb}})
+    return {"thumbnail": thumb}
+
+
+@router.get("/worlds/{world_id}/thumbnail")
+async def get_world_thumbnail(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0, "thumbnail": 1})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if world.get("thumbnail"):
+        return {"thumbnail": world["thumbnail"]}
+    # Generate on-the-fly if not cached
+    full_world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    from thumbnail import generate_thumbnail
+    thumb = generate_thumbnail(full_world)
+    await db.worlds.update_one({"id": world_id}, {"$set": {"thumbnail": thumb}})
+    return {"thumbnail": thumb}
+
+
 # ==================== WORLD FORK/CLONE ====================
 
 @router.post("/worlds/{world_id}/fork")

@@ -142,6 +142,11 @@ export function AppDialogs() {
             <div className="gallery-grid">
               {ctx.galleryEntries.map((entry) => (
                 <Card key={entry.id} className="gallery-card" data-testid={`gallery-entry-${entry.id}`}>
+                  {entry.thumbnail && (
+                    <div className="gallery-card-thumbnail">
+                      <img src={entry.thumbnail} alt={entry.name} />
+                    </div>
+                  )}
                   <CardHeader className="gallery-card-header"><CardTitle className="gallery-card-title">{entry.name}</CardTitle><CardDescription>{entry.description?.slice(0, 80)}{entry.description?.length > 80 ? "..." : ""}</CardDescription></CardHeader>
                   <CardContent>
                     <div className="gallery-meta"><Badge variant="secondary">{entry.map_size}</Badge><span><Eye size={12} />{entry.views}</span><span><ThumbsUp size={12} />{entry.likes}</span><span><Download size={12} />{entry.downloads}</span></div>

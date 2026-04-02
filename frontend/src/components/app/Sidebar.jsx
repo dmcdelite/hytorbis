@@ -34,17 +34,24 @@ export function Sidebar() {
           </div>
         </div>
         <ScrollArea className="worlds-list">
-          {ctx.worlds.map((world) => (
-            <div key={world.id} className={`world-item ${ctx.currentWorld?.id === world.id ? "active" : ""}`} onClick={() => ctx.loadWorld(world.id)} data-testid={`world-item-${world.id}`}>
-              <div className="world-item-info">
-                <span className="world-item-name">{world.name}</span>
-                <span className="world-item-seed">{world.seed} • {world.map_width}x{world.map_height}</span>
+          {ctx.worlds.map((world) => {
+            // Lazy-load thumbnail
+            if (!ctx.thumbnails[world.id] && world.zones?.length > 0) ctx.fetchThumbnail(world.id);
+            return (
+              <div key={world.id} className={`world-item ${ctx.currentWorld?.id === world.id ? "active" : ""}`} onClick={() => ctx.loadWorld(world.id)} data-testid={`world-item-${world.id}`}>
+                {ctx.thumbnails[world.id] && (
+                  <img src={ctx.thumbnails[world.id]} alt="" className="world-item-thumb" />
+                )}
+                <div className="world-item-info">
+                  <span className="world-item-name">{world.name}</span>
+                  <span className="world-item-seed">{world.seed} • {world.map_width}x{world.map_height}</span>
+                </div>
+                <Button variant="ghost" size="icon" className="world-delete-btn" onClick={(e) => { e.stopPropagation(); ctx.deleteWorld(world.id); }} data-testid={`delete-world-${world.id}`}>
+                  <Trash2 size={14} />
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" className="world-delete-btn" onClick={(e) => { e.stopPropagation(); ctx.deleteWorld(world.id); }} data-testid={`delete-world-${world.id}`}>
-                <Trash2 size={14} />
-              </Button>
-            </div>
-          ))}
+            );
+          })}
           {ctx.worlds.length === 0 && (
             <div className="empty-state">
               <p>No worlds yet</p>

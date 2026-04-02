@@ -55,9 +55,17 @@ async def publish_to_gallery(request_data: GalleryPublish, request: Request):
         template_used=world.get("template")
     )
 
+    # Auto-generate thumbnail
+    from thumbnail import generate_thumbnail
+    gallery_entry.thumbnail = generate_thumbnail(world)
+
     doc = gallery_entry.model_dump()
     doc['published_at'] = doc['published_at'].isoformat()
     await db.gallery.insert_one(doc)
+
+    # Also store thumbnail on the world itself
+    await db.worlds.update_one({"id": request_data.world_id}, {"$set": {"thumbnail": gallery_entry.thumbnail}})
+
     await track_analytics("gallery_publish", request_data.world_id, {"tags": request_data.tags})
 
     # Notify followers
