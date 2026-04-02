@@ -229,7 +229,7 @@ async def get_ai_response(message: str, world_config: dict, provider: str) -> di
 
     llm_provider, model = provider_models[provider]
 
-    system_message = """You are a Hytale World Builder AI assistant. You help users create amazing game worlds by suggesting:
+    system_message = """You are a Hyt Orbis World Builder AI assistant. You help users create amazing game worlds by suggesting:
 - Zone placements and configurations (Emerald Grove, Borea, Desert, Arctic, Corrupted)
 - Biome settings and mixing
 - Prefab placements (dungeons, villages, ruins, towers, caves, portals)

@@ -9,7 +9,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # Create the main app
-app = FastAPI(title="Hytale World Builder API")
+app = FastAPI(title="Hyt Orbis World Builder API")
 
 # CORS
 cors_origins = os.environ.get("CORS_ORIGINS", "*")
@@ -52,7 +52,7 @@ api_router.include_router(misc_router)
 
 @api_router.get("/")
 async def root():
-    return {"message": "Hytale World Builder API", "version": "2.0.0"}
+    return {"message": "Hyt Orbis World Builder API", "version": "2.0.0"}
 
 
 @api_router.get("/health")
@@ -69,6 +69,6 @@ app.include_router(api_router)
 async def startup_event():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-    logger.info("Starting Hytale World Builder API v2.0")
+    logger.info("Starting Hyt Orbis World Builder API v2.0")
     await seed_admin()
     logger.info("Admin user seeded")

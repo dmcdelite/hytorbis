@@ -16,8 +16,8 @@ export function Header() {
         <Button variant="ghost" size="icon" className="mobile-toggle-sidebar" onClick={() => ctx.setMobileSidebarOpen(!ctx.mobileSidebarOpen)} data-testid="mobile-sidebar-toggle">
           <Menu size={18} />
         </Button>
-        <img src="/logo-small.png" alt="Hytale World Builder" className="header-logo" />
-        <h1 className="header-title">Hytale World Builder</h1>
+        <img src="/logo-small.png" alt="Hyt Orbis World Builder" className="header-logo" />
+        <h1 className="header-title">Hyt Orbis World Builder</h1>
       </div>
       <div className="header-center">
         {ctx.currentWorld && (
