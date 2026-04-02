@@ -740,12 +740,18 @@ export function AppProvider({ children }) {
         const w = response.data.world;
         if (typeof w.created_at === 'string') w.created_at = new Date(w.created_at);
         if (typeof w.updated_at === 'string') w.updated_at = new Date(w.updated_at);
-        setCurrentWorld(w);
-        saveToHistory(w);
-        setAiMessages(prev => [...prev, { role: "assistant", content: `Auto-generated world with ${(w.zones || []).length} zones and ${(w.prefabs || []).length} prefabs.` }]);
+        setShowAutoGenDialog(false);
+        setAutoGenPrompt("");
+        // Defer heavy grid re-render to next frame to avoid INP lag
+        requestAnimationFrame(() => {
+          setCurrentWorld(w);
+          saveToHistory(w);
+          setAiMessages(prev => [...prev, { role: "assistant", content: `Auto-generated world with ${(w.zones || []).length} zones and ${(w.prefabs || []).length} prefabs.` }]);
+        });
+      } else {
+        setShowAutoGenDialog(false);
+        setAutoGenPrompt("");
       }
-      setShowAutoGenDialog(false);
-      setAutoGenPrompt("");
     } catch (e) {
       alert(e.response?.data?.detail || "AI auto-generation failed. Please try again.");
     }
