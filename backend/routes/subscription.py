@@ -308,7 +308,7 @@ def _get_paypal_client():
             o_auth_client_id=client_id,
             o_auth_client_secret=secret,
         ),
-        environment=Environment.SANDBOX
+        environment=Environment.PRODUCTION
     )
 
 
