@@ -31,6 +31,12 @@
   --font-heading: 'Exo 2', sans-serif;
   --font-body: 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Aliases for component styles */
+  --bg-primary: #0A0B10;
+  --bg-secondary: #12141D;
+  --bg-tertiary: #1A1D2A;
+  --border-color: #1E293B;
 }
 
 /* Reset and Base */
