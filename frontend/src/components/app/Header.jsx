@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Map, Undo2, Redo2, Users, Box, Globe, BarChart3, History,
   Lock, Unlock, PanelRightOpen, PanelRightClose, LogIn, LogOut,
-  UserCircle, Bell
+  UserCircle, Bell, Search, Activity, UserPlus
 } from "lucide-react";
 
 export function Header() {
@@ -64,6 +64,9 @@ export function Header() {
                 <Button variant="ghost" size="icon" onClick={ctx.toggleWorldVisibility} title={ctx.currentWorld?.is_public ? "Make Private" : "Make Public"} data-testid="visibility-toggle-btn">
                   {ctx.currentWorld?.is_public ? <Unlock size={18} /> : <Lock size={18} />}
                 </Button>
+                <Button variant="ghost" size="icon" onClick={() => { ctx.setShowCollabDialog(true); ctx.fetchCollaborators(); }} title="Manage Collaborators" data-testid="manage-collab-btn">
+                  <UserPlus size={18} />
+                </Button>
               </>
             )}
             <div className="header-divider" />
@@ -75,17 +78,33 @@ export function Header() {
         <div className="header-divider" />
         {/* Notifications */}
         {ctx.currentUser && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => { ctx.setShowNotifications(!ctx.showNotifications); ctx.fetchNotifications(); }}
-            title="Notifications"
-            data-testid="notifications-btn"
-            className="notification-bell"
-          >
-            <Bell size={18} />
-            {ctx.unreadCount > 0 && <span className="notification-badge">{ctx.unreadCount}</span>}
-          </Button>
+          <>
+            <Button
+              variant="ghost" size="icon"
+              onClick={() => { ctx.setShowActivityFeed(true); ctx.fetchActivityFeed(); }}
+              title="Activity Feed" data-testid="activity-feed-btn"
+            >
+              <Activity size={18} />
+            </Button>
+            <Button
+              variant="ghost" size="icon"
+              onClick={() => { ctx.setShowUserSearchDialog(true); ctx.fetchSuggestedUsers(); }}
+              title="Find Users" data-testid="user-search-btn"
+            >
+              <Search size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => { ctx.setShowNotifications(!ctx.showNotifications); ctx.fetchNotifications(); }}
+              title="Notifications"
+              data-testid="notifications-btn"
+              className="notification-bell"
+            >
+              <Bell size={18} />
+              {ctx.unreadCount > 0 && <span className="notification-badge">{ctx.unreadCount}</span>}
+            </Button>
+          </>
         )}
         {/* Auth */}
         {ctx.currentUser ? (

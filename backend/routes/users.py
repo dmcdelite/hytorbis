@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
+from typing import Optional
 from bson import ObjectId
 from datetime import datetime, timezone
 
@@ -7,6 +8,114 @@ from auth_utils import get_current_user, require_auth
 from models import UserProfileUpdate, FollowRequest
 
 router = APIRouter()
+
+
+@router.get("/users/search")
+async def search_users(q: str, limit: int = 20, request: Request = None):
+    if not q or len(q) < 2:
+        return {"users": []}
+    query = {"$or": [
+        {"name": {"$regex": q, "$options": "i"}},
+        {"email": {"$regex": q, "$options": "i"}}
+    ]}
+    users = await db.users.find(query, {"password_hash": 0}).limit(limit).to_list(limit)
+    current = await get_current_user(request) if request else None
+    result = []
+    for u in users:
+        uid = str(u["_id"])
+        is_following = False
+        if current:
+            f = await db.follows.find_one({"follower_id": current["id"], "following_id": uid})
+            is_following = f is not None
+        result.append({
+            "id": uid, "name": u.get("name", ""), "bio": u.get("bio", ""),
+            "avatar_url": u.get("avatar_url"), "role": u.get("role", "user"),
+            "is_following": is_following
+        })
+    return {"users": result}
+
+
+@router.get("/users/suggested")
+async def get_suggested_users(request: Request):
+    current = await require_auth(request)
+    # Get users the current user is NOT following
+    following = await db.follows.find({"follower_id": current["id"]}).to_list(500)
+    following_ids = [f["following_id"] for f in following]
+    following_ids.append(current["id"])  # exclude self
+
+    # Find active users with gallery entries
+    pipeline = [
+        {"$match": {"creator_id": {"$nin": following_ids, "$ne": None}}},
+        {"$group": {"_id": "$creator_id", "count": {"$sum": 1}, "total_likes": {"$sum": "$likes"}}},
+        {"$sort": {"total_likes": -1}},
+        {"$limit": 10}
+    ]
+    active_creators = await db.gallery.aggregate(pipeline).to_list(10)
+
+    suggestions = []
+    for ac in active_creators:
+        u = await db.users.find_one({"_id": ObjectId(ac["_id"])}, {"password_hash": 0})
+        if u:
+            suggestions.append({
+                "id": str(u["_id"]), "name": u.get("name", ""),
+                "bio": u.get("bio", ""), "avatar_url": u.get("avatar_url"),
+                "published_count": ac["count"], "total_likes": ac["total_likes"]
+            })
+    return {"suggestions": suggestions}
+
+
+@router.get("/activity-feed")
+async def get_activity_feed(request: Request, limit: int = 30):
+    current = await require_auth(request)
+    # Get IDs of users we follow
+    following = await db.follows.find({"follower_id": current["id"]}).to_list(500)
+    following_ids = [f["following_id"] for f in following]
+
+    if not following_ids:
+        return {"activities": []}
+
+    # Get recent gallery publications from followed users
+    activities = []
+    entries = await db.gallery.find(
+        {"creator_id": {"$in": following_ids}}, {"_id": 0}
+    ).sort([("published_at", -1)]).limit(limit).to_list(limit)
+
+    for entry in entries:
+        creator = await db.users.find_one({"_id": ObjectId(entry["creator_id"])}, {"password_hash": 0})
+        activities.append({
+            "type": "publication",
+            "user_id": entry["creator_id"],
+            "user_name": creator.get("name", "Unknown") if creator else "Unknown",
+            "data": {
+                "gallery_id": entry["id"], "world_name": entry["name"],
+                "description": entry.get("description", "")[:100],
+                "map_size": entry.get("map_size", ""), "likes": entry.get("likes", 0),
+                "downloads": entry.get("downloads", 0)
+            },
+            "created_at": entry.get("published_at", "")
+        })
+
+    # Get recent reviews by followed users
+    reviews = await db.reviews.find(
+        {"user_id": {"$in": following_ids}}, {"_id": 0}
+    ).sort([("created_at", -1)]).limit(10).to_list(10)
+
+    for review in reviews:
+        activities.append({
+            "type": "review",
+            "user_id": review["user_id"],
+            "user_name": review.get("user_name", "Unknown"),
+            "data": {
+                "gallery_id": review["gallery_id"],
+                "rating": review["rating"],
+                "comment": review.get("comment", "")[:80]
+            },
+            "created_at": review.get("created_at", "")
+        })
+
+    # Sort by date
+    activities.sort(key=lambda a: a.get("created_at", ""), reverse=True)
+    return {"activities": activities[:limit]}
 
 
 @router.get("/users/{user_id}/profile")
@@ -82,13 +191,10 @@ async def follow_user(user_id: str, request: Request):
         "created_at": datetime.now(timezone.utc).isoformat()
     })
 
-    # Create notification
-    await db.notifications.insert_one({
-        "user_id": user_id,
-        "type": "new_follower",
-        "data": {"follower_id": current["id"], "follower_name": current.get("name", "Someone")},
-        "read": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
+    # Create notification with real-time push
+    from routes.gallery import create_notification
+    await create_notification(user_id, "new_follower", {
+        "follower_id": current["id"], "follower_name": current.get("name", "Someone")
     })
 
     return {"message": "Followed"}

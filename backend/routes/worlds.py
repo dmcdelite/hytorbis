@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from typing import List, Optional
 from datetime import datetime, timezone
+from bson import ObjectId
 import json
 import base64
 import io
@@ -73,10 +74,13 @@ async def update_world(world_id: str, update: WorldUpdate, request: Request):
     if not world:
         raise HTTPException(status_code=404, detail="World not found")
 
-    # Permission check: owner or admin or unowned world
+    # Permission check: owner, admin, or editor collaborator
     user = await get_current_user(request)
     if world.get("owner_id") and user:
-        if world["owner_id"] != user["id"] and user.get("role") != "admin":
+        is_owner = world["owner_id"] == user["id"]
+        is_admin = user.get("role") == "admin"
+        is_editor = any(c["user_id"] == user["id"] and c["role"] == "editor" for c in world.get("collaborators", []))
+        if not (is_owner or is_admin or is_editor):
             raise HTTPException(status_code=403, detail="Not authorized to edit this world")
 
     update_data = update.model_dump(exclude_unset=True)
@@ -172,6 +176,152 @@ async def update_world_visibility(world_id: str, is_public: bool, request: Reque
         raise HTTPException(status_code=403, detail="Not authorized")
     await db.worlds.update_one({"id": world_id}, {"$set": {"is_public": is_public, "updated_at": datetime.now(timezone.utc).isoformat()}})
     return {"message": "Visibility updated", "is_public": is_public}
+
+
+# ==================== WORLD FORK/CLONE ====================
+
+@router.post("/worlds/{world_id}/fork")
+async def fork_world(world_id: str, request: Request):
+    user = await require_auth(request)
+    source = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    import uuid
+    fork_name = f"{source.get('name', 'World')} (Fork)"
+
+    body = None
+    try:
+        body = await request.json()
+    except:
+        pass
+    if body and body.get("name"):
+        fork_name = body["name"]
+
+    new_id = str(uuid.uuid4())
+    forked = {
+        **source,
+        "id": new_id,
+        "name": fork_name,
+        "owner_id": user["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "forked_from": world_id,
+        "collaborators": []
+    }
+    forked.pop("_id", None)
+    await db.worlds.insert_one(forked)
+    return {"message": "World forked", "world_id": new_id, "name": fork_name}
+
+
+# ==================== COLLABORATOR MANAGEMENT ====================
+
+@router.get("/worlds/{world_id}/collaborators")
+async def get_collaborators(world_id: str):
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    collabs = world.get("collaborators", [])
+    result = []
+    for c in collabs:
+        u = await db.users.find_one({"_id": ObjectId(c["user_id"])}, {"password_hash": 0})
+        if u:
+            result.append({
+                "user_id": c["user_id"], "role": c["role"],
+                "name": u.get("name", ""), "email": u.get("email", ""),
+                "added_at": c.get("added_at", "")
+            })
+    owner_id = world.get("owner_id")
+    owner = None
+    if owner_id:
+        o = await db.users.find_one({"_id": ObjectId(owner_id)}, {"password_hash": 0})
+        if o:
+            owner = {"user_id": owner_id, "name": o.get("name", ""), "role": "owner"}
+    return {"owner": owner, "collaborators": result}
+
+
+@router.post("/worlds/{world_id}/collaborators")
+async def add_collaborator(world_id: str, request: Request):
+    user = await require_auth(request)
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+
+    # Only owner or admin can add collaborators
+    if world.get("owner_id") and world["owner_id"] != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only the owner can manage collaborators")
+
+    body = await request.json()
+    target_user_id = body.get("user_id")
+    role = body.get("role", "viewer")
+    if role not in ("editor", "viewer"):
+        raise HTTPException(status_code=400, detail="Role must be 'editor' or 'viewer'")
+
+    target = await db.users.find_one({"_id": ObjectId(target_user_id)})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    collabs = world.get("collaborators", [])
+    if any(c["user_id"] == target_user_id for c in collabs):
+        raise HTTPException(status_code=400, detail="User is already a collaborator")
+
+    collabs.append({"user_id": target_user_id, "role": role, "added_at": datetime.now(timezone.utc).isoformat()})
+    await db.worlds.update_one({"id": world_id}, {"$set": {"collaborators": collabs}})
+
+    # Notify the invited user with real-time push
+    from routes.gallery import create_notification
+    await create_notification(target_user_id, "collab_invite", {
+        "world_name": world.get("name"), "world_id": world_id,
+        "role": role, "inviter_name": user.get("name", "Someone")
+    })
+
+    return {"message": f"Added {role} collaborator"}
+
+
+@router.put("/worlds/{world_id}/collaborators/{collab_user_id}")
+async def update_collaborator_role(world_id: str, collab_user_id: str, request: Request):
+    user = await require_auth(request)
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if world.get("owner_id") and world["owner_id"] != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only the owner can manage collaborators")
+
+    body = await request.json()
+    new_role = body.get("role", "viewer")
+    if new_role not in ("editor", "viewer"):
+        raise HTTPException(status_code=400, detail="Role must be 'editor' or 'viewer'")
+
+    collabs = world.get("collaborators", [])
+    found = False
+    for c in collabs:
+        if c["user_id"] == collab_user_id:
+            c["role"] = new_role
+            found = True
+            break
+    if not found:
+        raise HTTPException(status_code=404, detail="Collaborator not found")
+
+    await db.worlds.update_one({"id": world_id}, {"$set": {"collaborators": collabs}})
+    return {"message": f"Updated role to {new_role}"}
+
+
+@router.delete("/worlds/{world_id}/collaborators/{collab_user_id}")
+async def remove_collaborator(world_id: str, collab_user_id: str, request: Request):
+    user = await require_auth(request)
+    world = await db.worlds.find_one({"id": world_id}, {"_id": 0})
+    if not world:
+        raise HTTPException(status_code=404, detail="World not found")
+    if world.get("owner_id") and world["owner_id"] != user["id"] and user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only the owner can manage collaborators")
+
+    collabs = world.get("collaborators", [])
+    new_collabs = [c for c in collabs if c["user_id"] != collab_user_id]
+    if len(new_collabs) == len(collabs):
+        raise HTTPException(status_code=404, detail="Collaborator not found")
+
+    await db.worlds.update_one({"id": world_id}, {"$set": {"collaborators": new_collabs}})
+    return {"message": "Collaborator removed"}
 
 
 # ==================== TEMPLATES ====================

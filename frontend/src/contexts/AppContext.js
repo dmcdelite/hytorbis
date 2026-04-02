@@ -121,6 +121,30 @@ export function AppProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Enhanced Social
+  const [showUserSearchDialog, setShowUserSearchDialog] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [showActivityFeed, setShowActivityFeed] = useState(false);
+  const [activityFeed, setActivityFeed] = useState([]);
+
+  // Gallery filters
+  const [galleryFilterZones, setGalleryFilterZones] = useState("");
+  const [galleryFilterMinRating, setGalleryFilterMinRating] = useState(0);
+  const [galleryFilterMapMin, setGalleryFilterMapMin] = useState("");
+  const [galleryFilterMapMax, setGalleryFilterMapMax] = useState("");
+  const [galleryFollowingOnly, setGalleryFollowingOnly] = useState(false);
+
+  // Collaborators
+  const [showCollabDialog, setShowCollabDialog] = useState(false);
+  const [worldCollaborators, setWorldCollaborators] = useState({ owner: null, collaborators: [] });
+  const [collabInviteEmail, setCollabInviteEmail] = useState("");
+  const [collabInviteRole, setCollabInviteRole] = useState("viewer");
+
+  // Notification WebSocket
+  const notifWsRef = useRef(null);
+
   // ========== INIT ==========
   useEffect(() => {
     fetchWorlds();
@@ -215,8 +239,112 @@ export function AppProvider({ children }) {
   };
 
   useEffect(() => {
-    if (currentUser) fetchNotifications();
+    if (currentUser) {
+      fetchNotifications();
+      connectNotificationWs();
+    }
+    return () => {
+      if (notifWsRef.current) { notifWsRef.current.close(); notifWsRef.current = null; }
+    };
   }, [currentUser]);
+
+  // Real-time notification WebSocket
+  const connectNotificationWs = () => {
+    if (!currentUser || notifWsRef.current) return;
+    try {
+      const ws = new WebSocket(`${WS_URL}/api/ws/notifications/${currentUser.id}`);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "notification") {
+          setNotifications(prev => [data.data, ...prev]);
+          setUnreadCount(prev => prev + 1);
+        }
+      };
+      ws.onclose = () => { notifWsRef.current = null; };
+      // Ping every 30s to keep alive
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ping" }));
+        else clearInterval(pingInterval);
+      }, 30000);
+      notifWsRef.current = ws;
+    } catch (e) { console.error("Notification WS failed:", e); }
+  };
+
+  // ========== ENHANCED SOCIAL ==========
+  const searchUsers = async (q) => {
+    if (!q || q.length < 2) { setUserSearchResults([]); return; }
+    try {
+      const response = await axios.get(`${API}/users/search?q=${encodeURIComponent(q)}`);
+      setUserSearchResults(response.data.users || []);
+    } catch (e) { console.error("Search failed:", e); }
+  };
+
+  const fetchSuggestedUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users/suggested`);
+      setSuggestedUsers(response.data.suggestions || []);
+    } catch (e) { console.error("Suggested users failed:", e); }
+  };
+
+  const fetchActivityFeed = async () => {
+    try {
+      const response = await axios.get(`${API}/activity-feed`);
+      setActivityFeed(response.data.activities || []);
+    } catch (e) { console.error("Activity feed failed:", e); }
+  };
+
+  // ========== COLLABORATOR MANAGEMENT ==========
+  const fetchCollaborators = async () => {
+    if (!currentWorld) return;
+    try {
+      const response = await axios.get(`${API}/worlds/${currentWorld.id}/collaborators`);
+      setWorldCollaborators(response.data);
+    } catch (e) { console.error("Collaborators failed:", e); }
+  };
+
+  const addCollaborator = async (userId, role) => {
+    if (!currentWorld) return;
+    try {
+      await axios.post(`${API}/worlds/${currentWorld.id}/collaborators`, { user_id: userId, role });
+      fetchCollaborators();
+      setCollabInviteEmail("");
+    } catch (e) { alert(e.response?.data?.detail || "Failed to add collaborator"); }
+  };
+
+  const removeCollaborator = async (userId) => {
+    if (!currentWorld) return;
+    try {
+      await axios.delete(`${API}/worlds/${currentWorld.id}/collaborators/${userId}`);
+      fetchCollaborators();
+    } catch (e) { alert(e.response?.data?.detail || "Failed to remove collaborator"); }
+  };
+
+  const updateCollaboratorRole = async (userId, role) => {
+    if (!currentWorld) return;
+    try {
+      await axios.put(`${API}/worlds/${currentWorld.id}/collaborators/${userId}`, { role });
+      fetchCollaborators();
+    } catch (e) { alert(e.response?.data?.detail || "Failed to update role"); }
+  };
+
+  // ========== WORLD FORKING ==========
+  const forkWorld = async (worldId, name) => {
+    try {
+      const response = await axios.post(`${API}/worlds/${worldId}/fork`, { name: name || undefined });
+      fetchWorlds();
+      return response.data;
+    } catch (e) { alert(e.response?.data?.detail || "Fork failed"); }
+  };
+
+  const forkFromGallery = async (galleryId, name) => {
+    try {
+      const response = await axios.post(`${API}/gallery/${galleryId}/fork`, { name: name || undefined });
+      fetchWorlds();
+      if (response.data.world_id) loadWorld(response.data.world_id);
+      setShowGalleryDialog(false);
+      return response.data;
+    } catch (e) { alert(e.response?.data?.detail || "Fork failed"); }
+  };
 
   // ========== VERSIONS ==========
   const fetchVersions = async () => {
@@ -650,6 +778,11 @@ export function AppProvider({ children }) {
     try {
       const params = new URLSearchParams({ sort_by: gallerySort, limit: "20" });
       if (gallerySearch) params.set("query", gallerySearch);
+      if (galleryFilterZones) params.set("zone_types", galleryFilterZones);
+      if (galleryFilterMinRating > 0) params.set("min_rating", String(galleryFilterMinRating));
+      if (galleryFilterMapMin) params.set("map_size_min", galleryFilterMapMin);
+      if (galleryFilterMapMax) params.set("map_size_max", galleryFilterMapMax);
+      if (galleryFollowingOnly) params.set("following_only", "true");
       const response = await axios.get(`${API}/gallery?${params}`);
       setGalleryEntries(response.data.entries || []);
     } catch (e) { console.error("Failed to fetch gallery:", e); }
@@ -774,6 +907,16 @@ export function AppProvider({ children }) {
     selectedGalleryForReview, setSelectedGalleryForReview,
     // Social
     notifications, unreadCount, showNotifications, setShowNotifications,
+    // Enhanced Social
+    showUserSearchDialog, setShowUserSearchDialog, userSearchQuery, setUserSearchQuery,
+    userSearchResults, suggestedUsers, showActivityFeed, setShowActivityFeed, activityFeed,
+    // Gallery filters
+    galleryFilterZones, setGalleryFilterZones, galleryFilterMinRating, setGalleryFilterMinRating,
+    galleryFilterMapMin, setGalleryFilterMapMin, galleryFilterMapMax, setGalleryFilterMapMax,
+    galleryFollowingOnly, setGalleryFollowingOnly,
+    // Collaborators
+    showCollabDialog, setShowCollabDialog, worldCollaborators,
+    collabInviteEmail, setCollabInviteEmail, collabInviteRole, setCollabInviteRole,
     // Functions
     fetchWorlds, createWorld, loadWorld, saveWorld, deleteWorld,
     sendAiMessage, fetchTemplates, createFromTemplate,
@@ -786,6 +929,9 @@ export function AppProvider({ children }) {
     fetchVersions, createVersion, restoreVersion, toggleWorldVisibility,
     fetchReviews, createReview,
     fetchNotifications, markAllRead, followUser, unfollowUser,
+    searchUsers, fetchSuggestedUsers, fetchActivityFeed,
+    fetchCollaborators, addCollaborator, removeCollaborator, updateCollaboratorRole,
+    forkWorld, forkFromGallery,
     updateZoneProperty, updateZoneBiomes, deleteZone,
     updatePrefabProperty, deletePrefab, updateTerrain,
     wsRef,

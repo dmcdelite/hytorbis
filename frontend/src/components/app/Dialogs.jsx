@@ -14,8 +14,10 @@ import { MAP_SIZE_PRESETS, TEMPLATE_ICONS } from "@/config";
 import {
   Plus, Wand2, Loader2, FileJson, Upload, Download, ThumbsUp, Search, Tag,
   TrendingUp, Activity, Eye, Star, History, Lock, Unlock, UserCircle,
-  LogIn, User, Save, Send, RefreshCw, Play, Pause, SkipForward, Package, Box, Edit3, Bell
+  LogIn, User, Save, Send, RefreshCw, Play, Pause, SkipForward, Package, Box, Edit3, Bell,
+  GitFork, UserPlus, UserMinus, Filter, X, Trash2, Shield, Pencil
 } from "lucide-react";
+import { ZONE_CONFIG } from "@/config";
 
 // Helper for accessible dialog descriptions
 const HiddenDesc = ({ children }) => <DialogDescription className="sr-only">{children}</DialogDescription>;
@@ -109,8 +111,32 @@ export function AppDialogs() {
             <div className="gallery-search"><Search size={16} /><Input value={ctx.gallerySearch} onChange={(e) => ctx.setGallerySearch(e.target.value)} placeholder="Search worlds..." data-testid="gallery-search" onKeyDown={(e) => e.key === "Enter" && ctx.fetchGallery()} /></div>
             <Select value={ctx.gallerySort} onValueChange={(v) => { ctx.setGallerySort(v); ctx.fetchGallery(); }}>
               <SelectTrigger className="gallery-sort-select" data-testid="gallery-sort"><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="recent">Recent</SelectItem><SelectItem value="popular">Popular</SelectItem><SelectItem value="downloads">Downloads</SelectItem><SelectItem value="likes">Likes</SelectItem></SelectContent>
+              <SelectContent><SelectItem value="recent">Recent</SelectItem><SelectItem value="popular">Popular</SelectItem><SelectItem value="downloads">Downloads</SelectItem><SelectItem value="likes">Likes</SelectItem><SelectItem value="rating">Rating</SelectItem></SelectContent>
             </Select>
+          </div>
+          {/* Advanced Filters */}
+          <div className="gallery-filters" data-testid="gallery-filters">
+            <div className="filter-row">
+              <Select value={ctx.galleryFilterZones || "all"} onValueChange={(v) => { ctx.setGalleryFilterZones(v === "all" ? "" : v); }}>
+                <SelectTrigger className="filter-select" data-testid="filter-zone-type"><SelectValue placeholder="Zone Type" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Zones</SelectItem>
+                  {Object.entries(ZONE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.name}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <Input className="filter-input-sm" type="number" placeholder="Min size" value={ctx.galleryFilterMapMin} onChange={(e) => ctx.setGalleryFilterMapMin(e.target.value)} data-testid="filter-map-min" />
+              <Input className="filter-input-sm" type="number" placeholder="Max size" value={ctx.galleryFilterMapMax} onChange={(e) => ctx.setGalleryFilterMapMax(e.target.value)} data-testid="filter-map-max" />
+              <Select value={String(ctx.galleryFilterMinRating)} onValueChange={(v) => ctx.setGalleryFilterMinRating(parseFloat(v))}>
+                <SelectTrigger className="filter-select" data-testid="filter-min-rating"><SelectValue placeholder="Min Rating" /></SelectTrigger>
+                <SelectContent><SelectItem value="0">Any Rating</SelectItem><SelectItem value="3">3+ Stars</SelectItem><SelectItem value="4">4+ Stars</SelectItem><SelectItem value="4.5">4.5+ Stars</SelectItem></SelectContent>
+              </Select>
+              {ctx.currentUser && (
+                <Button variant={ctx.galleryFollowingOnly ? "default" : "outline"} size="sm" onClick={() => ctx.setGalleryFollowingOnly(!ctx.galleryFollowingOnly)} data-testid="filter-following-only">
+                  <User size={14} />{ctx.galleryFollowingOnly ? "Following" : "All"}
+                </Button>
+              )}
+              <Button size="sm" onClick={ctx.fetchGallery} data-testid="apply-gallery-filters"><Filter size={14} />Apply</Button>
+            </div>
           </div>
           <ScrollArea className="gallery-grid-scroll">
             <div className="gallery-grid">
@@ -125,6 +151,7 @@ export function AppDialogs() {
                     </div>
                     <div className="gallery-actions">
                       <Button size="sm" onClick={() => ctx.downloadFromGallery(entry.id)}><Download size={14} /> Download</Button>
+                      {ctx.currentUser && (<Button size="sm" variant="outline" onClick={() => ctx.forkFromGallery(entry.id)} data-testid={`fork-btn-${entry.id}`}><GitFork size={14} /> Fork</Button>)}
                       <Button size="sm" variant="ghost" onClick={async () => { const axios = (await import("axios")).default; await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/gallery/${entry.id}/like`); ctx.fetchGallery(); }}><ThumbsUp size={14} /></Button>
                       {ctx.currentUser && (<Button size="sm" variant="ghost" onClick={() => { ctx.setSelectedGalleryForReview(entry.id); ctx.fetchReviews(entry.id); ctx.setShowReviewDialog(true); }} data-testid={`review-btn-${entry.id}`}><Star size={14} /> Review</Button>)}
                     </div>
@@ -324,6 +351,138 @@ export function AppDialogs() {
           </ScrollArea>
         </div>
       )}
+
+      {/* User Search Dialog */}
+      <Dialog open={ctx.showUserSearchDialog} onOpenChange={ctx.setShowUserSearchDialog}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="user-search-dialog">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Search size={20} />Find Users</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Search for users to follow</DialogDescription>
+          <div className="dialog-form">
+            <div className="search-bar">
+              <Input value={ctx.userSearchQuery} onChange={(e) => { ctx.setUserSearchQuery(e.target.value); ctx.searchUsers(e.target.value); }} placeholder="Search by name or email..." data-testid="user-search-input" />
+            </div>
+            {ctx.userSearchResults.length > 0 && (
+              <div className="user-search-results">
+                <h4>Results</h4>
+                {ctx.userSearchResults.map((u) => (
+                  <div key={u.id} className="user-search-item" data-testid={`search-user-${u.id}`}>
+                    <div className="user-search-info">
+                      <UserCircle size={28} className="text-muted" />
+                      <div><span className="user-search-name">{u.name}</span><span className="user-search-bio text-muted">{u.bio || u.role}</span></div>
+                    </div>
+                    {u.is_following ? (
+                      <Button size="sm" variant="outline" onClick={() => { ctx.unfollowUser(u.id); ctx.searchUsers(ctx.userSearchQuery); }} data-testid={`unfollow-${u.id}`}><UserMinus size={14} />Unfollow</Button>
+                    ) : (
+                      <Button size="sm" onClick={() => { ctx.followUser(u.id); ctx.searchUsers(ctx.userSearchQuery); }} data-testid={`follow-${u.id}`}><UserPlus size={14} />Follow</Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {ctx.suggestedUsers.length > 0 && (
+              <div className="suggested-users">
+                <h4>Suggested Users</h4>
+                {ctx.suggestedUsers.map((u) => (
+                  <div key={u.id} className="user-search-item" data-testid={`suggested-${u.id}`}>
+                    <div className="user-search-info">
+                      <UserCircle size={28} className="text-muted" />
+                      <div>
+                        <span className="user-search-name">{u.name}</span>
+                        <span className="user-search-bio text-muted">{u.published_count} worlds &middot; {u.total_likes} likes</span>
+                      </div>
+                    </div>
+                    <Button size="sm" onClick={() => ctx.followUser(u.id)} data-testid={`follow-suggested-${u.id}`}><UserPlus size={14} />Follow</Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Activity Feed Dialog */}
+      <Dialog open={ctx.showActivityFeed} onOpenChange={ctx.setShowActivityFeed}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="activity-feed-dialog">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Activity size={20} />Activity Feed</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Recent activity from users you follow</DialogDescription>
+          <ScrollArea className="activity-feed-scroll">
+            {ctx.activityFeed.length === 0 ? (
+              <div className="empty-state">
+                <Activity size={32} className="opacity-30" />
+                <p>No activity yet</p>
+                <p className="text-muted">Follow users to see their activity here</p>
+              </div>
+            ) : (
+              ctx.activityFeed.map((a, i) => (
+                <div key={i} className="activity-item" data-testid={`activity-${i}`}>
+                  <div className="activity-icon">
+                    {a.type === "publication" ? <Upload size={16} /> : <Star size={16} />}
+                  </div>
+                  <div className="activity-content">
+                    {a.type === "publication" ? (
+                      <><strong>{a.user_name}</strong> published <strong>{a.data.world_name}</strong><p className="text-muted">{a.data.description}</p><div className="activity-meta"><Badge variant="secondary">{a.data.map_size}</Badge><span>{a.data.likes} likes</span><span>{a.data.downloads} downloads</span></div></>
+                    ) : (
+                      <><strong>{a.user_name}</strong> reviewed a world ({a.data.rating}/5)<p className="text-muted">{a.data.comment}</p></>
+                    )}
+                    <span className="activity-time text-muted">{new Date(a.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Collaborators Dialog */}
+      <Dialog open={ctx.showCollabDialog} onOpenChange={ctx.setShowCollabDialog}>
+        <DialogContent className="dialog-content dialog-lg" data-testid="collaborators-dialog">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><UserPlus size={20} />World Collaborators</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Manage who can edit or view this world</DialogDescription>
+          <div className="collab-manager">
+            {ctx.worldCollaborators.owner && (
+              <div className="collab-owner">
+                <div className="collab-user-info"><Shield size={16} className="text-amber-400" /><span className="collab-user-name">{ctx.worldCollaborators.owner.name}</span><Badge>Owner</Badge></div>
+              </div>
+            )}
+            <div className="collab-invite">
+              <h4>Invite Collaborator</h4>
+              <div className="collab-invite-form">
+                <Input value={ctx.collabInviteEmail} onChange={(e) => ctx.setCollabInviteEmail(e.target.value)} placeholder="Search user by name..." data-testid="collab-invite-input" />
+                <Select value={ctx.collabInviteRole} onValueChange={ctx.setCollabInviteRole}>
+                  <SelectTrigger className="collab-role-select" data-testid="collab-role-select"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="viewer"><Eye size={14} />Viewer</SelectItem><SelectItem value="editor"><Pencil size={14} />Editor</SelectItem></SelectContent>
+                </Select>
+                <Button onClick={async () => {
+                  if (!ctx.collabInviteEmail) return;
+                  const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/search?q=${ctx.collabInviteEmail}`, { credentials: "include" });
+                  const data = await res.json();
+                  if (data.users?.length > 0) ctx.addCollaborator(data.users[0].id, ctx.collabInviteRole);
+                  else alert("User not found");
+                }} data-testid="collab-invite-btn"><UserPlus size={16} />Add</Button>
+              </div>
+            </div>
+            <div className="collab-list">
+              <h4>Collaborators ({ctx.worldCollaborators.collaborators.length})</h4>
+              {ctx.worldCollaborators.collaborators.length === 0 ? (
+                <div className="empty-state"><p className="text-muted">No collaborators yet</p></div>
+              ) : (
+                ctx.worldCollaborators.collaborators.map((c) => (
+                  <div key={c.user_id} className="collab-item" data-testid={`collab-${c.user_id}`}>
+                    <div className="collab-user-info"><UserCircle size={20} /><span className="collab-user-name">{c.name}</span></div>
+                    <div className="collab-item-actions">
+                      <Select value={c.role} onValueChange={(v) => ctx.updateCollaboratorRole(c.user_id, v)}>
+                        <SelectTrigger className="collab-role-mini"><SelectValue /></SelectTrigger>
+                        <SelectContent><SelectItem value="viewer">Viewer</SelectItem><SelectItem value="editor">Editor</SelectItem></SelectContent>
+                      </Select>
+                      <Button size="icon" variant="ghost" onClick={() => ctx.removeCollaborator(c.user_id)} data-testid={`remove-collab-${c.user_id}`}><Trash2 size={14} /></Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -336,6 +495,8 @@ function NotificationContent({ notification }) {
     case "world_liked": return <span><strong>{data.liker_name}</strong> liked <strong>{data.world_name}</strong></span>;
     case "world_downloaded": return <span><strong>{data.downloader_name}</strong> downloaded <strong>{data.world_name}</strong></span>;
     case "new_review": return <span><strong>{data.reviewer_name}</strong> reviewed <strong>{data.world_name}</strong> ({data.rating}/5)</span>;
+    case "world_forked": return <span><strong>{data.forker_name}</strong> forked <strong>{data.world_name}</strong></span>;
+    case "collab_invite": return <span><strong>{data.inviter_name}</strong> invited you as <strong>{data.role}</strong> on <strong>{data.world_name}</strong></span>;
     default: return <span>New notification</span>;
   }
 }

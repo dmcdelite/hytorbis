@@ -59,6 +59,8 @@ class WorldConfig(BaseModel):
     thumbnail: Optional[str] = None
     owner_id: Optional[str] = None
     is_public: bool = True
+    forked_from: Optional[str] = None
+    collaborators: List[dict] = []
 
 
 class WorldCreate(BaseModel):
@@ -295,3 +297,20 @@ class AnalyticsEvent(BaseModel):
 
 class FollowRequest(BaseModel):
     user_id: str
+
+
+# ==================== WORLD PERMISSIONS MODELS ====================
+
+class WorldCollaborator(BaseModel):
+    user_id: str
+    role: str = "viewer"  # "editor" or "viewer"
+    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AddCollaboratorRequest(BaseModel):
+    user_id: str
+    role: str = "viewer"
+
+
+class WorldForkRequest(BaseModel):
+    name: Optional[str] = None

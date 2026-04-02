@@ -1673,6 +1673,188 @@ body {
 }
 
 
+/* ============ User Search ============ */
+.user-search-results,
+.suggested-users {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-search-results h4,
+.suggested-users h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 12px 0 6px;
+}
+
+.user-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.3);
+  transition: background 0.15s;
+}
+
+.user-search-item:hover {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.user-search-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-search-name {
+  font-weight: 600;
+  font-size: 14px;
+  display: block;
+}
+
+.user-search-bio {
+  font-size: 12px;
+  display: block;
+}
+
+/* ============ Activity Feed ============ */
+.activity-feed-scroll {
+  max-height: 500px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.activity-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+}
+
+.activity-content {
+  flex: 1;
+  font-size: 13px;
+}
+
+.activity-content strong {
+  color: #e2e8f0;
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.activity-time {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* ============ Collaborators ============ */
+.collab-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.collab-owner {
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+}
+
+.collab-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collab-user-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.collab-invite h4,
+.collab-list h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.collab-invite-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.collab-role-select {
+  width: 120px;
+}
+
+.collab-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.collab-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.collab-role-mini {
+  width: 100px;
+}
+
+/* ============ Gallery Filters ============ */
+.gallery-filters {
+  padding: 8px 0;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  width: 140px;
+}
+
+.filter-input-sm {
+  width: 90px;
+}
+
+
+
 
 /* Responsive */
 @media (max-width: 1200px) {

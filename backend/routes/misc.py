@@ -88,6 +88,20 @@ async def websocket_collab(websocket: WebSocket, world_id: str, user_id: str):
         await ws_manager.broadcast(world_id, {"type": "user_left", "user_id": user_id, "users": ws_manager.get_users(world_id)})
 
 
+@router.websocket("/ws/notifications/{user_id}")
+async def websocket_notifications(websocket: WebSocket, user_id: str):
+    await ws_manager.connect_notification(websocket, user_id)
+    try:
+        await websocket.send_json({"type": "connected", "user_id": user_id})
+        while True:
+            # Keep connection alive, client sends pings
+            data = await websocket.receive_json()
+            if data.get("type") == "ping":
+                await websocket.send_json({"type": "pong"})
+    except WebSocketDisconnect:
+        ws_manager.disconnect_notification(websocket, user_id)
+
+
 # ==================== CUSTOM PREFABS ====================
 
 @router.get("/prefabs/custom")

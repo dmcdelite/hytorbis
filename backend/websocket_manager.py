@@ -8,6 +8,8 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {}
         self.user_info: Dict[str, Dict[str, Any]] = {}
+        # Notification channels: user_id -> list of websockets
+        self.notification_channels: Dict[str, List[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, world_id: str, user_id: str):
         await websocket.accept()
@@ -59,6 +61,33 @@ class ConnectionManager:
         key = f"{world_id}:{user_id}"
         if key in self.user_info:
             self.user_info[key]["cursor"] = {"x": x, "y": y}
+
+    # Notification channel management
+    async def connect_notification(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        if user_id not in self.notification_channels:
+            self.notification_channels[user_id] = []
+        self.notification_channels[user_id].append(websocket)
+
+    def disconnect_notification(self, websocket: WebSocket, user_id: str):
+        if user_id in self.notification_channels:
+            if websocket in self.notification_channels[user_id]:
+                self.notification_channels[user_id].remove(websocket)
+            if not self.notification_channels[user_id]:
+                del self.notification_channels[user_id]
+
+    async def push_notification(self, user_id: str, notification: dict):
+        if user_id in self.notification_channels:
+            dead = []
+            for ws in self.notification_channels[user_id]:
+                try:
+                    await ws.send_json({"type": "notification", "data": notification})
+                except:
+                    dead.append(ws)
+            for ws in dead:
+                self.notification_channels[user_id].remove(ws)
+            if not self.notification_channels[user_id]:
+                del self.notification_channels[user_id]
 
 
 ws_manager = ConnectionManager()

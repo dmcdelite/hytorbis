@@ -33,10 +33,10 @@ async def create_review(review: ReviewCreate, request: Request):
 
     # Notify creator
     if entry.get("creator_id") and entry["creator_id"] != user["id"]:
-        await db.notifications.insert_one({
-            "user_id": entry["creator_id"], "type": "new_review",
-            "data": {"reviewer_name": user.get("name", "Someone"), "world_name": entry.get("name", ""), "rating": review.rating},
-            "read": False, "created_at": datetime.now(timezone.utc).isoformat()
+        from routes.gallery import create_notification
+        await create_notification(entry["creator_id"], "new_review", {
+            "reviewer_name": user.get("name", "Someone"),
+            "world_name": entry.get("name", ""), "rating": review.rating
         })
 
     return {"message": "Review created", "review_id": review_doc.id}
