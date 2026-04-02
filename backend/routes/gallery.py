@@ -101,15 +101,11 @@ async def browse_gallery(
     if min_rating:
         filter_query["avg_rating"] = {"$gte": min_rating}
     if zone_types:
-        # Filter by zone_types - need to check the source world
-        zone_list = zone_types.split(",")
-        # We'll filter in the entries that have matching zone types in their worlds
-        world_ids_with_zones = []
-        for zt in zone_list:
-            matching = await db.worlds.find(
-                {"zones": {"$elemMatch": {"type": zt.strip()}}}, {"id": 1, "_id": 0}
-            ).to_list(500)
-            world_ids_with_zones.extend([w["id"] for w in matching])
+        zone_list = [z.strip() for z in zone_types.split(",")]
+        matching = await db.worlds.find(
+            {"zones": {"$elemMatch": {"type": {"$in": zone_list}}}}, {"id": 1, "_id": 0}
+        ).to_list(500)
+        world_ids_with_zones = [w["id"] for w in matching]
         if world_ids_with_zones:
             filter_query["world_id"] = {"$in": list(set(world_ids_with_zones))}
         else:
@@ -117,7 +113,8 @@ async def browse_gallery(
     if map_size_min or map_size_max:
         size_filter = {}
         valid_sizes = []
-        all_entries_raw = await db.gallery.find({}, {"_id": 0, "id": 1, "map_size": 1}).to_list(1000)
+        size_query = filter_query.copy() if filter_query else {}
+        all_entries_raw = await db.gallery.find(size_query, {"_id": 0, "id": 1, "map_size": 1}).to_list(1000)
         for e in all_entries_raw:
             ms = e.get("map_size", "64x64")
             try:
@@ -136,7 +133,9 @@ async def browse_gallery(
         from auth_utils import get_current_user as gcu
         current = await gcu(request)
         if current:
-            follows = await db.follows.find({"follower_id": current["id"]}).to_list(500)
+            follows = await db.follows.find(
+                {"follower_id": current["id"]}, {"following_id": 1, "_id": 0}
+            ).limit(500).to_list(500)
             following_ids = [f["following_id"] for f in follows]
             filter_query["creator_id"] = {"$in": following_ids}
 

@@ -12,8 +12,8 @@ load_dotenv(ROOT_DIR / '.env')
 app = FastAPI(title="Hyt Orbis World Builder API")
 
 # CORS
-cors_origins = os.environ.get("CORS_ORIGINS", "*")
-if cors_origins == "*":
+cors_origins = os.environ.get("CORS_ORIGINS", "")
+if not cors_origins or cors_origins == "*":
     origins = [
         "https://hytale-frontend-b661.vercel.app",
         "https://hytaleworldbuilder.com",

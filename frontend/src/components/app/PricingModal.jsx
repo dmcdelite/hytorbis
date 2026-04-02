@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Loader2, Sparkles, Crown, Zap, X, CreditCard, ArrowLeft } from "lucide-react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
-const PAYPAL_CLIENT_ID = "AZIBOAUqysVLlRBMAFVr1fj6UHEsek1KGS1XW8rQTOUEqJ23nviZY9wK5Ct7yGll-uDYsNJe-D8gcmXU";
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID;
 
 const PLANS = [
   {
