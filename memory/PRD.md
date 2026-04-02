@@ -10,7 +10,7 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 /app/backend/
 ├── server.py              # Slim entry (~65 lines)
 ├── database.py            # MongoDB connection (Motor)
-├── auth_utils.py          # JWT, bcrypt, get_current_user, require_auth
+├── auth_utils.py          # JWT, bcrypt, get_current_user, require_auth, require_subscription
 ├── models.py              # All Pydantic models (WorldConfig, UserProfile, etc.)
 ├── templates.py           # WORLD_TEMPLATES constant
 ├── utils.py               # AI functions, world generation, seed helpers
@@ -20,27 +20,30 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
     ├── auth.py            # /auth/* (register, login, logout, me, refresh) + admin seeding
     ├── users.py           # /users/* (profile, search, suggested, follow, notifications, activity feed)
     ├── worlds.py          # /worlds/* (CRUD, zones, prefabs, export, import, visibility, templates, fork, collaborators, thumbnails)
-    ├── ai.py              # /ai/* (chat, auto-generate, procedural preview)
+    ├── ai.py              # /ai/* (chat, auto-generate, procedural preview) — GATED by subscription
     ├── gallery.py         # /gallery/* (publish, browse with filters, like, download, fork)
     ├── reviews.py         # /reviews/* (create, list, delete)
     ├── versions.py        # /worlds/*/versions (create, list, restore)
+    ├── subscription.py    # /subscription/* (plans, status, checkout, webhooks)
     └── misc.py            # WebSocket (collab + notifications), custom prefabs, analytics
 ```
 
 ### Frontend (Component Architecture)
 ```
 /app/frontend/src/
-├── App.js                     # Wrapper with mobile sidebar logic
+├── App.js                     # Wrapper with auth gate + mobile sidebar logic
 ├── App.css                    # All global styles + responsive breakpoints
 ├── config.js                  # Zone/Prefab/Biome configs, API URL
 ├── contexts/
-│   └── AppContext.js           # All shared state + functions (~970 lines)
+│   └── AppContext.js           # All shared state + functions (~1040 lines)
 └── components/app/
-    ├── Header.jsx              # Header: auth, notifications, activity, search, collaborators, mobile toggle
+    ├── AuthGate.jsx            # Full-screen login/register gate (mandatory auth)
+    ├── PricingModal.jsx        # Subscription pricing dialog (3 tiers)
+    ├── Header.jsx              # Header: auth, notifications, activity, search, collaborators, upgrade btn
     ├── Sidebar.jsx             # Worlds list, tools, zoom, actions, exports
-    ├── AIPanel.jsx             # AI chat panel
+    ├── AIPanel.jsx             # AI chat panel — shows gated message for free users
     ├── MapArea.jsx             # Map canvas (virtualized), terrain, properties sheets
-    ├── Dialogs.jsx             # All dialogs (auth, profile, gallery, reviews, versions, user search, activity feed, collaborators) — all with DialogDescription
+    ├── Dialogs.jsx             # All dialogs (auth, profile, gallery, reviews, versions, user search, activity feed, collaborators)
     └── CollabChat.jsx          # Collaboration chat overlay
 ```
 
@@ -50,6 +53,8 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 - Database: MongoDB (10+ collections)
 - AI: OpenAI/Anthropic/Gemini via `emergentintegrations` (Emergent LLM Key)
 - Auth: Custom JWT with httpOnly cookies, bcrypt
+- Payments: Stripe (via emergentintegrations)
+- Hosting/Deployment: Render (Backend) and Vercel (Frontend)
 
 ## Completed Phases
 
@@ -59,69 +64,33 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 ### P3 (DONE) - WebSocket collaboration, gallery, analytics, 3D preview
 ### P4 (DONE) - Auth, profiles, versions, reviews, visibility
 ### P5 (DONE) - Backend + Frontend refactoring into modular architecture
-### P6 (DONE - April 2, 2026) - Enhancements:
-1. Dialog Accessibility — DialogDescription on all dialogs
-2. Enhanced Social — User search, activity feed, suggested users
-3. World Forking — Fork worlds directly or from gallery
-4. Advanced Gallery Filtering — Zone types, map size range, min rating, following-only
-5. Real-time Notifications — WebSocket push, auto-reconnect, ping/pong
-6. Multiplayer World Permissions — Collaborator management, editor/viewer roles
-7. Auto-generated World Thumbnails — Pillow-based mini-map thumbnails
+### P6 (DONE) - Enhancements: Dialog Accessibility, Social, Forking, Gallery Filtering, Notifications, Collaborators, Thumbnails
+### P7 (DONE) - Polish: Full Accessibility, Mobile Responsiveness, Enhanced Collaborator UI
+### P8 (DONE - April 2, 2026) - Subscription & Monetization:
+1. Mandatory Auth Gate — Full-screen login/register before accessing app
+2. Subscription Plans — Explorer (Free), Creator ($9/mo), Developer ($29/mo)
+3. AI Feature Gating — Free users blocked from AI chat & auto-generate (403 backend + frontend UI)
+4. Stripe Checkout Integration — Checkout URL generation, status verification, webhook handling
+5. Pricing Modal — 3-tier comparison with feature checkmarks/X, upgrade CTAs
+6. Header Upgrade Button — Visible for free users, plan badge for paid users
+7. AI Panel Gating UI — Shows upgrade message with crown icon instead of chat for free users
 
-### P7 (DONE - April 2, 2026) - Polish:
-1. Full Accessibility Compliance — HiddenDesc on all 17 dialogs
-2. Mobile Responsiveness — Breakpoints at 1200/900/768/480px, slide-in sidebars, hamburger menu, mobile overlay
-3. Enhanced Collaborator UI — Search dropdown, role descriptions, improved empty states
+## Subscription Tiers
+| Feature | Explorer (Free) | Creator ($9/mo) | Developer ($29/mo) |
+|---|---|---|---|
+| Worlds | 5 max | Unlimited | Unlimited |
+| Map Size | 128x128 | 512x512 | 512x512 |
+| AI Generation | No | Yes | Yes |
+| Collaboration | No | Yes | Yes |
+| Version History | No | Yes | Yes |
+| Analytics | No | No | Yes |
+| Export Formats | JSON, Prefab | All | All |
 
 ## DB Collections
-worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics
-
-## All API Endpoints
-
-### Auth
-- POST /api/auth/register, /api/auth/login, /api/auth/logout, /api/auth/refresh
-- GET /api/auth/me
-
-### Users & Social
-- GET /api/users/search?q=, /api/users/suggested, /api/users/{id}/profile
-- PUT /api/users/profile
-- POST /api/users/{id}/follow, /api/users/{id}/unfollow
-- GET /api/users/{id}/followers, /api/users/{id}/following, /api/users/{id}/is-following
-- GET /api/notifications, POST /api/notifications/read-all
-- GET /api/activity-feed
-
-### Worlds
-- CRUD: GET/POST /api/worlds, GET/PUT/DELETE /api/worlds/{id}
-- Zones: POST/DELETE /api/worlds/{id}/zones(/{zone_id})
-- Prefabs: POST/DELETE /api/worlds/{id}/prefabs(/{prefab_id})
-- PUT /api/worlds/{id}/visibility
-- POST /api/worlds/{id}/fork
-- GET/POST/PUT/DELETE /api/worlds/{id}/collaborators(/{user_id})
-- GET/POST /api/worlds/{id}/versions, POST /api/worlds/{id}/versions/{vid}/restore
-- GET/POST /api/worlds/{id}/thumbnail
-
-### Templates & Exports
-- GET /api/templates, POST /api/worlds/from-template, POST /api/worlds/import
-- GET /api/worlds/{id}/export/{json|hytale|prefab|jar}
-- GET /api/worlds/{id}/preview-3d
-- GET /api/reference/{zones|prefabs|biomes}, GET /api/seed/random
-
-### AI
-- POST /api/ai/chat, /api/ai/auto-generate, /api/generate/preview
-
-### Gallery
-- POST /api/gallery/publish, GET /api/gallery (with filters), GET /api/gallery/featured
-- GET/POST /api/gallery/{id}(/like|/download|/fork)
-- POST/GET /api/reviews(/{gallery_id}), DELETE /api/reviews/{id}
-
-### WebSockets
-- WS /api/ws/collab/{world_id}/{user_id}
-- WS /api/ws/notifications/{user_id}
-
-### Analytics
-- POST /api/analytics/track, GET /api/analytics/world/{id}, GET /api/analytics/summary
-- GET/POST/DELETE /api/prefabs/custom(/{id})
+worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics, subscriptions, payment_transactions
 
 ## Backlog
-- All requested features are now COMPLETE
-- Potential future: Further split AppContext.js (~970 lines) into smaller context providers
+- PayPal integration (user has PayPal, requested both Stripe + PayPal)
+- Email notifications on subscription events
+- Further split AppContext.js (~1040 lines) into smaller context providers
+- Code obfuscation for production builds
