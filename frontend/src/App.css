@@ -2916,3 +2916,232 @@ body {
     gap: 10px;
   }
 }
+
+/* ========== MANAGE SUBSCRIPTION ========== */
+.manage-sub-dialog {
+  max-width: 480px !important;
+}
+
+.manage-sub-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.manage-sub-plan {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.manage-sub-plan-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.manage-sub-plan-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.manage-sub-plan-price {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.manage-sub-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.manage-sub-provider {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+}
+
+.manage-sub-upgrade-btn {
+  background: var(--brand-primary) !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  align-self: flex-start;
+  gap: 4px;
+}
+
+.manage-sub-section-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.manage-sub-txns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manage-sub-txn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.manage-sub-txn-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.manage-sub-txn-plan {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.manage-sub-txn-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manage-sub-txn-amount {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.manage-sub-txn-status {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  gap: 3px;
+}
+
+.manage-sub-txn-status.status-paid {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.manage-sub-txn-date {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* Cancel - deliberately hard to find */
+.manage-sub-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-default);
+}
+
+.manage-sub-cancel-trigger {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0;
+  font-family: var(--font-body);
+  transition: opacity 0.3s;
+}
+
+.manage-sub-cancel-trigger:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.manage-sub-cancel-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manage-sub-cancel-text {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.manage-sub-cancel-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.manage-sub-cancel-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-family: var(--font-body);
+  opacity: 0.6;
+}
+
+.manage-sub-cancel-btn:hover {
+  opacity: 0.9;
+}
+
+.manage-sub-cancel-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.manage-sub-cancel-nevermind {
+  background: none;
+  border: none;
+  color: var(--brand-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+.manage-sub-cancelled {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+/* Profile "Manage subscription" link - very subtle */
+.manage-sub-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0.4;
+  padding: 8px 0 0 0;
+  font-family: var(--font-body);
+  text-align: left;
+  transition: opacity 0.3s;
+}
+
+.manage-sub-link:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}

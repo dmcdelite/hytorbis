@@ -73,6 +73,35 @@ async def get_subscription_status(request: Request):
     }
 
 
+@router.get("/subscription/history")
+async def get_payment_history(request: Request):
+    user = await require_auth(request)
+    cursor = db.payment_transactions.find(
+        {"user_id": user["id"]}, {"_id": 0}
+    ).sort("created_at", -1).limit(20)
+    transactions = await cursor.to_list(length=20)
+    return {"transactions": transactions}
+
+
+@router.post("/subscription/cancel")
+async def cancel_subscription(request: Request):
+    user = await require_auth(request)
+    sub = await db.subscriptions.find_one({"user_id": user["id"], "status": "active"})
+    if not sub:
+        raise HTTPException(status_code=400, detail="No active subscription to cancel")
+
+    await db.subscriptions.update_one(
+        {"user_id": user["id"], "status": "active"},
+        {"$set": {"status": "cancelled", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    await db.users.update_one(
+        {"_id": __import__("bson").ObjectId(user["id"])},
+        {"$set": {"subscription_plan": "free"}}
+    )
+    logger.info(f"Subscription cancelled: user={user['id']}")
+    return {"status": "cancelled", "plan": "free"}
+
+
 @router.post("/subscription/checkout/stripe")
 async def create_stripe_checkout(request: Request):
     user = await require_auth(request)

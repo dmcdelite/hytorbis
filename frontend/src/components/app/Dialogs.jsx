@@ -292,6 +292,13 @@ export function AppDialogs() {
               <div className="form-group"><Label>Bio</Label><Textarea value={ctx.editProfile.bio} onChange={(e) => ctx.setEditProfile({ ...ctx.editProfile, bio: e.target.value })} placeholder="Tell us about yourself..." data-testid="edit-profile-bio" /></div>
               <Button onClick={ctx.updateProfile} data-testid="save-profile-btn"><Save size={16} /> Save Changes</Button>
             </div>
+            <button
+              className="manage-sub-link"
+              onClick={() => { ctx.setShowProfileDialog(false); ctx.setShowSubscriptionDialog(true); }}
+              data-testid="profile-manage-sub-link"
+            >
+              Manage subscription
+            </button>
           </div>
         </DialogContent>
       </Dialog>

@@ -8,6 +8,7 @@ import { AppDialogs } from "@/components/app/Dialogs";
 import { CollabChat } from "@/components/app/CollabChat";
 import { AuthGate } from "@/components/app/AuthGate";
 import { PricingModal } from "@/components/app/PricingModal";
+import { ManageSubscription } from "@/components/app/ManageSubscription";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function AppContent() {
       <AppDialogs />
       <CollabChat />
       <PricingModal />
+      <ManageSubscription />
     </div>
   );
 }

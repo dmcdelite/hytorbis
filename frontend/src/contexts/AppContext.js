@@ -152,6 +152,8 @@ export function AppProvider({ children }) {
   // Subscription
   const [subscription, setSubscription] = useState({ plan: "free", limits: null });
   const [showPricingDialog, setShowPricingDialog] = useState(false);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // Notification WebSocket ref
@@ -296,6 +298,27 @@ export function AppProvider({ children }) {
       }
       return response.data.status;
     } catch (e) { return "error"; }
+  };
+
+  const fetchPaymentHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/subscription/history`);
+      setPaymentHistory(response.data.transactions || []);
+    } catch (e) { setPaymentHistory([]); }
+  };
+
+  const cancelSubscription = async () => {
+    try {
+      const response = await axios.post(`${API}/subscription/cancel`);
+      if (response.data.status === "cancelled") {
+        await fetchSubscriptionStatus();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      alert(e.response?.data?.detail || "Failed to cancel");
+      return false;
+    }
   };
 
   // ========== PROFILE ==========
@@ -1058,8 +1081,10 @@ export function AppProvider({ children }) {
     wsRef,
     // Subscription
     subscription, showPricingDialog, setShowPricingDialog, checkoutLoading,
+    showSubscriptionDialog, setShowSubscriptionDialog, paymentHistory,
     fetchSubscriptionStatus, startCheckout, verifyCheckout, isFeatureGated,
     createPaypalOrder, capturePaypalOrder,
+    fetchPaymentHistory, cancelSubscription,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

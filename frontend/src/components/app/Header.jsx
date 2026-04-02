@@ -20,7 +20,7 @@ export function Header() {
         <img src="/hytorbis-logo.png" alt="Hyt Orbis World Builder" className="header-logo" />
         <h1 className="header-title">Hyt Orbis World Builder</h1>
         {plan !== "free" && (
-          <Badge className="header-plan-badge" data-testid="header-plan-badge">
+          <Badge className="header-plan-badge" style={{ cursor: "pointer" }} onClick={() => ctx.setShowSubscriptionDialog(true)} data-testid="header-plan-badge">
             <Crown size={12} /> {plan === "creator" ? "Creator" : "Developer"}
           </Badge>
         )}
