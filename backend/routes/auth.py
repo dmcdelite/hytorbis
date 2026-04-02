@@ -45,6 +45,13 @@ async def register(user_data: UserRegister, response: Response):
     response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="none", max_age=3600, path="/")
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
 
+    # Send welcome email (non-blocking)
+    try:
+        from email_service import send_welcome_email
+        send_welcome_email(email, user_data.name or email.split("@")[0])
+    except Exception as e:
+        logger.warning(f"Welcome email failed: {e}")
+
     return {"id": user_id, "email": email, "name": user_data.name, "role": "user"}
 
 

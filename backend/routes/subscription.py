@@ -103,6 +103,17 @@ async def cancel_subscription(request: Request):
         {"$set": {"subscription_plan": "free"}}
     )
     logger.info(f"Subscription cancelled: user={user['id']}")
+
+    # Send cancellation email
+    try:
+        from email_service import send_subscription_cancelled_email
+        send_subscription_cancelled_email(
+            user.get("email", ""),
+            user.get("name", user.get("email", "").split("@")[0])
+        )
+    except Exception as e:
+        logger.warning(f"Cancel email failed: {e}")
+
     return {"status": "cancelled", "plan": "free"}
 
 
@@ -223,6 +234,17 @@ async def stripe_webhook(request: Request):
                     {"$set": {"payment_status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
                 )
                 await _activate_subscription(txn["user_id"], txn["plan_id"], "stripe", event.session_id)
+        elif event.payment_status in ("unpaid", "failed"):
+            txn = await db.payment_transactions.find_one({"session_id": event.session_id})
+            if txn:
+                try:
+                    from email_service import send_payment_failed_email
+                    user = await db.users.find_one({"_id": __import__("bson").ObjectId(txn["user_id"])}, {"_id": 0, "email": 1, "name": 1})
+                    if user:
+                        plan_meta = PLANS.get(txn["plan_id"], {})
+                        send_payment_failed_email(user["email"], user.get("name", ""), plan_meta.get("name", txn["plan_id"].title()))
+                except Exception as e:
+                    logger.warning(f"Payment failed email error: {e}")
         return {"status": "ok"}
     except Exception as e:
         logger.error(f"Stripe webhook error: {e}")
@@ -252,6 +274,21 @@ async def _activate_subscription(user_id: str, plan_id: str, provider: str, sess
         {"$set": {"subscription_plan": plan_id}}
     )
     logger.info(f"Subscription activated: user={user_id}, plan={plan_id}, provider={provider}")
+
+    # Send upgrade email
+    try:
+        from email_service import send_subscription_upgraded_email
+        user = await db.users.find_one({"_id": __import__("bson").ObjectId(user_id)}, {"_id": 0, "email": 1, "name": 1})
+        if user:
+            plan_meta = PLANS.get(plan_id, {})
+            send_subscription_upgraded_email(
+                user["email"],
+                user.get("name", user["email"].split("@")[0]),
+                plan_meta.get("name", plan_id.title()),
+                str(plan_meta.get("price", 0))
+            )
+    except Exception as e:
+        logger.warning(f"Upgrade email failed: {e}")
 
 
 # ========== PAYPAL ==========

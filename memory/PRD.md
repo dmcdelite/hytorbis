@@ -93,7 +93,6 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 worlds, templates, gallery, custom_prefabs, users, login_attempts, world_versions, reviews, follows, notifications, analytics, subscriptions, payment_transactions
 
 ## Backlog
-- Email notifications on subscription events
-- Further split AppContext.js (~1060 lines) into smaller context providers
+- Further split AppContext.js (~1080 lines) into smaller context providers
 - Code obfuscation for production builds
 - Switch PayPal from sandbox to live environment for production
