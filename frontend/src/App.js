@@ -6,9 +6,6 @@ import { AIPanel } from "@/components/app/AIPanel";
 import { MapArea } from "@/components/app/MapArea";
 import { AppDialogs } from "@/components/app/Dialogs";
 import { CollabChat } from "@/components/app/CollabChat";
-import { useEffect, useRef } from "react";
-
-const DESIGN_WIDTH = 1440;
 
 function App() {
   return (
@@ -23,33 +20,9 @@ function AppContent() {
   const mobileSidebar = ctx.mobileSidebarOpen;
   const mobileAi = ctx.mobileAiPanelOpen;
   const anyOpen = mobileSidebar || mobileAi;
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    const scaleApp = () => {
-      const el = containerRef.current;
-      if (!el) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      if (vw >= DESIGN_WIDTH) {
-        el.style.transform = "none";
-        el.style.width = "100vw";
-        el.style.height = "100vh";
-      } else {
-        const scale = vw / DESIGN_WIDTH;
-        el.style.transform = `scale(${scale})`;
-        el.style.transformOrigin = "top left";
-        el.style.width = `${DESIGN_WIDTH}px`;
-        el.style.height = `${vh / scale}px`;
-      }
-    };
-    scaleApp();
-    window.addEventListener("resize", scaleApp);
-    return () => window.removeEventListener("resize", scaleApp);
-  }, []);
 
   return (
-    <div className="app-container" ref={containerRef}>
+    <div className="app-container">
       <Header />
       <div className="main-content">
         <div className={`sidebar-left-wrapper${mobileSidebar ? " mobile-open" : ""}`}>
