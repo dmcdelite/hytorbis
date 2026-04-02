@@ -52,8 +52,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
+  max-height: 100vh;
+  max-height: 100dvh;
 }
 
 /* Header */
@@ -62,6 +65,7 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 56px;
+  min-height: 56px;
   padding: 0 16px;
   background: var(--bg-surface-glass);
   backdrop-filter: blur(12px);
@@ -151,6 +155,10 @@ body {
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  height: calc(100vh - 56px);
+  height: calc(100dvh - 56px);
+  max-height: calc(100vh - 56px);
+  max-height: calc(100dvh - 56px);
 }
 
 /* Sidebars */
@@ -159,6 +167,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
 }
 
 .sidebar-left-wrapper {
@@ -179,10 +188,13 @@ body {
   border-right: 1px solid var(--border-default);
   overflow: hidden;
   flex: 1;
+  height: 100%;
+  min-height: 0;
 }
 
 .sidebar-left {
   width: 100%;
+  overflow-y: auto;
 }
 
 .sidebar-right {
@@ -478,6 +490,7 @@ body {
   overflow: hidden;
   position: relative;
   min-height: 0;
+  height: 100%;
 }
 
 /* Empty Canvas State */
@@ -730,6 +743,8 @@ body {
 .ai-messages {
   flex: 1;
   padding: 16px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .ai-welcome {
