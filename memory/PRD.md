@@ -95,4 +95,11 @@ worlds, templates, gallery, custom_prefabs, users, login_attempts, world_version
 ## Backlog
 - Further split AppContext.js (~1080 lines) into smaller context providers
 - Code obfuscation for production builds
-- Switch PayPal from sandbox to live environment for production
+- Monitor production CORS with wildcard subdomains
+- Verify mobile scroll constraints with new modals
+
+## P9 (DONE - April 2, 2026) - Premium Features & PWA:
+1. Install to Game — Premium-gated ZIP package generator with world files (Hytale config, Prefab, JAR, README)
+2. How-To Guide — 6-step onboarding modal with Hyt Orbis logo, auto-shows on first visit, "Don't show again" checkbox (localStorage), reopenable via header HelpCircle button
+3. PWA / Install App — manifest.json, service worker, beforeinstallprompt capture for "Install App" button in header
+4. PayPal Live Endpoint — Verified working (returns order_id + url)
