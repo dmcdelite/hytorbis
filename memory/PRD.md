@@ -75,6 +75,8 @@ Build a "Hytale Worlds" app — a world builder generator similar to Minecraft's
 6. 2-Step Pricing Modal — Plan selection → Payment method (Stripe or PayPal)
 7. Header Upgrade Button — Visible for free users, plan badge for paid users
 8. AI Panel Gating UI — Shows upgrade message with crown icon instead of chat for free users
+9. Manage Subscription Dialog — Shows current plan, payment history, and deliberately subtle cancel option
+10. Payment History — Tracks all Stripe/PayPal transactions per user
 
 ## Subscription Tiers
 | Feature | Explorer (Free) | Creator ($9/mo) | Developer ($29/mo) |
