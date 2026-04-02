@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Map, Undo2, Redo2, Users, Box, Globe, BarChart3, History,
   Lock, Unlock, PanelRightOpen, PanelRightClose, LogIn, LogOut,
-  UserCircle, Bell, Search, Activity, UserPlus
+  UserCircle, Bell, Search, Activity, UserPlus, Menu
 } from "lucide-react";
 
 export function Header() {
@@ -13,6 +13,9 @@ export function Header() {
   return (
     <header className="app-header" data-testid="app-header">
       <div className="header-left">
+        <Button variant="ghost" size="icon" className="mobile-toggle-sidebar" onClick={() => ctx.setMobileSidebarOpen(!ctx.mobileSidebarOpen)} data-testid="mobile-sidebar-toggle">
+          <Menu size={18} />
+        </Button>
         <Map className="header-icon" />
         <h1 className="header-title">Hytale World Builder</h1>
       </div>
@@ -72,7 +75,7 @@ export function Header() {
             <div className="header-divider" />
           </>
         )}
-        <Button variant="ghost" size="sm" onClick={() => ctx.setAiPanelOpen(!ctx.aiPanelOpen)} data-testid="toggle-ai-panel">
+        <Button variant="ghost" size="sm" onClick={() => { ctx.setAiPanelOpen(!ctx.aiPanelOpen); ctx.setMobileAiPanelOpen(!ctx.mobileAiPanelOpen); }} data-testid="toggle-ai-panel">
           {ctx.aiPanelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
         </Button>
         <div className="header-divider" />

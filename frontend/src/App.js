@@ -1,5 +1,5 @@
 import "@/App.css";
-import { AppProvider } from "@/contexts/AppContext";
+import { AppProvider, useApp } from "@/contexts/AppContext";
 import { Header } from "@/components/app/Header";
 import { Sidebar } from "@/components/app/Sidebar";
 import { AIPanel } from "@/components/app/AIPanel";
@@ -16,14 +16,24 @@ function App() {
 }
 
 function AppContent() {
+  const ctx = useApp();
+  const mobileSidebar = ctx.mobileSidebarOpen;
+  const mobileAi = ctx.mobileAiPanelOpen;
+  const anyOpen = mobileSidebar || mobileAi;
+
   return (
     <div className="app-container">
       <Header />
       <div className="main-content">
-        <Sidebar />
+        <div className={`sidebar-left-wrapper${mobileSidebar ? " mobile-open" : ""}`}>
+          <Sidebar />
+        </div>
         <MapArea />
-        <AIPanel />
+        <div className={`sidebar-right-wrapper${mobileAi ? " mobile-open" : ""}`}>
+          <AIPanel />
+        </div>
       </div>
+      {anyOpen && <div className={`mobile-overlay${anyOpen ? " visible" : ""}`} onClick={() => { ctx.setMobileSidebarOpen(false); ctx.setMobileAiPanelOpen(false); }} />}
       <AppDialogs />
       <CollabChat />
     </div>

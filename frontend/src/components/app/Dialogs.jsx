@@ -15,7 +15,7 @@ import {
   Plus, Wand2, Loader2, FileJson, Upload, Download, ThumbsUp, Search, Tag,
   TrendingUp, Activity, Eye, Star, History, Lock, Unlock, UserCircle,
   LogIn, User, Save, Send, RefreshCw, Play, Pause, SkipForward, Package, Box, Edit3, Bell,
-  GitFork, UserPlus, UserMinus, Filter, X, Trash2, Shield, Pencil
+  GitFork, UserPlus, UserMinus, Filter, X, Trash2, Shield, Pencil, Users
 } from "lucide-react";
 import { ZONE_CONFIG } from "@/config";
 
@@ -31,6 +31,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showNewWorldDialog} onOpenChange={ctx.setShowNewWorldDialog}>
         <DialogContent className="dialog-content" data-testid="new-world-dialog">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Plus size={20} />New World</DialogTitle></DialogHeader>
+          <HiddenDesc>Create a new world with custom name, seed, and map size</HiddenDesc>
           <div className="dialog-form">
             <div className="form-group"><Label>World Name</Label><Input value={ctx.newWorldName} onChange={(e) => ctx.setNewWorldName(e.target.value)} placeholder="My Hytale World" data-testid="new-world-name" /></div>
             <div className="form-group"><Label>Seed (optional)</Label><Input value={ctx.newWorldSeed} onChange={(e) => ctx.setNewWorldSeed(e.target.value)} placeholder="Leave blank for random" data-testid="new-world-seed" /></div>
@@ -50,6 +51,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showTemplateDialog} onOpenChange={ctx.setShowTemplateDialog}>
         <DialogContent className="dialog-content dialog-lg" data-testid="template-dialog">
           <DialogHeader><DialogTitle>World Templates</DialogTitle></DialogHeader>
+          <HiddenDesc>Choose a template to quickly create a pre-designed world</HiddenDesc>
           <div className="dialog-form">
             <div className="form-group"><Label>World Name</Label><Input value={ctx.newWorldName} onChange={(e) => ctx.setNewWorldName(e.target.value)} placeholder="My World" data-testid="template-world-name" /></div>
             <div className="form-group"><Label>Map Size</Label>
@@ -75,6 +77,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showImportDialog} onOpenChange={ctx.setShowImportDialog}>
         <DialogContent className="dialog-content" data-testid="import-dialog">
           <DialogHeader><DialogTitle><Upload size={20} />Import World</DialogTitle></DialogHeader>
+          <HiddenDesc>Import a world from a JSON configuration</HiddenDesc>
           <div className="dialog-form">
             <Textarea value={ctx.importConfig} onChange={(e) => ctx.setImportConfig(e.target.value)} placeholder="Paste JSON configuration..." className="import-textarea" rows={10} data-testid="import-config-input" />
             <Button onClick={ctx.importWorld} disabled={!ctx.importConfig.trim()} data-testid="import-submit"><FileJson size={16} />Import</Button>
@@ -86,6 +89,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showAutoGenDialog} onOpenChange={ctx.setShowAutoGenDialog}>
         <DialogContent className="dialog-content" data-testid="autogen-dialog">
           <DialogHeader><DialogTitle><Wand2 size={20} />AI Auto-Generate</DialogTitle></DialogHeader>
+          <HiddenDesc>Describe your world and let AI generate it for you</HiddenDesc>
           <div className="dialog-form">
             <Textarea value={ctx.autoGenPrompt} onChange={(e) => ctx.setAutoGenPrompt(e.target.value)} placeholder="Describe your world..." rows={4} data-testid="autogen-prompt" />
             <Button onClick={ctx.autoGenerate} disabled={ctx.autoGenLoading || !ctx.autoGenPrompt.trim()} data-testid="autogen-submit">
@@ -99,6 +103,7 @@ export function AppDialogs() {
       <Dialog open={ctx.show3DPreview} onOpenChange={ctx.setShow3DPreview}>
         <DialogContent className="dialog-content dialog-xl" data-testid="preview-3d-dialog">
           <DialogHeader><DialogTitle><Box size={20} />3D Terrain Preview</DialogTitle></DialogHeader>
+          <HiddenDesc>Height-mapped 3D terrain preview of your world</HiddenDesc>
           {ctx.preview3DData && <Preview3DCanvas data={ctx.preview3DData} />}
         </DialogContent>
       </Dialog>
@@ -107,6 +112,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showGalleryDialog} onOpenChange={ctx.setShowGalleryDialog}>
         <DialogContent className="dialog-content dialog-xl" data-testid="gallery-dialog">
           <DialogHeader><DialogTitle>Community Gallery</DialogTitle></DialogHeader>
+          <HiddenDesc>Browse, search, and download worlds shared by the community</HiddenDesc>
           <div className="gallery-controls">
             <div className="gallery-search"><Search size={16} /><Input value={ctx.gallerySearch} onChange={(e) => ctx.setGallerySearch(e.target.value)} placeholder="Search worlds..." data-testid="gallery-search" onKeyDown={(e) => e.key === "Enter" && ctx.fetchGallery()} /></div>
             <Select value={ctx.gallerySort} onValueChange={(v) => { ctx.setGallerySort(v); ctx.fetchGallery(); }}>
@@ -173,6 +179,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showPublishDialog} onOpenChange={ctx.setShowPublishDialog}>
         <DialogContent className="dialog-content" data-testid="publish-dialog">
           <DialogHeader><DialogTitle>Publish to Gallery</DialogTitle></DialogHeader>
+          <HiddenDesc>Share your world with the community</HiddenDesc>
           <div className="dialog-form">
             <div className="form-group"><Label>Description</Label><Textarea value={ctx.publishData.description} onChange={(e) => ctx.setPublishData({ ...ctx.publishData, description: e.target.value })} placeholder="Describe your world..." data-testid="publish-description" /></div>
             <div className="form-group"><Label>Creator Name</Label><Input value={ctx.publishData.creator_name} onChange={(e) => ctx.setPublishData({ ...ctx.publishData, creator_name: e.target.value })} placeholder={ctx.currentUser?.name || "Anonymous"} data-testid="publish-creator" /></div>
@@ -186,6 +193,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showCustomPrefabDialog} onOpenChange={ctx.setShowCustomPrefabDialog}>
         <DialogContent className="dialog-content" data-testid="custom-prefab-dialog">
           <DialogHeader><DialogTitle><Package size={20} />Custom Prefabs</DialogTitle></DialogHeader>
+          <HiddenDesc>Create and manage custom prefab structures</HiddenDesc>
           <div className="dialog-form">
             <div className="form-group"><Label>Name</Label><Input value={ctx.newPrefab.name} onChange={(e) => ctx.setNewPrefab({ ...ctx.newPrefab, name: e.target.value })} placeholder="My Prefab" /></div>
             <div className="form-group"><Label>Description</Label><Textarea value={ctx.newPrefab.description} onChange={(e) => ctx.setNewPrefab({ ...ctx.newPrefab, description: e.target.value })} /></div>
@@ -203,6 +211,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showAnalyticsDialog} onOpenChange={ctx.setShowAnalyticsDialog}>
         <DialogContent className="dialog-content dialog-lg" data-testid="analytics-dialog">
           <DialogHeader><DialogTitle><Activity size={20} />Analytics Dashboard</DialogTitle></DialogHeader>
+          <HiddenDesc>View statistics and analytics for your worlds</HiddenDesc>
           {ctx.analyticsData && (
             <div className="analytics-grid">
               <Card><CardHeader><CardTitle className="stat-title">Total Worlds</CardTitle></CardHeader><CardContent><span className="analytics-stat">{ctx.analyticsData.total_worlds}</span></CardContent></Card>
@@ -221,6 +230,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showProceduralPreview} onOpenChange={ctx.setShowProceduralPreview}>
         <DialogContent className="dialog-content dialog-lg" data-testid="procedural-preview-dialog">
           <DialogHeader><DialogTitle><Play size={20} />Procedural Generation Preview</DialogTitle></DialogHeader>
+          <HiddenDesc>Watch the step-by-step procedural generation of your world</HiddenDesc>
           <div className="procedural-controls">
             <Button variant={ctx.previewPlaying ? "default" : "outline"} onClick={() => ctx.setPreviewPlaying(!ctx.previewPlaying)}>{ctx.previewPlaying ? <Pause size={16} /> : <Play size={16} />}{ctx.previewPlaying ? "Pause" : "Play"}</Button>
             <Button variant="outline" onClick={() => ctx.setCurrentPreviewStep(Math.min(ctx.proceduralSteps.length - 1, ctx.currentPreviewStep + 1))} disabled={ctx.currentPreviewStep >= ctx.proceduralSteps.length - 1}><SkipForward size={16} />Next</Button>
@@ -237,6 +247,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showAuthDialog} onOpenChange={ctx.setShowAuthDialog}>
         <DialogContent className="dialog-content" data-testid="auth-dialog">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><UserCircle size={20} />{ctx.authMode === "login" ? "Sign In" : "Create Account"}</DialogTitle></DialogHeader>
+          <HiddenDesc>{ctx.authMode === "login" ? "Sign in to your account" : "Create a new account to save and share worlds"}</HiddenDesc>
           <div className="dialog-form">
             {ctx.authError && <div className="auth-error" data-testid="auth-error">{ctx.authError}</div>}
             {ctx.authMode === "register" && (<div className="form-group"><Label>Name</Label><Input value={ctx.authForm.name} onChange={(e) => ctx.setAuthForm({ ...ctx.authForm, name: e.target.value })} placeholder="Your name" data-testid="auth-name-input" /></div>)}
@@ -256,6 +267,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showProfileDialog} onOpenChange={ctx.setShowProfileDialog}>
         <DialogContent className="dialog-content dialog-lg" data-testid="profile-dialog">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><User size={20} />My Profile</DialogTitle></DialogHeader>
+          <HiddenDesc>View and edit your profile information</HiddenDesc>
           <div className="profile-container">
             <div className="profile-info"><div className="profile-avatar"><UserCircle size={64} /></div>
               <div className="profile-details">
@@ -288,6 +300,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showVersionDialog} onOpenChange={ctx.setShowVersionDialog}>
         <DialogContent className="dialog-content dialog-lg" data-testid="version-dialog">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><History size={20} />Version History</DialogTitle></DialogHeader>
+          <HiddenDesc>Manage saved versions of your world</HiddenDesc>
           <div className="version-container">
             <div className="version-actions"><Button onClick={ctx.createVersion} data-testid="create-version-btn"><Plus size={16} /> Save Current Version</Button><span className="text-muted">{ctx.worldVersions.length} version(s) saved</span></div>
             <ScrollArea className="version-list">
@@ -310,6 +323,7 @@ export function AppDialogs() {
       <Dialog open={ctx.showReviewDialog} onOpenChange={ctx.setShowReviewDialog}>
         <DialogContent className="dialog-content dialog-lg" data-testid="review-dialog">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Star size={20} />World Reviews</DialogTitle></DialogHeader>
+          <HiddenDesc>Read and write reviews for this world</HiddenDesc>
           <div className="reviews-container">
             <div className="review-form"><h4>Leave a Review</h4>
               <div className="rating-input" data-testid="rating-input">
@@ -452,16 +466,34 @@ export function AppDialogs() {
             <div className="collab-invite">
               <h4>Invite Collaborator</h4>
               <div className="collab-invite-form">
-                <Input value={ctx.collabInviteEmail} onChange={(e) => ctx.setCollabInviteEmail(e.target.value)} placeholder="Search user by name..." data-testid="collab-invite-input" />
+                <div className="collab-search-wrapper">
+                  <Input value={ctx.collabInviteEmail} onChange={(e) => { ctx.setCollabInviteEmail(e.target.value); if (e.target.value.length >= 2) ctx.searchUsers(e.target.value); }} placeholder="Search user by name..." data-testid="collab-invite-input" />
+                  {ctx.collabInviteEmail.length >= 2 && ctx.userSearchResults.length > 0 && (
+                    <div className="collab-search-dropdown" data-testid="collab-search-dropdown">
+                      {ctx.userSearchResults.slice(0, 5).map((u) => (
+                        <button key={u.id} className="collab-search-item" onClick={() => { ctx.addCollaborator(u.id, ctx.collabInviteRole); ctx.setCollabInviteEmail(""); }} data-testid={`collab-select-${u.id}`}>
+                          <UserCircle size={18} className="text-muted" />
+                          <div className="collab-search-item-info">
+                            <span className="collab-search-name">{u.name}</span>
+                            <span className="collab-search-email">{u.email || u.role}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Select value={ctx.collabInviteRole} onValueChange={ctx.setCollabInviteRole}>
                   <SelectTrigger className="collab-role-select" data-testid="collab-role-select"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="viewer"><Eye size={14} />Viewer</SelectItem><SelectItem value="editor"><Pencil size={14} />Editor</SelectItem></SelectContent>
+                  <SelectContent>
+                    <SelectItem value="viewer"><div className="collab-role-option"><Eye size={14} /><div><span>Viewer</span><span className="collab-role-desc">Can view but not edit</span></div></div></SelectItem>
+                    <SelectItem value="editor"><div className="collab-role-option"><Pencil size={14} /><div><span>Editor</span><span className="collab-role-desc">Can edit zones and prefabs</span></div></div></SelectItem>
+                  </SelectContent>
                 </Select>
                 <Button onClick={async () => {
                   if (!ctx.collabInviteEmail) return;
                   const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/search?q=${ctx.collabInviteEmail}`, { credentials: "include" });
                   const data = await res.json();
-                  if (data.users?.length > 0) ctx.addCollaborator(data.users[0].id, ctx.collabInviteRole);
+                  if (data.users?.length > 0) { ctx.addCollaborator(data.users[0].id, ctx.collabInviteRole); ctx.setCollabInviteEmail(""); }
                   else alert("User not found");
                 }} data-testid="collab-invite-btn"><UserPlus size={16} />Add</Button>
               </div>
@@ -469,11 +501,20 @@ export function AppDialogs() {
             <div className="collab-list">
               <h4>Collaborators ({ctx.worldCollaborators.collaborators.length})</h4>
               {ctx.worldCollaborators.collaborators.length === 0 ? (
-                <div className="empty-state"><p className="text-muted">No collaborators yet</p></div>
+                <div className="collab-empty-state">
+                  <Users size={28} className="opacity-30" />
+                  <p className="text-muted">No collaborators yet. Search for users above to invite them.</p>
+                </div>
               ) : (
                 ctx.worldCollaborators.collaborators.map((c) => (
                   <div key={c.user_id} className="collab-item" data-testid={`collab-${c.user_id}`}>
-                    <div className="collab-user-info"><UserCircle size={20} /><span className="collab-user-name">{c.name}</span></div>
+                    <div className="collab-user-info">
+                      <UserCircle size={20} />
+                      <div className="collab-user-details">
+                        <span className="collab-user-name">{c.name}</span>
+                        <span className="collab-user-role-label">{c.role === "editor" ? "Can edit" : "View only"}</span>
+                      </div>
+                    </div>
                     <div className="collab-item-actions">
                       <Select value={c.role} onValueChange={(v) => ctx.updateCollaboratorRole(c.user_id, v)}>
                         <SelectTrigger className="collab-role-mini"><SelectValue /></SelectTrigger>

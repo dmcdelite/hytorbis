@@ -145,6 +145,10 @@ export function AppProvider({ children }) {
   // Thumbnails cache
   const [thumbnails, setThumbnails] = useState({});
 
+  // Mobile sidebar state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileAiPanelOpen, setMobileAiPanelOpen] = useState(false);
+
   // Notification WebSocket ref
   const notifWsRef = useRef(null);
 
@@ -959,6 +963,7 @@ export function AppProvider({ children }) {
     updateZoneProperty, updateZoneBiomes, deleteZone,
     updatePrefabProperty, deletePrefab, updateTerrain,
     thumbnails, fetchThumbnail, regenerateThumbnail,
+    mobileSidebarOpen, setMobileSidebarOpen, mobileAiPanelOpen, setMobileAiPanelOpen,
     wsRef,
   };
 
