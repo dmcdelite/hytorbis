@@ -8,7 +8,7 @@ import { ZONE_CONFIG, PREFAB_CONFIG } from "@/config";
 import {
   FolderOpen, Plus, LayoutTemplate, Upload, Settings, MousePointer,
   Paintbrush, Castle, Move, Wand2, ZoomIn, ZoomOut, Maximize2,
-  Save, Share2, FileJson, Download, Layers, Package, Trash2, FolderDown
+  Save, Share2, FileJson, Download, Layers, Package, Trash2, FolderDown, ExternalLink
 } from "lucide-react";
 
 export function Sidebar() {
@@ -131,7 +131,10 @@ export function Sidebar() {
       {ctx.currentWorld && (
         <div className="sidebar-section sidebar-actions">
           <Button onClick={ctx.saveWorld} disabled={ctx.loading} className="action-btn" data-testid="save-world-btn"><Save size={16} />Save World</Button>
-          <Button variant="outline" onClick={() => ctx.setShowPublishDialog(true)} className="publish-btn" data-testid="publish-btn"><Share2 size={16} />Publish to Gallery</Button>
+          <div className="export-buttons">
+            <Button variant="outline" onClick={() => ctx.setShowPublishDialog(true)} className="publish-btn" data-testid="publish-btn"><Share2 size={16} />Publish</Button>
+            <Button variant="outline" onClick={() => ctx.setShowShareDialog(true)} className="share-btn" data-testid="share-world-btn"><ExternalLink size={16} />Share</Button>
+          </div>
           <div className="export-buttons">
             <Button variant="secondary" onClick={() => ctx.exportWorld("json")} data-testid="export-json-btn" title="Export as JSON"><FileJson size={16} />JSON</Button>
             <Button variant="secondary" onClick={() => ctx.exportWorld("hytale")} data-testid="export-hytale-btn" title="Export Hytale config"><Download size={16} />Hytale</Button>

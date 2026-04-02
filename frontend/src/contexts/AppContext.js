@@ -166,6 +166,10 @@ export function AppProvider({ children }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [pwaInstallable, setPwaInstallable] = useState(false);
 
+  // Share World
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareInfo, setShareInfo] = useState({ share_enabled: false, share_token: null });
+
   // Notification WebSocket ref
   const notifWsRef = useRef(null);
 
@@ -203,6 +207,25 @@ export function AppProvider({ children }) {
       fetchSubscriptionStatus();
     }
   }, [currentUser]);
+
+  // ========== SHARE WORLD ==========
+  const fetchShareInfo = async (worldId) => {
+    try {
+      const response = await axios.get(`${API}/worlds/${worldId}/share`);
+      setShareInfo(response.data);
+    } catch (e) { setShareInfo({ share_enabled: false, share_token: null }); }
+  };
+
+  const toggleShare = async () => {
+    if (!currentWorld) return;
+    try {
+      const response = await axios.post(`${API}/worlds/${currentWorld.id}/share`);
+      setShareInfo(response.data);
+      return response.data;
+    } catch (e) {
+      alert(e.response?.data?.detail || "Failed to toggle sharing");
+    }
+  };
 
   // ========== THUMBNAILS ==========
   const fetchThumbnail = async (worldId) => {
@@ -1121,6 +1144,8 @@ export function AppProvider({ children }) {
     showHowToDialog, setShowHowToDialog,
     // PWA
     pwaInstallable, triggerPwaInstall,
+    // Share
+    showShareDialog, setShowShareDialog, shareInfo, fetchShareInfo, toggleShare,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

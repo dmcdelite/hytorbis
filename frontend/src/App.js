@@ -11,8 +11,23 @@ import { PricingModal } from "@/components/app/PricingModal";
 import { ManageSubscription } from "@/components/app/ManageSubscription";
 import { InstallToGame } from "@/components/app/InstallToGame";
 import { HowToGuide } from "@/components/app/HowToGuide";
+import { ShareWorld } from "@/components/app/ShareWorld";
+import { SharedView } from "@/components/app/SharedView";
 
 function App() {
+  // Check for share/embed tokens in URL before rendering providers
+  const params = new URLSearchParams(window.location.search);
+  const shareToken = params.get("share");
+  const embedToken = params.get("embed");
+
+  if (embedToken) {
+    return <SharedView shareToken={embedToken} isEmbed />;
+  }
+
+  if (shareToken) {
+    return <SharedView shareToken={shareToken} isEmbed={false} />;
+  }
+
   return (
     <AppProvider>
       <AppContent />
@@ -51,6 +66,7 @@ function AppContent() {
       <ManageSubscription />
       <InstallToGame />
       <HowToGuide />
+      <ShareWorld />
     </div>
   );
 }
