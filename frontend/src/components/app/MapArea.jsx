@@ -1,15 +1,35 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ZONE_CONFIG, PREFAB_CONFIG, BIOME_CONFIG } from "@/config";
-import { Wand2, Plus, LayoutTemplate, Upload, Mountain, Layers, Trash2 } from "lucide-react";
+import { ZONE_CONFIG, PREFAB_CONFIG, BIOME_CONFIG, CAVE_TYPES } from "@/config";
+import { Wand2, Plus, LayoutTemplate, Upload, Mountain, Layers, Trash2, Sparkles, Eye, EyeOff } from "lucide-react";
+
+// ========== Border distance calculator ==========
+function getBorderFade(x, y, zone, zoneMap, mapWidth, mapHeight) {
+  if (!zone) return 0;
+  const fade = zone.border_fade || 0.3;
+  const radius = Math.max(1, Math.round(fade * 5));
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= mapWidth || ny >= mapHeight) continue;
+      const neighbor = zoneMap[`${nx}-${ny}`];
+      if (!neighbor || neighbor.type !== zone.type) {
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= radius) return Math.max(0, 1 - (dist / radius));
+      }
+    }
+  }
+  return 0;
+}
 
 // ========== Map Canvas (virtualized) ==========
-function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoom, pan, selectedElement }) {
+function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoom, pan, selectedElement, showCaves, showBorders }) {
   const containerRef = useRef(null);
   const [visibleRange, setVisibleRange] = useState({ startX: 0, endX: 50, startY: 0, endY: 50 });
   const cellSize = Math.max(8, Math.min(32, Math.floor(800 / Math.max(world.map_width, world.map_height))));
@@ -44,7 +64,9 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoo
       const zone = zoneMap[key];
       const prefabs = prefabMap[key] || [];
       const isSelected = selectedElement && ((selectedElement.type === "zone" && zone?.id === selectedElement.data.id) || (selectedElement.type === "prefab" && prefabs.some(p => p.id === selectedElement.data.id)));
-      visibleCells.push({ x, y, key, zone, prefabs, isSelected });
+      const borderFade = showBorders && zone ? getBorderFade(x, y, zone, zoneMap, world.map_width, world.map_height) : 0;
+      const hasCaves = showCaves && zone && (zone.caves?.length > 0);
+      visibleCells.push({ x, y, key, zone, prefabs, isSelected, borderFade, hasCaves });
     }
   }
 
@@ -75,16 +97,26 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoo
           backgroundSize: `${scaledCellSize}px ${scaledCellSize}px`,
           backgroundImage: `linear-gradient(to right, var(--border-default) 1px, transparent 1px), linear-gradient(to bottom, var(--border-default) 1px, transparent 1px)`
         }}>
-          {visibleCells.map(({ x, y, key, zone, prefabs, isSelected }) => {
+          {visibleCells.map(({ x, y, key, zone, prefabs, isSelected, borderFade, hasCaves }) => {
             const ZoneIcon = zone ? ZONE_CONFIG[zone.type]?.icon : null;
+            const caveColor = hasCaves ? CAVE_TYPES[zone.caves[0]?.type]?.color : null;
             return (
               <div key={key} className={`map-cell-abs ${isSelected ? 'selected' : ''}`} style={{
                 left: x * scaledCellSize, top: y * scaledCellSize, width: scaledCellSize, height: scaledCellSize,
                 backgroundColor: zone ? `${ZONE_CONFIG[zone.type]?.color}50` : 'transparent',
-                borderColor: isSelected ? '#fff' : (zone ? ZONE_CONFIG[zone.type]?.color : 'transparent')
+                borderColor: isSelected ? '#fff' : (zone ? ZONE_CONFIG[zone.type]?.color : 'transparent'),
+                opacity: borderFade > 0 ? (1 - borderFade * 0.4) : 1,
               }} data-testid={`cell-${x}-${y}`}>
+                {/* Border transition glow */}
+                {borderFade > 0 && (
+                  <div className="cell-border-fade" style={{ opacity: borderFade * 0.6, background: `radial-gradient(circle, rgba(255,255,255,0.15), transparent)` }} />
+                )}
                 {zone && scaledCellSize > 16 && (
                   <div className="cell-content">{ZoneIcon && <ZoneIcon size={Math.min(14, scaledCellSize * 0.5)} style={{ color: ZONE_CONFIG[zone.type]?.color }} />}</div>
+                )}
+                {/* Cave indicator */}
+                {hasCaves && scaledCellSize > 10 && (
+                  <div className="cell-cave-dot" style={{ background: caveColor || '#78716C' }} />
                 )}
                 {prefabs.map((prefab) => {
                   const PrefabIcon = PREFAB_CONFIG[prefab.type]?.icon;
@@ -102,6 +134,14 @@ function MapCanvas({ world, onMouseDown, onMouseMove, onMouseUp, activeTool, zoo
             <div key={key} className="legend-item"><div className="color-dot" style={{ backgroundColor: config.color }} /><span>{config.name}</span></div>
           ))}
         </div>
+        {showCaves && (
+          <div className="legend-section">
+            <span className="legend-title">Caves</span>
+            {Object.entries(CAVE_TYPES).map(([key, config]) => (
+              <div key={key} className="legend-item"><div className="color-dot" style={{ backgroundColor: config.color, width: 6, height: 6 }} /><span>{config.name}</span></div>
+            ))}
+          </div>
+        )}
         <div className="legend-section">
           <span className="legend-title">Stats</span>
           <span className="legend-stat">{world.zones.length} zones</span>
@@ -179,6 +219,93 @@ function ZonePropertiesPanel({ zone, onUpdate, onUpdateBiomes, onDelete }) {
   );
 }
 
+// ========== Cave Config Panel (inside zone properties) ==========
+function CaveConfigPanel({ zone, onUpdate }) {
+  const caves = zone.caves || [];
+  const availableBiomes = Object.entries(BIOME_CONFIG).filter(([_, b]) => b.zones.includes(zone.type));
+
+  const addCave = (type) => {
+    const newCave = { type, density: 0.5, min_depth: 10, max_depth: 64, biome_mask: [] };
+    onUpdate(zone.id, 'caves', [...caves, newCave]);
+  };
+
+  const removeCave = (idx) => {
+    onUpdate(zone.id, 'caves', caves.filter((_, i) => i !== idx));
+  };
+
+  const updateCave = (idx, key, value) => {
+    onUpdate(zone.id, 'caves', caves.map((c, i) => i === idx ? { ...c, [key]: value } : c));
+  };
+
+  const unusedCaveTypes = Object.keys(CAVE_TYPES).filter(ct => !caves.some(c => c.type === ct));
+
+  return (
+    <div className="cave-config-panel" data-testid="cave-config-panel">
+      <Label className="cave-config-title"><Mountain size={14} /> Cave System</Label>
+      {caves.map((cave, idx) => {
+        const ct = CAVE_TYPES[cave.type];
+        return (
+          <div key={idx} className="cave-item" style={{ borderLeftColor: ct?.color || '#666' }}>
+            <div className="cave-item-header">
+              <div className="color-dot" style={{ backgroundColor: ct?.color }} />
+              <span>{ct?.name || cave.type}</span>
+              <button className="cave-remove-btn" onClick={() => removeCave(idx)}>x</button>
+            </div>
+            <div className="cave-sliders">
+              <div className="biome-slider"><span>Density</span><Slider value={[cave.density || 0.5]} min={0} max={1} step={0.1} onValueChange={([v]) => updateCave(idx, 'density', v)} /><span>{(cave.density || 0.5).toFixed(1)}</span></div>
+              <div className="biome-slider"><span>Min Depth</span><Slider value={[cave.min_depth || 10]} min={0} max={128} step={5} onValueChange={([v]) => updateCave(idx, 'min_depth', v)} /><span>{cave.min_depth || 10}</span></div>
+              <div className="biome-slider"><span>Max Depth</span><Slider value={[cave.max_depth || 64]} min={0} max={256} step={5} onValueChange={([v]) => updateCave(idx, 'max_depth', v)} /><span>{cave.max_depth || 64}</span></div>
+            </div>
+          </div>
+        );
+      })}
+      {unusedCaveTypes.length > 0 && (
+        <Select onValueChange={(v) => addCave(v)}>
+          <SelectTrigger className="cave-add-trigger"><SelectValue placeholder="+ Add cave type" /></SelectTrigger>
+          <SelectContent>
+            {unusedCaveTypes.map(ct => (
+              <SelectItem key={ct} value={ct}><div className="color-dot" style={{ backgroundColor: CAVE_TYPES[ct].color, display: 'inline-block', marginRight: 6 }} />{CAVE_TYPES[ct].name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
+// ========== Discovery Config Panel ==========
+function DiscoveryConfigPanel({ zone, onUpdate }) {
+  const disc = zone.discovery || { show_notification: true, display_name: ZONE_CONFIG[zone.type]?.name || "", sound_event: `zone.${zone.type}.discover`, major_zone: true, duration: 5.0, fade_in: 2.0, fade_out: 1.5 };
+
+  const update = (key, value) => {
+    onUpdate(zone.id, 'discovery', { ...disc, [key]: value });
+  };
+
+  return (
+    <div className="discovery-config-panel" data-testid="discovery-config-panel">
+      <Label className="cave-config-title"><Sparkles size={14} /> Zone Discovery</Label>
+      <div className="discovery-row">
+        <Label>Display Name</Label>
+        <input className="discovery-input" value={disc.display_name || ""} onChange={(e) => update('display_name', e.target.value)} data-testid="discovery-display-name" />
+      </div>
+      <div className="discovery-row">
+        <Label>Sound Event</Label>
+        <input className="discovery-input" value={disc.sound_event || ""} onChange={(e) => update('sound_event', e.target.value)} />
+      </div>
+      <div className="discovery-row">
+        <label className="discovery-checkbox"><input type="checkbox" checked={disc.show_notification !== false} onChange={(e) => update('show_notification', e.target.checked)} /> Show Notification</label>
+      </div>
+      <div className="discovery-row">
+        <label className="discovery-checkbox"><input type="checkbox" checked={disc.major_zone !== false} onChange={(e) => update('major_zone', e.target.checked)} /> Major Zone</label>
+      </div>
+      <div className="biome-slider"><span>Fade In</span><Slider value={[disc.fade_in || 2.0]} min={0} max={10} step={0.5} onValueChange={([v]) => update('fade_in', v)} /><span>{(disc.fade_in || 2.0).toFixed(1)}s</span></div>
+      <div className="biome-slider"><span>Fade Out</span><Slider value={[disc.fade_out || 1.5]} min={0} max={10} step={0.5} onValueChange={([v]) => update('fade_out', v)} /><span>{(disc.fade_out || 1.5).toFixed(1)}s</span></div>
+      <div className="biome-slider"><span>Duration</span><Slider value={[disc.duration || 5.0]} min={0.5} max={20} step={0.5} onValueChange={([v]) => update('duration', v)} /><span>{(disc.duration || 5.0).toFixed(1)}s</span></div>
+      <div className="biome-slider"><span>Border Fade</span><Slider value={[zone.border_fade || 0.3]} min={0} max={1} step={0.05} onValueChange={([v]) => onUpdate(zone.id, 'border_fade', v)} /><span>{(zone.border_fade || 0.3).toFixed(2)}</span></div>
+    </div>
+  );
+}
+
 // ========== Prefab Properties ==========
 function PrefabPropertiesPanel({ prefab, onUpdate, onDelete }) {
   const prefabConfig = PREFAB_CONFIG[prefab.type];
@@ -199,6 +326,8 @@ function PrefabPropertiesPanel({ prefab, onUpdate, onDelete }) {
 // ========== Main MapArea ==========
 export function MapArea() {
   const ctx = useApp();
+  const [showCaves, setShowCaves] = useState(true);
+  const [showBorders, setShowBorders] = useState(true);
 
   return (
     <>
@@ -214,7 +343,17 @@ export function MapArea() {
               zoom={ctx.zoom}
               pan={ctx.pan}
               selectedElement={ctx.selectedElement}
+              showCaves={showCaves}
+              showBorders={showBorders}
             />
+            <div className="map-view-toggles" data-testid="map-view-toggles">
+              <button className={`view-toggle ${showCaves ? 'active' : ''}`} onClick={() => setShowCaves(!showCaves)} title="Toggle cave layer" data-testid="toggle-caves">
+                <Mountain size={14} /> Caves
+              </button>
+              <button className={`view-toggle ${showBorders ? 'active' : ''}`} onClick={() => setShowBorders(!showBorders)} title="Toggle border transitions" data-testid="toggle-borders">
+                <Layers size={14} /> Borders
+              </button>
+            </div>
             <TerrainPanel terrain={ctx.currentWorld.terrain} onUpdate={ctx.updateTerrain} />
           </>
         ) : (
@@ -241,7 +380,11 @@ export function MapArea() {
         <SheetContent className="properties-sheet">
           <SheetHeader><SheetTitle>{ctx.selectedElement?.type === "zone" ? "Zone Properties" : "Structure Properties"}</SheetTitle></SheetHeader>
           {ctx.selectedElement?.type === "zone" && (
-            <ZonePropertiesPanel zone={ctx.selectedElement.data} onUpdate={ctx.updateZoneProperty} onUpdateBiomes={ctx.updateZoneBiomes} onDelete={ctx.deleteZone} />
+            <>
+              <ZonePropertiesPanel zone={ctx.selectedElement.data} onUpdate={ctx.updateZoneProperty} onUpdateBiomes={ctx.updateZoneBiomes} onDelete={ctx.deleteZone} />
+              <CaveConfigPanel zone={ctx.selectedElement.data} onUpdate={ctx.updateZoneProperty} />
+              <DiscoveryConfigPanel zone={ctx.selectedElement.data} onUpdate={ctx.updateZoneProperty} />
+            </>
           )}
           {ctx.selectedElement?.type === "prefab" && (
             <PrefabPropertiesPanel prefab={ctx.selectedElement.data} onUpdate={ctx.updatePrefabProperty} onDelete={ctx.deletePrefab} />

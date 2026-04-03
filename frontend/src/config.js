@@ -4,11 +4,11 @@ import {
 } from "lucide-react";
 
 export const ZONE_CONFIG = {
-  emerald_grove: { name: "Emerald Grove", color: "#10B981", icon: TreePine },
-  borea: { name: "Borea", color: "#06B6D4", icon: Snowflake },
-  desert: { name: "Desert", color: "#F59E0B", icon: Sun },
-  arctic: { name: "Arctic", color: "#E2E8F0", icon: Snowflake },
-  corrupted: { name: "Corrupted", color: "#8B5CF6", icon: Skull }
+  emerald_grove: { name: "Emerald Grove", color: "#10B981", icon: TreePine, id: 1 },
+  borea: { name: "Borea", color: "#06B6D4", icon: Snowflake, id: 2 },
+  desert: { name: "Desert", color: "#F59E0B", icon: Sun, id: 3 },
+  arctic: { name: "Arctic", color: "#E2E8F0", icon: Snowflake, id: 4 },
+  corrupted: { name: "Corrupted", color: "#8B5CF6", icon: Skull, id: 5 }
 };
 
 export const PREFAB_CONFIG = {
@@ -31,6 +31,34 @@ export const BIOME_CONFIG = {
   oasis: { name: "Oasis", zones: ["desert"], color: "#34D399" },
   void: { name: "Void", zones: ["corrupted"], color: "#7C3AED" },
   wasteland: { name: "Wasteland", zones: ["corrupted"], color: "#A855F7" }
+};
+
+// Hytale Cave System — matches CaveGenerator / CaveType API
+export const CAVE_TYPES = {
+  natural: { name: "Natural Cave", color: "#78716C", description: "Standard underground tunnels", defaultBiomes: ["forest", "plains", "mountains"] },
+  crystal: { name: "Crystal Cavern", color: "#818CF8", description: "Luminescent crystal formations", defaultBiomes: ["mountains", "glacier"] },
+  lava: { name: "Lava Tube", color: "#EF4444", description: "Volcanic underground channels", defaultBiomes: ["dunes", "wasteland"] },
+  ice: { name: "Ice Cave", color: "#7DD3FC", description: "Frozen underground passages", defaultBiomes: ["tundra", "glacier"] },
+  corrupted: { name: "Corrupted Depths", color: "#A855F7", description: "Dark magic-infused caverns", defaultBiomes: ["void", "wasteland"] },
+  flooded: { name: "Flooded Grotto", color: "#2DD4BF", description: "Partially submerged cave system", defaultBiomes: ["swamp", "oasis"] },
+};
+
+// Default cave configs per zone type — matches Hytale's zone.caveGenerator() pattern
+export const ZONE_DEFAULT_CAVES = {
+  emerald_grove: ["natural", "flooded"],
+  borea: ["natural", "ice"],
+  desert: ["natural", "lava"],
+  arctic: ["ice"],
+  corrupted: ["corrupted", "lava"],
+};
+
+// Zone Discovery Config — matches Hytale's ZoneDiscoveryConfig
+export const ZONE_DISCOVERY_DEFAULTS = {
+  emerald_grove: { showNotification: true, displayName: "Emerald Grove", soundEvent: "zone.emerald.discover", majorZone: true, duration: 5.0, fadeIn: 2.0, fadeOut: 1.5 },
+  borea: { showNotification: true, displayName: "Borea", soundEvent: "zone.borea.discover", majorZone: true, duration: 5.0, fadeIn: 2.0, fadeOut: 1.5 },
+  desert: { showNotification: true, displayName: "Howling Sands", soundEvent: "zone.desert.discover", majorZone: true, duration: 5.0, fadeIn: 2.0, fadeOut: 1.5 },
+  arctic: { showNotification: true, displayName: "Frozen Wastes", soundEvent: "zone.arctic.discover", majorZone: true, duration: 5.0, fadeIn: 2.0, fadeOut: 1.5 },
+  corrupted: { showNotification: true, displayName: "The Corruption", soundEvent: "zone.corrupted.discover", majorZone: true, duration: 5.0, fadeIn: 2.0, fadeOut: 1.5 },
 };
 
 export const MAP_SIZE_PRESETS = [

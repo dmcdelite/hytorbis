@@ -20,6 +20,24 @@ class BiomeConfig(BaseModel):
     variation: float = Field(default=0.3, ge=0.0, le=1.0)
 
 
+class CaveConfig(BaseModel):
+    type: str = "natural"
+    density: float = Field(default=0.5, ge=0.0, le=1.0)
+    min_depth: int = Field(default=10, ge=0, le=256)
+    max_depth: int = Field(default=64, ge=0, le=256)
+    biome_mask: List[str] = []
+
+
+class ZoneDiscoveryConfig(BaseModel):
+    show_notification: bool = True
+    display_name: str = ""
+    sound_event: str = ""
+    major_zone: bool = True
+    duration: float = Field(default=5.0, ge=0.5, le=20.0)
+    fade_in: float = Field(default=2.0, ge=0.0, le=10.0)
+    fade_out: float = Field(default=1.5, ge=0.0, le=10.0)
+
+
 class ZoneConfig(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     type: str
@@ -28,7 +46,10 @@ class ZoneConfig(BaseModel):
     width: int = 1
     height: int = 1
     biomes: List[BiomeConfig] = []
+    caves: List[CaveConfig] = []
+    discovery: Optional[ZoneDiscoveryConfig] = None
     difficulty: int = Field(default=1, ge=1, le=10)
+    border_fade: float = Field(default=0.3, ge=0.0, le=1.0)
 
 
 class PrefabPlacement(BaseModel):

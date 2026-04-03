@@ -3217,6 +3217,161 @@ body {
   transition: opacity 0.3s;
 }
 
+/* ========== CAVE INDICATOR ON MAP ========== */
+.cell-cave-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.cell-border-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+/* ========== MAP VIEW TOGGLES ========== */
+.map-view-toggles {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.view-toggle.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.view-toggle:hover {
+  border-color: #10b981;
+}
+
+/* ========== CAVE CONFIG PANEL ========== */
+.cave-config-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.cave-config-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cave-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border-left: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cave-item-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.cave-remove-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0 4px;
+}
+
+.cave-remove-btn:hover {
+  color: #ef4444;
+}
+
+.cave-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cave-add-trigger {
+  font-size: 0.78rem;
+}
+
+/* ========== DISCOVERY CONFIG PANEL ========== */
+.discovery-config-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.discovery-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.discovery-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.discovery-input:focus {
+  border-color: #10b981;
+}
+
+.discovery-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.discovery-checkbox input {
+  accent-color: #10b981;
+}
+
 .manage-sub-link:hover {
   opacity: 0.7;
   text-decoration: underline;
