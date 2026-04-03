@@ -102,6 +102,15 @@ worlds, templates, gallery, custom_prefabs, users, login_attempts, world_version
 4. CORS monitoring — Middleware logs rejected origins
 5. Code obfuscation — GENERATE_SOURCEMAP=false for production
 
+## P12 (DONE - April 3, 2026) - Hytale Modding API Alignment:
+1. Cave System — 6 cave types (Natural, Crystal Cavern, Lava Tube, Ice Cave, Corrupted Depths, Flooded Grotto) configurable per-zone with density, depth range, and biome masks
+2. Zone Discovery Config — Display name, sound event, notification settings, major zone toggle, fade in/out/duration timings — matches Hytale's ZoneDiscoveryConfig API
+3. Border Transitions — Opacity gradient visualization at zone edges with configurable border_fade per zone
+4. Map Layer Toggles — Show/hide caves and borders independently via toggle buttons
+5. Hytale-Accurate JAR Export v2.0 — Generates real Java code using Zone, BiomePatternGenerator, CaveGenerator, ZoneDiscoveryConfig classes. Includes mod.json, placement.json, terrain.json, README.md
+6. Updated config.js with CAVE_TYPES, ZONE_DEFAULT_CAVES, ZONE_DISCOVERY_DEFAULTS
+7. Updated backend models with CaveConfig and ZoneDiscoveryConfig
+
 ## P10 (DONE - April 2, 2026) - Share World Feature:
 1. Per-world share toggle — Owner enables/disables public sharing with unique share token
 2. Share dialog — Copy link, Facebook/Twitter/Discord/Reddit social share buttons, iframe embed code
